@@ -40,7 +40,7 @@ local function load_static_png_sprite_16x16(png_path)
 end
 
 
-local alt_arrow              = iutils.assert_sprite_load("gfx/reminders/alt_arrow.anm2")
+local alt_arrow = iutils.assert_sprite_load("gfx/reminders/alt_arrow.anm2")
 
 -- TODO: to optimize all of these, we could put all of them in one single spritesheet
 -- and have different frames of animation
@@ -76,32 +76,32 @@ rems.notify_special_rooms = {}
 -- Room names
 -- TODO: maybe support translation?
 -- TODO: move to another file
-rems.room_names = {
-    [RoomType.ROOM_SECRET]      = "Secret Room",
-    [RoomType.ROOM_SUPERSECRET] = "Super Secret Room",
-    [RoomType.ROOM_ULTRASECRET] = "Ultra Secret Room",
-
-    [RoomType.ROOM_SHOP]        = "Shop",
-    [RoomType.ROOM_TREASURE]    = "Treasure Room",
-    [RoomType.ROOM_SACRIFICE]   = "Sacrifice Room",
-    [RoomType.ROOM_LIBRARY]     = "Library",
-    [RoomType.ROOM_ARCADE]      = "Arcade",
-    [RoomType.ROOM_CHALLENGE]   = "Challenge Room",
-    [RoomType.ROOM_PLANETARIUM] = "Planetarium",
-
-    [RoomType.ROOM_ISAACS] = "Bedroom",
-    [RoomType.ROOM_BARREN] = "Barren Bedroom",
-
-    [RoomType.ROOM_CHEST]       = "Chest Room",
-    [RoomType.ROOM_DICE]        = "Dice Room",
-    [RoomType.ROOM_CURSE]       = "Curse Room",
-    [RoomType.ROOM_MINIBOSS]    = "Miniboss Room",
-
-    [RoomType.ROOM_DEVIL] = "Devil Room",
-    [RoomType.ROOM_ANGEL] = "Angel Room",
-
-    [RoomType.ROOM_BOSS] = "Boss Room",
-}
+-- rems.room_names = {
+--     [RoomType.ROOM_SECRET]      = "Secret Room",
+--     [RoomType.ROOM_SUPERSECRET] = "Super Secret Room",
+--     [RoomType.ROOM_ULTRASECRET] = "Ultra Secret Room",
+--
+--     [RoomType.ROOM_SHOP]        = "Shop",
+--     [RoomType.ROOM_TREASURE]    = "Treasure Room",
+--     [RoomType.ROOM_SACRIFICE]   = "Sacrifice Room",
+--     [RoomType.ROOM_LIBRARY]     = "Library",
+--     [RoomType.ROOM_ARCADE]      = "Arcade",
+--     [RoomType.ROOM_CHALLENGE]   = "Challenge Room",
+--     [RoomType.ROOM_PLANETARIUM] = "Planetarium",
+--
+--     [RoomType.ROOM_ISAACS] = "Bedroom",
+--     [RoomType.ROOM_BARREN] = "Barren Bedroom",
+--
+--     [RoomType.ROOM_CHEST]       = "Chest Room",
+--     [RoomType.ROOM_DICE]        = "Dice Room",
+--     [RoomType.ROOM_CURSE]       = "Curse Room",
+--     [RoomType.ROOM_MINIBOSS]    = "Miniboss Room",
+--
+--     [RoomType.ROOM_DEVIL] = "Devil Room",
+--     [RoomType.ROOM_ANGEL] = "Angel Room",
+--
+--     [RoomType.ROOM_BOSS] = "Boss Room",
+-- }
 
 -- HACK: this is not stable, as it depends on the resources of another mod.
 -- But Im lazy, so we have this for now.
@@ -251,12 +251,10 @@ function rems:update_notify_rooms()
     for _, room in ipairs(unvisited_special_rooms) do
         local desc = room.Descriptor
 
-        local room_name = self.room_names[room.Type]
-
         -- Curse of the lost will not affect the display flags
         local should_notify = (room:IsVisible() and room:IsIconVisible()) or iutils.is_any_secret_room(room)
 
-        if room_name ~= nil and should_notify then
+        if should_notify then
             table.insert(self.notify_special_rooms, RoomNotify.new(room.Type))
         end
 
@@ -317,7 +315,7 @@ function rems:render_notify(alpha)
         assert(self.minimapapi_roomtype2icon, "Cannot draw icon!")
         local line_height_offset = LINE_HEIGHT * i
 
-        local rname = self.room_names[room.type]
+        local rname = iutils.room_name_from_type(room.type)
 
         local icon_id = self.minimapapi_roomtype2icon[room.type]
         local icon = self.minimapapi_icons
@@ -521,6 +519,18 @@ function rems:handle_special_room_notify()
     end
 end
 
+local function lerpf(a, b, t)
+    return a + (b - a) * t
+end
+
+local function lerpv(a, b, t)
+    return Vector(
+        lerpf(a.X, b.X, t), lerpf(a.Y, b.Y, t)
+    )
+end
+
+rems.time_progress_anim_pos_offset = Vector(0, 0)
+
 function rems:render_time_progress()
     local w = Isaac.GetScreenWidth()
     local h = Isaac.GetScreenHeight()
@@ -536,7 +546,21 @@ function rems:render_time_progress()
     local opacity = config.time_progress_opacity * extra_info_fade_opacity
     local node_opacity = config.time_progress_opacity_node
 
-    local offset = iserializer.decode_vector(self:get_config().time_progress_offset)
+    local ANIM_SPEED = 4.0
+
+    if self.extra_info_timer:max() then
+        -- TODO HACK instead of -50, we should calculate the difference between current pos with 0
+        self.time_progress_anim_pos_offset = lerpv(
+            self.time_progress_anim_pos_offset, Vector(0, -50), self.dt_ms * ANIM_SPEED
+        )
+    else
+        self.time_progress_anim_pos_offset = lerpv(
+            self.time_progress_anim_pos_offset, Vector(0, 0), self.dt_ms * ANIM_SPEED
+        )
+    end
+
+    local total_offset = iserializer.decode_vector(self:get_config().time_progress_offset) +
+        self.time_progress_anim_pos_offset
 
     clock_sprite.Color = Color(1, 1, 1, opacity)
     node_tiny.Color = Color(1, 1, 1, opacity * node_opacity)
@@ -551,7 +575,7 @@ function rems:render_time_progress()
 
     for i = 0, sections do
         local node_pos = Vector(
-            w / 2 - length / 2 + section_len * i + offset.X, 20 + offset.Y
+            w / 2 - length / 2 + section_len * i + total_offset.X, 20 + total_offset.Y
         )
 
         -- boss rush
@@ -576,7 +600,7 @@ function rems:render_time_progress()
 
     clock_sprite:SetFrame("Static_Center", 0)
     clock_sprite:Render(Vector(
-        w / 2 - length / 2 + length * progress + offset.X, 10 + offset.Y
+        w / 2 - length / 2 + length * progress + total_offset.X, 10 + total_offset.Y
     ))
 end
 
@@ -588,10 +612,12 @@ function rems:render_game_timer()
 
     local offset = iserializer.decode_vector(self:get_config().game_timer_offset)
 
-    Isaac.RenderText(
-        time_str,
-        w / 2 - Isaac.GetTextWidth(time_str) / 2 + offset.X, 25 + offset.Y, 0.8, 0.8, 0.8, 1
-    )
+    if self.extra_info_timer:max() == false then
+        Isaac.RenderText(
+            time_str,
+            w / 2 - Isaac.GetTextWidth(time_str) / 2 + offset.X, 25 + offset.Y, 0.8, 0.8, 0.8, 1
+        )
+    end
 end
 
 -- CALLBACKS --
