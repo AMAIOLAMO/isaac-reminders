@@ -53,7 +53,7 @@ local clock_sprite   = load_static_png_sprite_16x16("gfx/reminders/sprites/clock
 local hush_icon      = load_static_png_sprite_16x16("gfx/reminders/sprites/hush_icon.png")
 local boss_rush_icon = load_static_png_sprite_16x16("gfx/reminders/sprites/boss_rush_icon.png")
 
-local card_fronts            = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
+local card_fronts = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
 
 rems.marked_rooms = {}
 
@@ -61,14 +61,21 @@ rems.config = configs.get_default_config()
 
 rems.extra_info_timer = timerf.new(0.5, 0)
 
+local RoomNotify = {}
+RoomNotify.__index = RoomNotify
+
+function RoomNotify.new(rtype)
+    return setmetatable({ type = rtype }, RoomNotify)
+end
+
+
 rems.notify_special_rooms = {}
-rems.notify_msg = ""
-rems.notify_msg_timer = timerf.new(5, 5)
-rems.notify_msg_start_fade = 4
+rems.notify_info_timer = timerf.new(5, 5)
+rems.notify_info_start_fade = 4
 
 -- Room names
 -- TODO: maybe support translation?
-rems.notify_room_names = {
+rems.room_names = {
     [RoomType.ROOM_SECRET]      = "Secret Room",
     [RoomType.ROOM_SUPERSECRET] = "Super Secret Room",
     [RoomType.ROOM_ULTRASECRET] = "Ultra Secret Room",
@@ -98,8 +105,7 @@ rems.notify_room_names = {
 -- HACK: this is not stable, as it depends on the resources of another mod.
 -- But Im lazy, so we have this for now.
 if MinimapAPI then
-    rems.minimapapi_icons = Sprite()
-    rems.minimapapi_icons:Load("gfx/ui/minimapapi_icons.anm2", true)
+    rems.minimapapi_icons = iutils.assert_sprite_load("gfx/ui/minimapapi_icons.anm2", true)
 
     rems.minimapapi_roomtype2icon = {
         [RoomType.ROOM_SECRET] = "IconSecretRoom",
@@ -172,13 +178,8 @@ function rems:get_config()
     return self.config
 end
 
-function rems:start_notify_msg(msg)
-    self.notify_msg = msg
-    self.notify_msg_timer:reset()
-end
-
-function rems:refresh_notify_msg_timer()
-    self.notify_msg_timer:reset()
+function rems:start_notify_info()
+    self.notify_info_timer:reset()
 end
 
 function rems:mark_room(room)
@@ -250,20 +251,21 @@ end
 
 function rems:update_notify_rooms()
     local unvisited_special_rooms = self:get_unvisited_special_rooms()
+    for i in ipairs(self.notify_special_rooms) do
+        self.notify_special_rooms[i] = nil
+    end
+
 
     for _, room in ipairs(unvisited_special_rooms) do
         local desc = room.Descriptor
 
-        local room_name = self.notify_room_names[room.Type]
+        local room_name = self.room_names[room.Type]
 
         -- Curse of the lost will not affect the display flags
         local should_notify = (room:IsVisible() and room:IsIconVisible()) or iutils.is_any_secret_room(room)
 
         if room_name ~= nil and should_notify then
-            table.insert(self.notify_special_rooms, {
-                type = room.Type,
-                name = room_name
-            })
+            table.insert(self.notify_special_rooms, RoomNotify.new(room.Type))
         end
 
     end
@@ -271,37 +273,9 @@ function rems:update_notify_rooms()
     self:log_debug("Notify rooms updated")
 end
 
-function rems:get_notify_msg_with_unvisited_special_rooms()
-    local notify_msg = self:get_config().notify_text_header
-
-    local unvisited_special_rooms = self:get_unvisited_special_rooms()
-
-    for _, room in ipairs(unvisited_special_rooms) do
-        local desc = room.Descriptor
-
-        local room_name = self.notify_room_names[room.Type]
-
-        if self:get_config().debug_mode then
-            notify_msg = string.format("%s\n--> room_name: %s, display_flags: %d", notify_msg, room_name or "NIL", room:GetDisplayFlags())
-        else
-            -- Curse of the lost will not affect the display flags
-            local should_notify = (room:IsVisible() and room:IsIconVisible()) or iutils.is_any_secret_room(room)
-
-            if room_name ~= nil and should_notify then
-                notify_msg = string.format("%s\n--> %s", notify_msg, room_name)
-            end
-        end
-
-    end
-
-    return notify_msg
-end
-
 function rems:notify_unvisited_special_rooms()
-    local msg = self:get_notify_msg_with_unvisited_special_rooms()
     self:update_notify_rooms()
-
-    self:start_notify_msg(msg)
+    self:start_notify_info()
 end
 
 function rems:render_room_icon(room_type, pos)
@@ -317,21 +291,62 @@ function rems:render_room_icon(room_type, pos)
     icons:Render(pos)
 end
 
--- TODO: rewrite this so that the notify_msg actually contains useful information of
--- each room to render, so we can also handle line height, displaying icons and more
 function rems:render_notify(alpha)
-    local width = Isaac.GetScreenWidth()
-    local text_width = Isaac.GetTextWidth(self:get_config().notify_text_header)
+    local LINE_HEIGHT = 15
 
-    local offset = iserializer.decode_vector(self:get_config().notify_msg_offset)
+    local width = Isaac.GetScreenWidth()
+
+    local config = self:get_config()
+
+    local notify_header = #self.notify_special_rooms == 0 and
+        config.notify_text_header_ok or config.notify_text_header
+        
+    local header_width = Isaac.GetTextWidth(notify_header)
+
+    local offset = iserializer.decode_vector(config.notify_info_offset)
+
+    local global_offset = Vector(0, 50)
+
+    local render_pivot = Vector(
+        (width - header_width) / 2 + offset.X, offset.Y
+    ) + global_offset
+
+    Isaac.RenderText(
+        notify_header,
+        render_pivot.X, render_pivot.Y,
+        1, 1, 1, alpha
+    )
 
     notify_sprite.Color = Color(1, 1, 1, alpha)
     notify_sprite:SetFrame(notify_sprite:GetDefaultAnimation(), 0)
-    notify_sprite:Render(Vector(
-        (width - text_width) / 2 - 32 + offset.X, 50 + offset.Y
-    ))
+    notify_sprite:Render(render_pivot + Vector(-32, 0))
 
-    Isaac.RenderText(self.notify_msg, (width - text_width) / 2 + offset.X, 50 + offset.Y, 1, 1, 1, alpha)
+    for i, room in ipairs(self.notify_special_rooms) do
+        assert(self.minimapapi_roomtype2icon, "Cannot draw icon!")
+        local line_height_offset = LINE_HEIGHT * i
+
+        local rname = self.room_names[room.type]
+
+        local icon_id = self.minimapapi_roomtype2icon[room.type]
+        local icon = self.minimapapi_icons
+
+        local icon_scale = self:get_config().icon_scale
+        local ICON_SIZE = 12
+        local icon_fsize = ICON_SIZE * icon_scale
+
+        local name_width = Isaac.GetTextWidth(rname)
+        local x_pivot = (width - name_width) / 2
+
+        icon:SetFrame(icon_id, 0)
+        icon.Scale = Vector(1, 1) * icon_scale
+        icon:Render(Vector(x_pivot - icon_fsize, render_pivot.Y + line_height_offset))
+
+        Isaac.RenderText(
+            rname,
+            x_pivot, render_pivot.Y + line_height_offset,
+            1, 1, 1, alpha
+        )
+    end
 end
 
 function rems:render_lost_death_icon()
@@ -487,21 +502,21 @@ function rems:handle_extra_info_timer()
 end
 
 function rems:handle_special_room_notify()
-    if self.notify_msg_timer:max() == false then
+    if self.notify_info_timer:max() == false then
         -- only update the timer when time progress
         if game:IsPaused() == false then
-            self.notify_msg_timer:tick(self.dt_ms)
+            self.notify_info_timer:tick(self.dt_ms)
         end
 
         if self:get_config().debug_mode then
-            Isaac.RenderText(tostring(self.notify_msg_timer.span), 50, 50, 1, 1, 1, 1)
+            Isaac.RenderText(tostring(self.notify_info_timer.span), 50, 50, 1, 1, 1, 1)
         end
 
         local alpha = 1
 
-        if self.notify_msg_start_fade < self.notify_msg_timer.span then
-            local fade_progress = (self.notify_msg_timer.span - self.notify_msg_start_fade) /
-                (self.notify_msg_timer.max_span - self.notify_msg_start_fade)
+        if self.notify_info_start_fade < self.notify_info_timer.span then
+            local fade_progress = (self.notify_info_timer.span - self.notify_info_start_fade) /
+                (self.notify_info_timer.max_span - self.notify_info_start_fade)
 
             alpha = 1 - fade_progress
         end
@@ -624,10 +639,6 @@ function rems:on_post_game_started()
         end
 
         self:log_debug("Updated rooms")
-
-        if self.minimapapi_icons and self.minimapapi_icons:IsLoaded() then
-            self:log_info("Minimapapi icons loaded")
-        end
     else
         self:log_info("Minimap Not Found.")
     end
@@ -660,8 +671,6 @@ function rems:on_post_new_room()
     end
 
     self:update_notify_rooms()
-
-    self.notify_msg = self:get_notify_msg_with_unvisited_special_rooms()
 
     if self:get_config().debug_mode then
         self:log_debug("Updated room marks")
@@ -709,7 +718,6 @@ function rems:on_pre_spawn_clean_award(_rng)
 
     -- recommended by discord users: shows a big arrow and add audio cues
     self:update_notify_rooms()
-    self.notify_msg = self:get_notify_msg_with_unvisited_special_rooms()
 
     if self:get_config().map_special_colormarks_enabled then
         self:update_room_color_marks()
@@ -756,7 +764,7 @@ function rems:on_post_render()
         self:render_lost_death_icon()
     end
 
-    if config.notify_msg_enabled then
+    if config.notify_info_enabled then
         self:handle_special_room_notify()
     end
 

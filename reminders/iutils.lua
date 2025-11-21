@@ -46,7 +46,9 @@ function IUtils.assert_sprite_load(gfx_path, should_load)
     local sprite = Sprite()
     sprite:Load(gfx_path, should_load)
 
-    assert(sprite:IsLoaded(), "sprite is not loaded")
+    if should_load then
+        assert(sprite:IsLoaded(), "sprite is not loaded")
+    end
     
     return sprite
 end
@@ -64,6 +66,9 @@ function IUtils.get_game_time(game)
         hours = total_hours
     }
 end
+
+-- function IUtils.get_room_name_from_type(room_type)
+-- end
 
 
 return IUtils

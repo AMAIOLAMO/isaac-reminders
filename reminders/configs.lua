@@ -15,9 +15,10 @@ function Configs.get_default_config()
         special_color_visited = iserializer.encode_color(Color(0, 1, 0)),
         normal_color_marked = iserializer.encode_color(Color(1, 1, 0)),
 
-        notify_msg_enabled = true,
+        notify_info_enabled = true,
         notify_text_header = "=== ![Missed Special Rooms]! ===",
-        notify_msg_offset = iserializer.encode_vector(Vector(0, 0)),
+        notify_text_header_ok = "No Missed Special Rooms :)",
+        notify_info_offset = iserializer.encode_vector(Vector(0, 0)),
 
         icon_scale = 1.5,
 
