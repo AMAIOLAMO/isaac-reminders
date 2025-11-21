@@ -1,74 +1,93 @@
 -- AUTHOR: CxRedix
+-- Copyright 2025 CxRedix
+-- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
+
+-- The major purpose of this mod is to make things that are not obvious to be more obvious!
 -- TODO:
 -- 1. add alt path reminders (partially done)
+--  -> add different directions of the alt_path arrow
 -- 2. icons
--- 3. put this on github
 
-local MOD_NAME = "Map Reminder"
-local map_rem = RegisterMod(MOD_NAME, 1)
+local MOD_NAME = "Reminders"
+local rems = RegisterMod(MOD_NAME, 1)
 
-local json = require("map_reminder.lib.json")
-local timerf = require("map_reminder.timerf")
-local iserializer = require("map_reminder.iserializer")
-local config_menu_helper = require("map_reminder.mod_config_menu_helper")
+local json = require("reminders.lib.json")
+local timerf = require("reminders.timerf")
+local iserializer = require("reminders.iserializer")
+local ilogger = require("reminders.ilogger")
+local iutils = require("reminders.iutils")
 
-local notify_sprite = Sprite()
-notify_sprite:Load("gfx/notify.anm2", true)
+local setup_mod_config_menu = require("reminders.setup_mod_config_menu")
 
-local alt_arrow = Sprite()
-alt_arrow:Load("gfx/alt_arrow.anm2", true)
-
+-- GAME --
 local game = Game()
+local sfx_manager = SFXManager()
 
-map_rem.marked_rooms = {}
+-- SETUP --
+local configs = require("reminders.configs")
 
-function map_rem.get_default_config()
-    return {
-        special_color_unvisited = iserializer.encode_color(Color(1, 0, 0)),
-        special_color_visited = iserializer.encode_color(Color(0, 1, 0)),
-        normal_color_marked = iserializer.encode_color(Color(1, 1, 0)),
-        debug_mode = true,
-        notify_text_header = "=== ![Map Reminder]! ===",
-        notify_msg_offset = iserializer.encode_vector(Vector(0, 0)),
-        icon_scale = 1.5,
-    }
+local function load_static_png_sprite_16x16(png_path)
+    local sprite = Sprite()
+    sprite:Load("gfx/reminders/static_16x16.anm2", true)
+    sprite:ReplaceSpritesheet(0, png_path)
+    sprite:LoadGraphics()
+
+    assert(sprite:IsLoaded(), string.format("png sprite %s is not loaded", png_path))
+
+    return sprite
 end
 
-map_rem.config = map_rem.get_default_config()
 
-map_rem.map_call_timer = timerf.new(0.5, 0)
+local alt_arrow              = iutils.assert_sprite_load("gfx/reminders/alt_arrow.anm2")
 
-map_rem.notify_special_rooms = {}
-map_rem.notify_msg = ""
-map_rem.notify_msg_timer = timerf.new(5, 5)
-map_rem.notify_msg_start_fade = 4
+-- TODO: to optimize all of these, we could put all of them in one single spritesheet
+-- and have different frames of animation
+local notify_sprite          = load_static_png_sprite_16x16("gfx/reminders/sprites/notify.png")
+local white_fireplace_notify =  load_static_png_sprite_16x16("gfx/reminders/sprites/white_fireplace_notify.png")
+local lost_death_icon        = load_static_png_sprite_16x16("gfx/reminders/sprites/lost_death_icon.png")
+local maus_knife_sprite      = load_static_png_sprite_16x16("gfx/reminders/sprites/maus_knife.png")
 
-map_rem.alt_path_arrow_doors = {
-    [RoomType.ROOM_SECRET_EXIT] = true
-}
+local node_tiny      = load_static_png_sprite_16x16("gfx/reminders/sprites/node_tiny.png")
+local node_regular   = load_static_png_sprite_16x16("gfx/reminders/sprites/node_regular.png")
+local clock_sprite   = load_static_png_sprite_16x16("gfx/reminders/sprites/clock.png")
+local hush_icon      = load_static_png_sprite_16x16("gfx/reminders/sprites/hush_icon.png")
+local boss_rush_icon = load_static_png_sprite_16x16("gfx/reminders/sprites/boss_rush_icon.png")
+
+local card_fronts            = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
+
+rems.marked_rooms = {}
+
+rems.config = configs.get_default_config()
+
+rems.extra_info_timer = timerf.new(0.5, 0)
+
+rems.notify_special_rooms = {}
+rems.notify_msg = ""
+rems.notify_msg_timer = timerf.new(5, 5)
+rems.notify_msg_start_fade = 4
 
 -- Room names
 -- TODO: maybe support translation?
-map_rem.notify_room_names = {
-    [RoomType.ROOM_SECRET] = "Secret Room",
+rems.notify_room_names = {
+    [RoomType.ROOM_SECRET]      = "Secret Room",
     [RoomType.ROOM_SUPERSECRET] = "Super Secret Room",
     [RoomType.ROOM_ULTRASECRET] = "Ultra Secret Room",
 
-    [RoomType.ROOM_SHOP] = "Shop",
-    [RoomType.ROOM_TREASURE] = "Treasure Room",
-    [RoomType.ROOM_SACRIFICE] = "Sacrifice Room",
-    [RoomType.ROOM_LIBRARY] = "Library",
-    [RoomType.ROOM_ARCADE] = "Arcade",
-    [RoomType.ROOM_CHALLENGE] = "Challenge Room",
+    [RoomType.ROOM_SHOP]        = "Shop",
+    [RoomType.ROOM_TREASURE]    = "Treasure Room",
+    [RoomType.ROOM_SACRIFICE]   = "Sacrifice Room",
+    [RoomType.ROOM_LIBRARY]     = "Library",
+    [RoomType.ROOM_ARCADE]      = "Arcade",
+    [RoomType.ROOM_CHALLENGE]   = "Challenge Room",
+    [RoomType.ROOM_PLANETARIUM] = "Planetarium",
 
     [RoomType.ROOM_ISAACS] = "Bedroom",
     [RoomType.ROOM_BARREN] = "Barren Bedroom",
 
-    [RoomType.ROOM_CHEST] = "Chest Room",
-    [RoomType.ROOM_DICE] = "Dice Room",
-    [RoomType.ROOM_PLANETARIUM] = "Planetarium",
-    [RoomType.ROOM_CURSE] = "Curse Room",
-    [RoomType.ROOM_MINIBOSS] = "Miniboss Room",
+    [RoomType.ROOM_CHEST]       = "Chest Room",
+    [RoomType.ROOM_DICE]        = "Dice Room",
+    [RoomType.ROOM_CURSE]       = "Curse Room",
+    [RoomType.ROOM_MINIBOSS]    = "Miniboss Room",
 
     [RoomType.ROOM_DEVIL] = "Devil Room",
     [RoomType.ROOM_ANGEL] = "Angel Room",
@@ -76,11 +95,13 @@ map_rem.notify_room_names = {
     [RoomType.ROOM_BOSS] = "Boss Room",
 }
 
+-- HACK: this is not stable, as it depends on the resources of another mod.
+-- But Im lazy, so we have this for now.
 if MinimapAPI then
-    map_rem.minimapapi_icons = Sprite()
-    map_rem.minimapapi_icons:Load("gfx/ui/minimapapi_icons.anm2", true)
+    rems.minimapapi_icons = Sprite()
+    rems.minimapapi_icons:Load("gfx/ui/minimapapi_icons.anm2", true)
 
-    map_rem.minimapapi_roomtype2icon = {
+    rems.minimapapi_roomtype2icon = {
         [RoomType.ROOM_SECRET] = "IconSecretRoom",
         [RoomType.ROOM_SUPERSECRET] = "IconSuperSecretRoom",
         [RoomType.ROOM_ULTRASECRET] = "IconUltraSecretRoom",
@@ -108,93 +129,90 @@ if MinimapAPI then
     }
 end
 
-map_rem.dt_ms = 0
-map_rem.prev_frame_time = 0.0
+rems.dt_ms = 0
+rems.prev_frame_time = 0.0
 
 -- simple implementation of shallow copy
-function table.shallow_copy(tbl)
-  local new_tbl = {}
+-- function table.shallow_copy(tbl)
+--   local new_tbl = {}
+--
+--   for k,v in pairs(tbl) do
+--     new_tbl[k] = v
+--   end
+--
+--   return new_tbl
+-- end
 
-  for k,v in pairs(tbl) do
-    new_tbl[k] = v
-  end
 
-  return new_tbl
-end
-
-
-function map_rem:log_debug(msg)
-    if map_rem:get_config().debug_mode then
-        print(string.format("[DBG][%s][%s]: %s", MOD_NAME, tostring(Isaac.GetTime()), msg))
+-- DEBUG --
+function rems:log_debug(fmt, ...)
+    if self:get_config().debug_mode then
+        local time_str = tostring(Isaac.GetTime())
+        local result_msg = arg and
+            string.format(fmt, table.unpack(arg)) or fmt
+        print(
+            string.format("[DBG][%s][%s]: %s", MOD_NAME, time_str, result_msg)
+        )
     end
 end
 
-function map_rem:log_info(msg)
-    print(string.format("[INFO][%s][%s]: %s", MOD_NAME, tostring(Isaac.GetTime()), msg))
+function rems:log_info(fmt, ...)
+    local time_str = tostring(Isaac.GetTime())
+
+    local result_msg = arg and
+    string.format(fmt, table.unpack(arg)) or fmt
+    print(
+        string.format("[INFO][%s][%s]: %s", MOD_NAME, time_str, result_msg)
+    )
 end
 
--- lazy load config
-function map_rem:get_config()
-    assert(map_rem.config, "config is nil")
-    return map_rem.config
+-- MAIN PROCEDURES --
+function rems:get_config()
+    assert(self.config, "config is nil")
+    return self.config
 end
 
-function map_rem:start_notify_msg(msg)
+function rems:start_notify_msg(msg)
     self.notify_msg = msg
     self.notify_msg_timer:reset()
 end
 
-function map_rem:refresh_notify_msg_timer()
+function rems:refresh_notify_msg_timer()
     self.notify_msg_timer:reset()
 end
 
-function map_rem:mark_room(room)
+function rems:mark_room(room)
     self.marked_rooms[room.Position] = {
         pos = room.Position,
         original_color = room.Color
     }
 
-    room.Color = iserializer.decode_color(map_rem:get_config().normal_color_marked)
+    room.Color = iserializer.decode_color(self:get_config().normal_color_marked)
 end
 
-function map_rem:unmark_room(room)
+function rems:unmark_room(room)
     room.Color = self.marked_rooms[room.Position].original_color
     self.marked_rooms[room.Position] = nil
 end
 
-function map_rem:is_room_marked(room)
+function rems:is_room_marked(room)
     return self.marked_rooms[room.Position] ~= nil
 end
 
-function map_rem:is_any_secret_room(room)
-    return room.Descriptor and
-        (room.Type == RoomType.ROOM_SECRET or
-        room.Type == RoomType.ROOM_SUPERSECRET or
-        room.Type == RoomType.ROOM_ULTRASECRET)
-end
 
-function map_rem:is_normal_room(room)
-    return room.Descriptor and room.Type == RoomType.ROOM_DEFAULT
-end
-
-function map_rem:is_special_room(room)
-    return room.Descriptor and
-        room.Type ~= RoomType.ROOM_NULL and not map_rem:is_normal_room(room)
-end
-
-function map_rem:update_room_marks()
+function rems:update_room_color_marks()
     local special_rooms = {}
 
     for _, room in ipairs(MinimapAPI:GetLevel()) do
-        if map_rem:is_special_room(room) then
+        if iutils.is_special_room(room) then
             table.insert(special_rooms, room)
             -- probably make this customizable?
             local room_visit_count = room.Descriptor.VisitedCount
 
-            local config = map_rem:get_config()
+            local config = self:get_config()
 
-            -- Special Case for Miniboss (as it is an ambush >:D) 
-            if room.Type == RoomType.ROOM_MINIBOSS then
+            -- Special Case for Miniboss (as it is an ambush >:D)  and rooms with icons not visible
+            if room.Type == RoomType.ROOM_MINIBOSS or room:IsIconVisible() == false then
                 if room:IsVisited() then
                     room.Color = iserializer.decode_color(config.special_color_visited)
                 end
@@ -214,15 +232,15 @@ function map_rem:update_room_marks()
 
     output_str = output_str .. "}"
 
-    map_rem:log_debug(output_str)
+    self:log_debug(output_str)
 end
 
-function map_rem:get_unvisited_special_rooms()
+function rems:get_unvisited_special_rooms()
     assert(MinimapAPI, "Cannot find MinimapAPI!")
     local rooms = {}
     
     for _, room in ipairs(MinimapAPI:GetLevel()) do
-        if map_rem:is_special_room(room) and room:IsVisited() == false then
+        if iutils.is_special_room(room) and room:IsVisited() == false then
             table.insert(rooms, room)
         end
     end
@@ -230,7 +248,7 @@ function map_rem:get_unvisited_special_rooms()
     return rooms
 end
 
-function map_rem:update_notify_rooms()
+function rems:update_notify_rooms()
     local unvisited_special_rooms = self:get_unvisited_special_rooms()
 
     for _, room in ipairs(unvisited_special_rooms) do
@@ -239,14 +257,13 @@ function map_rem:update_notify_rooms()
         local room_name = self.notify_room_names[room.Type]
 
         -- Curse of the lost will not affect the display flags
-        local should_notify = (room:IsVisible() and room:IsIconVisible()) or self:is_any_secret_room(room)
+        local should_notify = (room:IsVisible() and room:IsIconVisible()) or iutils.is_any_secret_room(room)
 
         if room_name ~= nil and should_notify then
             table.insert(self.notify_special_rooms, {
                 type = room.Type,
                 name = room_name
             })
-            -- notify_msg = string.format("%s\n--> %s", notify_msg, room_name)
         end
 
     end
@@ -254,21 +271,21 @@ function map_rem:update_notify_rooms()
     self:log_debug("Notify rooms updated")
 end
 
-function map_rem:get_notify_msg_with_unvisited_special_rooms()
-    local notify_msg = map_rem.get_config().notify_text_header
+function rems:get_notify_msg_with_unvisited_special_rooms()
+    local notify_msg = self:get_config().notify_text_header
 
-    local unvisited_special_rooms = map_rem:get_unvisited_special_rooms()
+    local unvisited_special_rooms = self:get_unvisited_special_rooms()
 
     for _, room in ipairs(unvisited_special_rooms) do
         local desc = room.Descriptor
 
-        local room_name = map_rem.notify_room_names[room.Type]
+        local room_name = self.notify_room_names[room.Type]
 
-        if map_rem:get_config().debug_mode then
+        if self:get_config().debug_mode then
             notify_msg = string.format("%s\n--> room_name: %s, display_flags: %d", notify_msg, room_name or "NIL", room:GetDisplayFlags())
         else
             -- Curse of the lost will not affect the display flags
-            local should_notify = (room:IsVisible() and room:IsIconVisible()) or map_rem:is_any_secret_room(room)
+            local should_notify = (room:IsVisible() and room:IsIconVisible()) or iutils.is_any_secret_room(room)
 
             if room_name ~= nil and should_notify then
                 notify_msg = string.format("%s\n--> %s", notify_msg, room_name)
@@ -280,143 +297,14 @@ function map_rem:get_notify_msg_with_unvisited_special_rooms()
     return notify_msg
 end
 
-function map_rem:notify_unvisited_special_rooms()
+function rems:notify_unvisited_special_rooms()
     local msg = self:get_notify_msg_with_unvisited_special_rooms()
-    map_rem:update_notify_rooms()
+    self:update_notify_rooms()
 
     self:start_notify_msg(msg)
 end
 
--- CALLBACKS --
-
-function map_rem.on_post_game_started()
-    map_rem:log_debug("Game started")
-
-    map_rem.prev_frame_time = Isaac.GetTime()
-
-    -- should load
-    if MinimapAPI then
-        map_rem:log_info("Minimap Found.")
-        map_rem:update_room_marks()
-        map_rem:log_debug("Updated rooms")
-
-        if map_rem.minimapapi_icons and map_rem.minimapapi_icons:IsLoaded() then
-            map_rem:log_info("Minimapapi icons loaded")
-        end
-    else
-        map_rem:log_info("Minimap Not Found.")
-    end
-end
-
-function map_rem:on_pre_game_exit()
-    -- should save
-    assert(map_rem:get_config(), "Cannot save data because config is nil")
-    local json_data = json.encode(map_rem:get_config())
-    map_rem:log_debug(string.format("Saving data: %s", json_data))
-    map_rem:SaveData(json_data)
-end
-
-function map_rem.on_execute_cmd(_, command, args)
-    if command == "MR_reset" then
-        map_rem:log_debug("resetting...")
-        
-        return "Reset data complete"
-    end
-    
-end
-
-function map_rem.on_post_new_room()
-    if not MinimapAPI then
-        return
-    end
-    -- else
-    
-    -- update rooms
-    map_rem:update_room_marks()
-    map_rem:update_notify_rooms()
-    map_rem.notify_msg = map_rem:get_notify_msg_with_unvisited_special_rooms()
-
-    if map_rem:get_config().debug_mode then
-        map_rem:log_debug("Updated room marks")
-        map_rem:log_debug("Updated notify msg")
-
-
-        -- TODO: check white fire for the entire floor and show icon above curse room
-        local white_fire_variant = 4
-        local white_fires = Isaac.FindByType(EntityType.ENTITY_FIREPLACE, white_fire_variant)
-        
-        if white_fires then
-            for _, white_fire in ipairs(white_fires) do
-                map_rem:log_debug("Found white fire at location: <%.2f, %.2f>", white_fire.Position.X, white_fire.Position.Y)
-            end
-        end
-    end
-
-    local new_room = MinimapAPI:GetCurrentRoom()
-    assert(new_room, "minimapapi returned new room is nil")
-
-    if map_rem:is_special_room(new_room) then
-        -- are all rooms automatically visited if we go into a new room?
-        -- what about special case such as glowing hourglass?
-        if new_room:IsVisited() then
-            new_room.Color = iserializer.decode_color(map_rem:get_config().special_color_visited)
-        end
-    end
-end
-
-function map_rem.on_post_new_floor()
-    if not MinimapAPI then
-        return
-    end
-    -- else
-    
-    -- clear entries on new floor
-    local marked_rooms_size = #map_rem.marked_rooms
-    for k, v in ipairs(map_rem.marked_rooms) do
-        map_rem.marked_rooms[k] = nil
-    end
-
-    map_rem:log_debug("new floor entered, cleared all marks")
-
-    map_rem:update_room_marks()
-
-    map_rem:log_debug("Updated Room marks")
-end
-
-function map_rem.on_pre_spawn_clean_award(_rng)
-    if not MinimapAPI then
-        return
-    end
-    -- else
-
-    -- TODO: alt floor reminders
-    -- when room completes, we check if the room contains alt floor doors
-    -- recommended by discord users: shows a big arrow and add audio cues
-
-    map_rem:update_notify_rooms()
-    map_rem.notify_msg = map_rem:get_notify_msg_with_unvisited_special_rooms()
-
-    local current_room = MinimapAPI:GetCurrentRoom()
-
-    -- TODO: Handle void floor differently, as it could be annoying to show up everytime
-    -- TODO: handle mirror floors differently, although Im still unsure on how to
-    -- Check whether or not it has been seen in the normal world
-    if current_room.Descriptor and current_room.Type == RoomType.ROOM_BOSS then
-        map_rem:on_boss_completed(current_room)
-    end
-end
-
-function map_rem.on_boss_completed(self, boss_room)
-    if not MinimapAPI then
-        return
-    end
-
-    map_rem:log_debug("BOSS COMPLETED, NOTIFY PLAYER ABOUT MISSED SPECIAL ROOMS")
-
-    map_rem:notify_unvisited_special_rooms()
-end
-
-function map_rem:render_room_icon(room_type, pos)
+function rems:render_room_icon(room_type, pos)
     assert(self.minimapapi_icons and self.minimapapi_roomtype2icon, "Minimapapi icons are not loaded")
     local icon_anm_name = self.minimapapi_roomtype2icon[room_type]
     assert(icon_anm_name, "Cannot find associate roomtype: " .. tostring(room_type) .. "and their icon")
@@ -431,12 +319,13 @@ end
 
 -- TODO: rewrite this so that the notify_msg actually contains useful information of
 -- each room to render, so we can also handle line height, displaying icons and more
-function map_rem:render_notify(alpha)
+function rems:render_notify(alpha)
     local width = Isaac.GetScreenWidth()
     local text_width = Isaac.GetTextWidth(self:get_config().notify_text_header)
 
     local offset = iserializer.decode_vector(self:get_config().notify_msg_offset)
 
+    notify_sprite.Color = Color(1, 1, 1, alpha)
     notify_sprite:SetFrame(notify_sprite:GetDefaultAnimation(), 0)
     notify_sprite:Render(Vector(
         (width - text_width) / 2 - 32 + offset.X, 50 + offset.Y
@@ -445,15 +334,44 @@ function map_rem:render_notify(alpha)
     Isaac.RenderText(self.notify_msg, (width - text_width) / 2 + offset.X, 50 + offset.Y, 1, 1, 1, alpha)
 end
 
-function map_rem.on_post_render()
-    local MS2SECS = 1 / 1000
-    map_rem.dt_ms = (Isaac.GetTime() - map_rem.prev_frame_time) * MS2SECS
+function rems:render_lost_death_icon()
+    local player = Isaac.GetPlayer()
+    
+    -- touched by white fire, turned into the lost
+    local is_lost_curse_effect = player:GetEffects():HasNullEffect(112)
+    
+    -- devil beggars are slot machines :P
+    local devil_beggars = Isaac.FindByType(EntityType.ENTITY_SLOT, 5, -1, true, false)
+    local blood_donos = Isaac.FindByType(EntityType.ENTITY_SLOT, 2, -1, true, false)
 
-    if not MinimapAPI then
-        return
+    if player:GetPlayerType() == PlayerType.PLAYER_THELOST or
+        player:GetPlayerType() == PlayerType.PLAYER_THELOST_B or is_lost_curse_effect then
+
+        lost_death_icon:SetFrame("Static_PivotBottom", 0)
+
+        local config = self:get_config()
+
+        for _, devil_beggar in ipairs(devil_beggars) do
+            local is_mirror = game:GetRoom():IsMirrorWorld()
+            local screen_pos = iutils.world_to_screen_ext(devil_beggar.Position, is_mirror)
+
+            lost_death_icon:Render(Vector(
+                screen_pos.X, screen_pos.Y - config.lost_death_devil_beggar_offset
+            ))
+        end
+
+        for _, dono in ipairs(blood_donos) do
+            local screen_pos = Isaac.WorldToScreen(dono.Position)
+
+            lost_death_icon:Render(Vector(
+                screen_pos.X, screen_pos.Y - config.lost_death_dono_offset
+            ))
+        end
     end
 
-    -- debug doors
+end
+
+function rems:render_door_reminders()
     local room = game:GetRoom()
     local doors = {}
 
@@ -465,200 +383,431 @@ function map_rem.on_post_render()
     end
 
     for _, door in ipairs(doors) do
-        local screen_pos = Isaac.WorldToScreen(door.Position)
-        if map_rem:get_config().debug_mode then
+        local is_mirror = game:GetRoom():IsMirrorWorld()
+        local screen_pos = iutils.world_to_screen_ext(door.Position, is_mirror)
+        local player = Isaac.GetPlayer()
+
+        if self:get_config().debug_mode then
             Isaac.RenderText(
-                string.format("%d.%d\n<%.2f, %.2f>\nState: %d\nVarData: %d\nRoomType: %d", door:GetType(), door:GetVariant(), door.Position.X, door.Position.Y, door.State, door.VarData, door.TargetRoomType),
+                string.format(
+                    "Type.Variant: %d.%d\nPos: <%.2f, %.2f>\nState: %d, VarData: %d\nCurrentRoomType: %d\nTargetRoomType: %d",
+                        door:GetType(), door:GetVariant(), door.Position.X, door.Position.Y,
+                        door.State, door.VarData, door.CurrentRoomType, door.TargetRoomType
+                ),
                 screen_pos.X, screen_pos.Y, 1, 1, 1, 1
             )
         end
 
-        if map_rem.alt_path_arrow_doors[door.TargetRoomType] ~= nil then
+        -- TODO: based on direction, rotate the sprite's pivot point
+        -- alt path doors mark
+        if door.TargetRoomType == RoomType.ROOM_SECRET_EXIT then
             alt_arrow:Play("Idle")
             alt_arrow:Update()
-            local render_arrow_pos = Vector(
+
+            local render_pos = Vector(
                 screen_pos.X, screen_pos.Y - 20
             )
-            alt_arrow:Render(render_arrow_pos)
+
+            alt_arrow.Color = Color.Default
+
+            alt_arrow:Render(render_pos)
         end
+
+        -- special boss door fool card on special stage
+        
+        -- TODO: edge case -> gehenna does not have ascent door
+        local level = game:GetLevel()
+        if door.TargetRoomType == RoomType.ROOM_BOSS then
+
+            local is_mausoleum_meat_door = door:GetType() == 16 and door:GetVariant() == 3
+
+            -- is in mom's floor (possible XL floor edge case)
+            if level:GetStage() == LevelStage.STAGE3_2 then
+                local has_all_knife_pieces = player:HasCollectible(CollectibleType.COLLECTIBLE_KNIFE_PIECE_1) and
+                    player:HasCollectible(CollectibleType.COLLECTIBLE_KNIFE_PIECE_2)
+
+                if is_mausoleum_meat_door then
+                    if has_all_knife_pieces then
+                        local render_pos = Vector(
+                            screen_pos.X, screen_pos.Y - 20
+                        )
+
+                        maus_knife_sprite:SetFrame("Static_PivotBottom", 0)
+                        maus_knife_sprite:Render(render_pos)
+                    end
+
+                else
+                    card_fronts:SetFrame("00_TheFool", 0)
+
+                    local render_pos = Vector(
+                        screen_pos.X, screen_pos.Y - 20
+                    )
+                    card_fronts:Render(render_pos)
+                end
+            end
+
+        end
+
+
+        -- curse door white fire in downpour / dross specifically
+        local player_type = Isaac.GetPlayer():GetPlayerType()
+
+        -- only display white fire when they are not the lost (since there is no reason to touch white fire)
+        if player_type ~= PlayerType.PLAYER_THELOST and player_type ~= PlayerType.PLAYER_THELOST_B then
+            if door.TargetRoomType == RoomType.ROOM_CURSE and
+                level:GetStage() == LevelStage.STAGE1_2 and
+                (level:GetStageType() == StageType.STAGETYPE_REPENTANCE or level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
+                white_fireplace_notify:SetFrame("Static_PivotBottom", 0)
+
+
+                local render_pos = Vector(
+                    screen_pos.X, screen_pos.Y - 20
+                )
+
+                white_fireplace_notify:Render(render_pos)
+            end
+        end
+
     end
+end
 
+function rems:handle_extra_info_timer()
+    local main_player = Isaac.GetPlayer()
 
+    if Input.GetActionValue(ButtonAction.ACTION_MAP, main_player.ControllerIndex) >= 0.5 then
+        if self:get_config().debug_mode then
+            Isaac.RenderText(tostring(self.extra_info_timer.span), 50, 50, 1, 1, 1, 1)
+        end
 
+        self.extra_info_timer:tick_max(self.dt_ms)
 
-    if map_rem.notify_msg_timer:max() == false then
+    else
+        self.extra_info_timer:reset()
+    end
+end
+
+function rems:handle_special_room_notify()
+    if self.notify_msg_timer:max() == false then
         -- only update the timer when time progress
         if game:IsPaused() == false then
-            map_rem.notify_msg_timer:tick(map_rem.dt_ms)
+            self.notify_msg_timer:tick(self.dt_ms)
         end
 
-        if map_rem:get_config().debug_mode then
-            Isaac.RenderText(tostring(map_rem.notify_msg_timer.span), 50, 50, 1, 1, 1, 1)
+        if self:get_config().debug_mode then
+            Isaac.RenderText(tostring(self.notify_msg_timer.span), 50, 50, 1, 1, 1, 1)
         end
 
         local alpha = 1
 
-        if map_rem.notify_msg_start_fade < map_rem.notify_msg_timer.span then
-            local fade_progress = (map_rem.notify_msg_timer.span - map_rem.notify_msg_start_fade) /
-                (map_rem.notify_msg_timer.max_span - map_rem.notify_msg_start_fade)
+        if self.notify_msg_start_fade < self.notify_msg_timer.span then
+            local fade_progress = (self.notify_msg_timer.span - self.notify_msg_start_fade) /
+                (self.notify_msg_timer.max_span - self.notify_msg_start_fade)
 
             alpha = 1 - fade_progress
         end
     
-        map_rem:render_notify(alpha)
+        self:render_notify(alpha)
     end
 
-    local main_player = Isaac.GetPlayer()
+    if self.extra_info_timer:max() then
+        self:render_notify(1.0)
+    end
+end
 
-    if Input.GetActionValue(ButtonAction.ACTION_MAP, main_player.ControllerIndex) >= 0.5 then
-        if map_rem:get_config().debug_mode then
-            Isaac.RenderText(tostring(map_rem.map_call_timer.span), 50, 50, 1, 1, 1, 1)
+function rems:render_time_progress()
+    local w = Isaac.GetScreenWidth()
+    local h = Isaac.GetScreenHeight()
+
+    local config = self:get_config()
+
+    local opacity = config.time_progress_opacity
+    local node_opacity = config.time_progress_opacity_node
+
+    local offset = iserializer.decode_vector(self:get_config().time_progress_offset)
+
+    clock_sprite.Color = Color(1, 1, 1, opacity)
+    node_tiny.Color = Color(1, 1, 1, opacity * node_opacity)
+    boss_rush_icon.Color = Color(1, 1, 1, opacity)
+    hush_icon.Color = Color(1, 1, 1, opacity)
+
+    local length = w * config.time_progress_width_percent
+    local sections = 30 / 5 -- divide in 5 minutes
+    local section_len = length / sections
+
+    local game_time = iutils.get_game_time(game)
+
+    for i = 0, sections do
+        local node_pos = Vector(
+            w / 2 - length / 2 + section_len * i + offset.X, 20 + offset.Y
+        )
+
+        -- boss rush
+        if i == (25 / 5) and config.time_progress_boss_rush_icon_enabled then
+            boss_rush_icon:SetFrame("Static_Center", 0)
+            boss_rush_icon:Render(node_pos)
+
+        -- hush
+        elseif i == (30 / 5) and config.time_progress_hush_icon_enabled then
+            hush_icon:SetFrame("Static_Center", 0)
+            hush_icon:Render(node_pos)
+
+        else
+            node_tiny:SetFrame("Static_Center", 0)
+            node_tiny:Render(node_pos)
+        end
+    end
+
+    local hush_time_secs = 30 * 60
+
+    local progress = math.min(game_time.total_secs, hush_time_secs) / hush_time_secs
+
+    clock_sprite:SetFrame("Static_Center", 0)
+    clock_sprite:Render(Vector(
+        w / 2 - length / 2 + length * progress + offset.X, 10 + offset.Y
+    ))
+end
+
+function rems:render_game_timer()
+    local w = Isaac.GetScreenWidth()
+    local game_time = iutils.get_game_time(game)
+
+    local time_str = string.format("%02.0f:%02.0f:%02.0f", game_time.hours, game_time.mins, game_time.secs)
+
+    local offset = iserializer.decode_vector(self:get_config().game_timer_offset)
+
+    Isaac.RenderText(
+        time_str,
+        w / 2 - Isaac.GetTextWidth(time_str) / 2 + offset.X, 25 + offset.Y, 0.8, 0.8, 0.8, 1
+    )
+end
+
+-- CALLBACKS --
+
+function rems:on_post_game_started()
+    self:log_debug("Game started")
+
+    self.prev_frame_time = Isaac.GetTime()
+
+    if self:HasData() then
+        local json_data = self:LoadData()
+        self:log_debug(string.format("Loading data: %s", json_data))
+        local new_config_data = json.decode(json_data)
+        self.config = new_config_data
+        self:log_debug(string.format("Data loaded"))
+    end
+
+    if card_fronts:IsLoaded() then
+        self:log_info("Loaded card sprites.")
+    else
+        self:log_info("[warning] Cannot load card sprites.")
+    end
+
+    if white_fireplace_notify:IsLoaded() then
+        self:log_info("Loaded white fireplace sprites.")
+    else
+        self:log_info("[warning] Cannot load white fireplace sprites.")
+    end
+
+    if lost_death_icon:IsLoaded() then
+        self:log_info("Loaded lost death icon.")
+    else
+        self:log_info("[warning] Cannot load lost death icon.")
+    end
+
+    -- should load
+    if MinimapAPI then
+        self:log_info("Minimap Found.")
+        local config = self:get_config()
+
+        if config.map_special_colormarks_enabled then
+            self:update_room_color_marks()
         end
 
-        if map_rem.map_call_timer:tick_max(map_rem.dt_ms) then
-            map_rem:render_notify(1.0)
+        self:log_debug("Updated rooms")
+
+        if self.minimapapi_icons and self.minimapapi_icons:IsLoaded() then
+            self:log_info("Minimapapi icons loaded")
         end
     else
-        map_rem.map_call_timer:reset()
+        self:log_info("Minimap Not Found.")
+    end
+end
+
+function rems:on_pre_game_exit()
+    -- should save
+    assert(self:get_config(), "Cannot save data because config is nil")
+    local json_data = json.encode(self:get_config())
+    self:log_debug(string.format("Saving data: %s", json_data))
+    self:SaveData(json_data)
+end
+
+function rems:on_execute_cmd(command, args)
+    if command == "REMS_ResetConfig" then
+        self.config = configs.get_default_config()
+        self:log_info("Config has reset: %s", json.encode(self.config))
+    end
+end
+
+function rems:on_post_new_room()
+    if not MinimapAPI then
+        return
+    end
+    -- else
+    
+    -- update rooms
+    if self:get_config().map_special_colormarks_enabled then
+        self:update_room_color_marks()
+    end
+
+    self:update_notify_rooms()
+
+    self.notify_msg = self:get_notify_msg_with_unvisited_special_rooms()
+
+    if self:get_config().debug_mode then
+        self:log_debug("Updated room marks")
+        self:log_debug("Updated notify msg")
+    end
+
+    local newmap_room = MinimapAPI:GetCurrentRoom()
+    local isaac_room = game:GetRoom()
+
+    if newmap_room ~= nil and iutils.is_special_room(newmap_room) and isaac_room:IsMirrorWorld() == false then
+        -- are all rooms automatically visited if we go into a new room?
+        -- what about special case such as glowing hourglass?
+        if newmap_room:IsVisited() then
+            newmap_room.Color = iserializer.decode_color(self:get_config().special_color_visited)
+        end
+    end
+end
+
+function rems:on_post_new_floor()
+    if not MinimapAPI then
+        return
+    end
+    -- else
+    
+    -- clear entries on new floor
+    local marked_rooms_size = #self.marked_rooms
+    for k, v in ipairs(self.marked_rooms) do
+        self.marked_rooms[k] = nil
+    end
+
+    self:log_debug("new floor entered, cleared all marks")
+
+    if self:get_config().map_special_colormarks_enabled then
+        self:update_room_color_marks()
+    end
+
+    self:log_debug("Updated Room marks")
+end
+
+function rems:on_pre_spawn_clean_award(_rng)
+    if not MinimapAPI then
+        return
+    end
+    -- else
+
+    -- recommended by discord users: shows a big arrow and add audio cues
+    self:update_notify_rooms()
+    self.notify_msg = self:get_notify_msg_with_unvisited_special_rooms()
+
+    if self:get_config().map_special_colormarks_enabled then
+        self:update_room_color_marks()
+    end
+
+    local current_room = MinimapAPI:GetCurrentRoom()
+
+    -- TODO: Handle void floor differently, as it could be annoying to show up everytime
+    -- TODO: handle mirror floors differently, although Im still unsure on how to
+    -- Check whether or not it has been seen in the normal world
+    if current_room ~= nil and current_room.Type == RoomType.ROOM_BOSS then
+        self:on_boss_completed(current_room)
+    end
+end
+
+function rems:on_boss_completed(boss_room)
+    if not MinimapAPI then
+        return
+    end
+
+    self:log_debug("BOSS COMPLETED, NOTIFY PLAYER ABOUT MISSED SPECIAL ROOMS")
+
+    self:notify_unvisited_special_rooms()
+end
+
+
+function rems:on_post_render()
+    local MS2SECS = 1 / 1000
+    self.dt_ms = (Isaac.GetTime() - self.prev_frame_time) * MS2SECS
+
+    if not MinimapAPI then
+        return
+    end
+
+    local config = self:get_config()
+
+    self:handle_extra_info_timer()
+
+    if config.door_reminders_enabled then
+        self:render_door_reminders()
+    end
+
+    if config.lost_death_icon_enabled then
+        self:render_lost_death_icon()
+    end
+
+    if config.notify_msg_enabled then
+        self:handle_special_room_notify()
+    end
+
+    if config.time_progress_enabled then
+        self:render_time_progress()
+    end
+
+    if config.game_timer_enabled then
+        self:render_game_timer()
     end
 
     -- KEYBOARD SPECIFIC CONTROLS --
     -- TODO: add remapping ability utilizing Mod Config Menu
-    if Input.IsButtonTriggered(Keyboard.KEY_G, 0) then
-        map_rem:notify_unvisited_special_rooms()
-    end
-
-    if Input.IsButtonTriggered(Keyboard.KEY_N, 0) then
-        map_rem:log_debug("N pressed, toggle marking of room")
-        local current_room = MinimapAPI:GetCurrentRoom()
-
-        if map_rem:is_room_marked(current_room) then
-            map_rem:unmark_room(current_room)
-            map_rem:log_debug("room unmarked")
-        else
-            map_rem:mark_room(current_room)
-            map_rem:log_debug("room marked")
+    if config.debug_mode then
+        if Input.IsButtonTriggered(Keyboard.KEY_G, 0) then
+            self:notify_unvisited_special_rooms()
         end
+
+        if Input.IsButtonTriggered(Keyboard.KEY_N, 0) then
+            self:log_debug("N pressed, toggle marking of room")
+            local current_room = MinimapAPI:GetCurrentRoom()
+
+            if self:is_room_marked(current_room) then
+                self:unmark_room(current_room)
+                self:log_debug("room unmarked")
+            else
+                self:mark_room(current_room)
+                self:log_debug("room marked")
+            end
+        end
+
     end
 
 
-    map_rem.prev_frame_time = Isaac.GetTime()
+    self.prev_frame_time = Isaac.GetTime()
 end
 
 -- MOD CONFIG MENU SUPPORT --
 
--- SIMPLIFY MOD CONFIG MENU FOR common settings.
 if ModConfigMenu then
-    -- GENERAL SECTION --
-    ModConfigMenu.AddText(MOD_NAME, "General", "Developer")
-
-    ModConfigMenu.AddSetting(
-        MOD_NAME, "General", {
-            Type = ModConfigMenu.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return map_rem:get_config().debug_mode
-            end,
-
-            Display = function()
-                return "Debug Mode: " .. (map_rem:get_config().debug_mode and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                map_rem:get_config().debug_mode = value
-            end,
-
-            Info = { -- This can also be a function instead of a table
-                "debug mode displays extra information",
-                "in debug console / while using the mod"
-            }
-        }
-    )
-    
-    -- VISUALS SECTION -- 
-    ModConfigMenu.AddText(MOD_NAME, "Visuals", "Notify Message")
-    ModConfigMenu.AddSetting(
-        MOD_NAME, "Visuals", {
-            Type = ModConfigMenu.OptionType.NUMBER,
-
-            CurrentSetting = function()
-                return map_rem:get_config().notify_msg_offset[1]
-            end,
-
-            Display = function()
-                return "Offset X: " .. tostring(map_rem:get_config().notify_msg_offset[1])
-            end,
-
-            Minimum = -500, Maximum = 500,
-
-            OnChange = function(value)
-                map_rem:get_config().notify_msg_offset[1] = value
-            end,
-
-            Info = { -- This can also be a function instead of a table
-                "Changes the x offset of the map reminder message at the end of each boss",
-            }
-        }
-    )
-    ModConfigMenu.AddSetting(
-        MOD_NAME, "Visuals", {
-            Type = ModConfigMenu.OptionType.NUMBER,
-
-            CurrentSetting = function()
-                return map_rem:get_config().notify_msg_offset[2]
-            end,
-
-            Display = function()
-                return "Offset Y: " .. tostring(map_rem:get_config().notify_msg_offset[2])
-            end,
-
-            Minimum = -500, Maximum = 500,
-
-            OnChange = function(value)
-                map_rem:get_config().notify_msg_offset[2] = value
-            end,
-
-            Info = { -- This can also be a function instead of a table
-                "Changes the y offset of the map reminder message at the end of each boss",
-            }
-        }
-    )
-
-    ModConfigMenu.AddText(MOD_NAME, "Visuals", "Unvisited Rooms")
-    config_menu_helper.AddColorSetting(
-        MOD_NAME, "Visuals", {
-            CurrentSetting = function()
-                return iserializer.decode_color(map_rem:get_config().special_color_unvisited)
-            end,
-
-            OnChange = function(new_color)
-                map_rem:get_config().special_color_unvisited = iserializer.encode_color(new_color)
-            end
-        }
-    )
-
-    ModConfigMenu.AddText(MOD_NAME, "Visuals", "Visited Rooms")
-    config_menu_helper.AddColorSetting(
-        MOD_NAME, "Visuals", {
-            CurrentSetting = function()
-                return iserializer.decode_color(map_rem:get_config().special_color_visited)
-            end,
-
-            OnChange = function(new_color)
-                map_rem:get_config().special_color_visited = iserializer.encode_color(new_color)
-            end
-        }
-    )
+    setup_mod_config_menu(MOD_NAME, rems)
 end
 
 
 -- Callback Registers --
-map_rem:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, map_rem.on_post_game_started)
-map_rem:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, map_rem.on_pre_game_exit)
+rems:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, rems.on_post_game_started)
+rems:AddCallback(ModCallbacks.MC_PRE_GAME_EXIT, rems.on_pre_game_exit)
 
-map_rem:AddCallback(ModCallbacks.MC_POST_RENDER, map_rem.on_post_render)
-map_rem:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, map_rem.on_post_new_room)
-map_rem:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, map_rem.on_post_new_floor)
-map_rem:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, map_rem.on_pre_spawn_clean_award)
+rems:AddCallback(ModCallbacks.MC_POST_RENDER, rems.on_post_render)
+rems:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, rems.on_post_new_room)
+rems:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, rems.on_post_new_floor)
+rems:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, rems.on_pre_spawn_clean_award)
 
-map_rem:AddCallback(ModCallbacks.MC_EXECUTE_CMD, map_rem.on_execute_cmd)
+rems:AddCallback(ModCallbacks.MC_EXECUTE_CMD, rems.on_execute_cmd)
