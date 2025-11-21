@@ -129,7 +129,7 @@ local setup_mod_config_menu = function(mod_name, mod)
             end,
 
             Display = function()
-                return "Enable Door Reminders: " .. (mod:get_config().door_reminders_enabled and "on" or "off")
+                return "enabled: " .. (mod:get_config().door_reminders_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -139,6 +139,31 @@ local setup_mod_config_menu = function(mod_name, mod)
             Info = {
                 "Toggles whether or not to display door reminders in the first place",
                 "For example, white fire icon above curse room in floors with white fire"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "General")
+
+    MCM.AddText(mod_name, "General", "Notify Info", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_enabled
+            end,
+
+            Display = function()
+                return "enabled: " .. (mod:get_config().notify_info_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not notify info should be enabled",
+                "Notify info shows the reminder of special rooms unvisited this floor"
             }
         }
     )
@@ -192,34 +217,34 @@ local setup_mod_config_menu = function(mod_name, mod)
             end,
 
             Info = { -- This can also be a function instead of a table
-                "Changes the general icon scale for notify messages"
+                "Changes the general icon scale for notify info"
             }
         }
     )
     MCM.AddSpace(mod_name, "Visuals")
 
 
-    MCM.AddText(mod_name, "Visuals", "Notify Message", DEFAULT_TXT_COLOR)
+    MCM.AddText(mod_name, "Visuals", "Notify Info", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "Visuals", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
-                return mod:get_config().notify_msg_offset[1]
+                return mod:get_config().notify_info_offset[1]
             end,
 
             Display = function()
-                return "Offset X: " .. tostring(mod:get_config().notify_msg_offset[1])
+                return "Offset X: " .. tostring(mod:get_config().notify_info_offset[1])
             end,
 
             Minimum = -500, Maximum = 500,
 
             OnChange = function(value)
-                mod:get_config().notify_msg_offset[1] = value
+                mod:get_config().notify_info_offset[1] = value
             end,
 
             Info = { -- This can also be a function instead of a table
-                "Changes the x offset of the map reminder message at the end of each boss",
+                "Changes the x offset of the map reminder info at the end of each boss",
             }
         }
     )
@@ -229,21 +254,21 @@ local setup_mod_config_menu = function(mod_name, mod)
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
-                return mod:get_config().notify_msg_offset[2]
+                return mod:get_config().notify_info_offset[2]
             end,
 
             Display = function()
-                return "Offset Y: " .. tostring(mod:get_config().notify_msg_offset[2])
+                return "Offset Y: " .. tostring(mod:get_config().notify_info_offset[2])
             end,
 
             Minimum = -500, Maximum = 500,
 
             OnChange = function(value)
-                mod:get_config().notify_msg_offset[2] = value
+                mod:get_config().notify_info_offset[2] = value
             end,
 
             Info = { -- This can also be a function instead of a table
-                "Changes the y offset of the map reminder message at the end of each boss",
+                "Changes the y offset of the map reminder info at the end of each boss",
             }
         }
     )

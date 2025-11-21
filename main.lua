@@ -8,6 +8,8 @@
 --  -> add different directions of the alt_path arrow
 -- 2. icons
 
+-- 3. TIME is past boss rush / hush, should make them fade a bit dark / switch them into nodes / add X to them
+
 local MOD_NAME = "Reminders"
 local rems = RegisterMod(MOD_NAME, 1)
 
@@ -70,11 +72,10 @@ end
 
 
 rems.notify_special_rooms = {}
-rems.notify_info_timer = timerf.new(5, 5)
-rems.notify_info_start_fade = 4
 
 -- Room names
 -- TODO: maybe support translation?
+-- TODO: move to another file
 rems.room_names = {
     [RoomType.ROOM_SECRET]      = "Secret Room",
     [RoomType.ROOM_SUPERSECRET] = "Super Secret Room",
@@ -138,18 +139,6 @@ end
 rems.dt_ms = 0
 rems.prev_frame_time = 0.0
 
--- simple implementation of shallow copy
--- function table.shallow_copy(tbl)
---   local new_tbl = {}
---
---   for k,v in pairs(tbl) do
---     new_tbl[k] = v
---   end
---
---   return new_tbl
--- end
-
-
 -- DEBUG --
 function rems:log_debug(fmt, ...)
     if self:get_config().debug_mode then
@@ -177,6 +166,9 @@ function rems:get_config()
     assert(self.config, "config is nil")
     return self.config
 end
+
+rems.notify_info_timer = timerf.new(5, 5)
+rems.notify_info_start_fade = 4
 
 function rems:start_notify_info()
     self.notify_info_timer:reset()
@@ -535,7 +527,13 @@ function rems:render_time_progress()
 
     local config = self:get_config()
 
-    local opacity = config.time_progress_opacity
+    local extra_info_fade_opacity = 1.0
+
+    if self.extra_info_timer:max() then
+        extra_info_fade_opacity = 0.4
+    end
+
+    local opacity = config.time_progress_opacity * extra_info_fade_opacity
     local node_opacity = config.time_progress_opacity_node
 
     local offset = iserializer.decode_vector(self:get_config().time_progress_offset)
