@@ -327,6 +327,7 @@ function rems:render_notify(alpha)
         local name_width = Isaac.GetTextWidth(rname)
         local x_pivot = (width - name_width) / 2
 
+        icon.Color = Color(1, 1, 1, alpha)
         icon:SetFrame(icon_id, 0)
         icon.Scale = Vector(1, 1) * icon_scale
         icon:Render(Vector(x_pivot - icon_fsize, render_pivot.Y + line_height_offset))
@@ -548,7 +549,13 @@ function rems:render_time_progress()
 
     local ANIM_SPEED = 4.0
 
-    if self.extra_info_timer:max() then
+    local game_time = iutils.get_game_time(game)
+
+    local HIDE_TIME_MINS = 30
+    local should_hide = self.extra_info_timer:max() or
+        game_time.mins > HIDE_TIME_MINS or game_time.hours > 1
+
+    if should_hide then
         -- TODO HACK instead of -50, we should calculate the difference between current pos with 0
         self.time_progress_anim_pos_offset = lerpv(
             self.time_progress_anim_pos_offset, Vector(0, -50), self.dt_ms * ANIM_SPEED
@@ -570,8 +577,6 @@ function rems:render_time_progress()
     local length = w * config.time_progress_width_percent
     local sections = 30 / 5 -- divide in 5 minutes
     local section_len = length / sections
-
-    local game_time = iutils.get_game_time(game)
 
     for i = 0, sections do
         local node_pos = Vector(
