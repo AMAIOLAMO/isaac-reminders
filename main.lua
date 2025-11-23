@@ -66,6 +66,11 @@ rems.marked_rooms = {}
 
 rems.config = configs.get_default_config()
 
+function rems:reset_config()
+    self.config = configs.get_default_config()
+    self:log_info("Config has reset")
+end
+
 rems.extra_info_timer = timerf.new(0.5, 0)
 
 local RoomNotify = {}
@@ -616,6 +621,8 @@ function rems:render_time_progress()
 
     local config = self:get_config()
 
+    local config_offset = iserializer.decode_vector(self:get_config().time_progress_offset)
+
     local extra_info_fade_opacity = 1.0
 
     if self.extra_info_timer:max() then
@@ -636,7 +643,7 @@ function rems:render_time_progress()
     if should_hide then
         -- TODO HACK instead of -50, we should calculate the difference between current pos with 0
         self.time_progress_anim_pos_offset = lerpv(
-            self.time_progress_anim_pos_offset, Vector(0, -50), self.dt_ms * ANIM_SPEED
+            self.time_progress_anim_pos_offset, Vector(0, -50 - config_offset.Y), self.dt_ms * ANIM_SPEED
         )
     else
         self.time_progress_anim_pos_offset = lerpv(
@@ -644,7 +651,7 @@ function rems:render_time_progress()
         )
     end
 
-    local total_offset = iserializer.decode_vector(self:get_config().time_progress_offset) +
+    local total_offset = config_offset +
         self.time_progress_anim_pos_offset
 
     clock_sprite.Color = Color(1, 1, 1, opacity)
@@ -761,8 +768,7 @@ end
 
 function rems:on_execute_cmd(command, args)
     if command == "REMS_ResetConfig" then
-        self.config = configs.get_default_config()
-        self:log_info("Config has reset: %s", json.encode(self.config))
+        self:reset_config()
     end
 end
 
@@ -911,10 +917,14 @@ function rems:on_post_render()
     self.prev_frame_time = Isaac.GetTime()
 end
 
+function rems:on_reset_config()
+    self:reset_config()
+end
+
 -- MOD CONFIG MENU SUPPORT --
 
 if ModConfigMenu then
-    setup_mod_config_menu(MOD_NAME, rems)
+    setup_mod_config_menu(MOD_NAME, rems, rems.on_reset_config)
 end
 
 

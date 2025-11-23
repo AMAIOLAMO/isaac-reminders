@@ -4,9 +4,8 @@
 local mcm_helper = require("reminders.mod_config_menu_helper")
 local iserializer = require("reminders.iserializer")
 
-local setup_mod_config_menu = function(mod_name, mod)
+local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     local DEFAULT_TXT_COLOR = {.1, .2, .4}
-
 
     local MCM = ModConfigMenu
     assert(MCM, "Cannot Find Mod Config Menu!")
@@ -18,6 +17,7 @@ local setup_mod_config_menu = function(mod_name, mod)
     
 
     -- GENERAL SECTION --
+
     MCM.AddText(mod_name, "General", "Map Special Room Colormarks", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "General", {
@@ -191,6 +191,31 @@ local setup_mod_config_menu = function(mod_name, mod)
                 "debug mode displays extra information",
                 "in debug console / while using the mod"
             }
+        }
+    )
+    MCM.AddSpace(mod_name, "General")
+    MCM.AddText(mod_name, "General", "!!!! DANGEROUS AREA !!!!", {0.8, 0.1, 0.1})
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return false
+            end,
+
+            Display = function()
+                return "RESET ALL SETTINGS"
+            end,
+
+            OnChange = function(value)
+                on_reset_config_callback(mod)
+            end,
+
+            Info = {
+                "RESETS ALL SETTINGS, CHOOSE AT YOUR OWN RISK"
+            },
+
+            Color = {0.65, 0, 0}
         }
     )
     
