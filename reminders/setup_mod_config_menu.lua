@@ -169,6 +169,30 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
     MCM.AddSpace(mod_name, "General")
 
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_end_of_boss_notify
+            end,
+
+            Display = function()
+                return "Should notify after boss complete: " .. (mod:get_config().notify_info_end_of_boss_notify and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_end_of_boss_notify = value
+            end,
+
+            Info = {
+                "Toggles whether or not notify info should auto show after",
+                "A boss has been defeated"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "General")
+
     MCM.AddText(mod_name, "General", "Developer", DEFAULT_TXT_COLOR)
 
     MCM.AddSetting(

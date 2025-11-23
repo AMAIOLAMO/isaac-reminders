@@ -19,6 +19,7 @@ function Configs.get_default_config()
         notify_text_header = "=== ![Missed Special Rooms]! ===",
         notify_text_header_ok = "No Missed Special Rooms :)",
         notify_info_offset = iserializer.encode_vector(Vector(0, 0)),
+        notify_info_end_of_boss_notify = true,
 
         icon_scale = 1.5,
 

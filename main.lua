@@ -151,6 +151,7 @@ rems.notify_info_timer = timerf.new(5, 5)
 rems.notify_info_start_fade = 4
 
 function rems:start_notify_info()
+    self:update_notify_rooms()
     self.notify_info_timer:reset()
 end
 
@@ -273,11 +274,6 @@ function rems:update_notify_rooms()
     end
 
     self:log_debug("Notify rooms updated")
-end
-
-function rems:notify_unvisited_special_rooms()
-    self:update_notify_rooms()
-    self:start_notify_info()
 end
 
 function rems:render_room_icon(room_type, pos)
@@ -853,7 +849,7 @@ function rems:on_boss_completed(boss_room)
 
     self:log_debug("BOSS COMPLETED, NOTIFY PLAYER ABOUT MISSED SPECIAL ROOMS")
 
-    self:notify_unvisited_special_rooms()
+    self:start_notify_info()
 end
 
 
@@ -892,12 +888,7 @@ function rems:on_post_render()
     end
 
     -- KEYBOARD SPECIFIC CONTROLS --
-    -- TODO: add remapping ability utilizing Mod Config Menu
     if config.debug_mode then
-        if Input.IsButtonTriggered(Keyboard.KEY_G, 0) then
-            self:notify_unvisited_special_rooms()
-        end
-
         if Input.IsButtonTriggered(Keyboard.KEY_N, 0) then
             self:log_debug("N pressed, toggle marking of room")
             local current_room = MinimapAPI:GetCurrentRoom()
