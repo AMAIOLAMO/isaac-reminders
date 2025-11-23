@@ -1,9 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
-    <name>Reminders</name>
+    <name>TOO MANY REMINDERS</name>
     <directory>reminders</directory>
-    <id>0</id>
-    <description></description>
-    <version>1.0</version>
+    <id>3610902393</id>
+    <description>Do you have gold fish memory like I do? Have you always went to the wrong alternative floor and hated yourself for it? Have you got the polaroid but went down to sheol instead? (or vice versa) FEAR NOT. Too many reminders will overflow you with REMINDERS!
+
+[b]
+REQUIRES [url=https://steamcommunity.com/workshop/filedetails/?id=1978904635]MiniMAPI[/url] AND [url=https://steamcommunity.com/workshop/filedetails/?id=2681875787]Mod Config Menu Pure[/url]!
+REQUIRES [url=https://steamcommunity.com/workshop/filedetails/?id=1978904635]MiniMAPI[/url] AND [url=https://steamcommunity.com/workshop/filedetails/?id=2681875787]Mod Config Menu Pure[/url]!
+REQUIRES [url=https://steamcommunity.com/workshop/filedetails/?id=1978904635]MiniMAPI[/url] AND [url=https://steamcommunity.com/workshop/filedetails/?id=2681875787]Mod Config Menu Pure[/url]!
+[/b]
+
+This mod can remind you:
+1. Alt path doors
+2. special rooms you haven't visited in the current floor (or you could just hold down MAP button)
+3. sheol / cathedral path based on polaroid / negative
+4. The lost (or Tainted lost) icon above blood donation machine & devil beggar (so you dont die with skill issue)
+5. Time progress that shows you how far you are into the game. Also shows you how close you are towards boss rush and hush!
+6. A small in game timer shown below time progress
+7. White fire icon on top of curse rooms when the current floor has white fire :)
+8. Minimap special room coloring!
+
+This mod is fully [b]Open-Source[/b]! Check it out here on [url=https://github.com/AMAIOLAMO/isaac-reminders]Github[/url]!
+
+Hopefully this should help you in having less skill issues like I do :D
+HAVE FUN!
+</description>
+    <version>1.1</version>
     <visibility>Public</visibility>
+    <tag id="Tweaks"/>
+    <tag id="Graphics"/>
 </metadata>
