@@ -29,6 +29,8 @@ function Configs.get_default_config()
 
         door_reminders_enabled = true,
 
+        door_reminders_yoffset = 20,
+
         time_progress_enabled = true,
         time_progress_offset = iserializer.encode_vector(Vector(0, 0)),
         time_progress_opacity = 0.8,

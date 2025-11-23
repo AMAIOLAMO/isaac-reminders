@@ -55,7 +55,12 @@ local clock_sprite   = load_static_png_sprite_16x16("gfx/reminders/sprites/clock
 local hush_icon      = load_static_png_sprite_16x16("gfx/reminders/sprites/hush_icon.png")
 local boss_rush_icon = load_static_png_sprite_16x16("gfx/reminders/sprites/boss_rush_icon.png")
 
+local static_sprites = iutils.assert_sprite_load("gfx/reminders/static_sprites.anm2")
+
+-- TODO: this is unstable in the future, we are relying on the game to give things
 local card_fronts = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
+local polaroid_sprite = load_static_png_sprite_16x16("gfx/reminders/sprites/collectibles_327_thepolaroid.png")
+local negative_sprite = load_static_png_sprite_16x16("gfx/reminders/sprites/collectibles_328_thenegative.png")
 
 rems.marked_rooms = {}
 
@@ -72,36 +77,6 @@ end
 
 
 rems.notify_special_rooms = {}
-
--- Room names
--- TODO: maybe support translation?
--- TODO: move to another file
--- rems.room_names = {
---     [RoomType.ROOM_SECRET]      = "Secret Room",
---     [RoomType.ROOM_SUPERSECRET] = "Super Secret Room",
---     [RoomType.ROOM_ULTRASECRET] = "Ultra Secret Room",
---
---     [RoomType.ROOM_SHOP]        = "Shop",
---     [RoomType.ROOM_TREASURE]    = "Treasure Room",
---     [RoomType.ROOM_SACRIFICE]   = "Sacrifice Room",
---     [RoomType.ROOM_LIBRARY]     = "Library",
---     [RoomType.ROOM_ARCADE]      = "Arcade",
---     [RoomType.ROOM_CHALLENGE]   = "Challenge Room",
---     [RoomType.ROOM_PLANETARIUM] = "Planetarium",
---
---     [RoomType.ROOM_ISAACS] = "Bedroom",
---     [RoomType.ROOM_BARREN] = "Barren Bedroom",
---
---     [RoomType.ROOM_CHEST]       = "Chest Room",
---     [RoomType.ROOM_DICE]        = "Dice Room",
---     [RoomType.ROOM_CURSE]       = "Curse Room",
---     [RoomType.ROOM_MINIBOSS]    = "Miniboss Room",
---
---     [RoomType.ROOM_DEVIL] = "Devil Room",
---     [RoomType.ROOM_ANGEL] = "Angel Room",
---
---     [RoomType.ROOM_BOSS] = "Boss Room",
--- }
 
 -- HACK: this is not stable, as it depends on the resources of another mod.
 -- But Im lazy, so we have this for now.
@@ -173,6 +148,38 @@ rems.notify_info_start_fade = 4
 function rems:start_notify_info()
     self.notify_info_timer:reset()
 end
+
+function rems:any_player_has_collectible(type)
+    local player_count = game:GetNumPlayers()
+    
+    for i = 0, player_count - 1 do
+        local player = game:GetPlayer(i)
+
+        if player:HasCollectible(type) then
+            return true
+        end
+    end
+
+    return false
+end
+
+-- naive way of implementing this
+function rems:get_current_room_grid_entities()
+    local room = game:GetRoom()
+    local idx_count = room:GetGridSize()
+    local grid_entities = {}
+
+    for i = 0, idx_count - 1 do
+        local grid_entity = room:GetGridEntity(i)
+
+        if grid_entity then
+            table.insert(grid_entities, grid_entity)
+        end
+    end
+
+    return grid_entities
+end
+
 
 function rems:mark_room(room)
     self.marked_rooms[room.Position] = {
@@ -377,10 +384,71 @@ function rems:render_lost_death_icon()
 
 end
 
+function rems:direction_to_rotation_deg(dir)
+    local rot = 0
+
+    if dir == Direction.LEFT then
+        rot = 270
+    elseif dir == Direction.RIGHT then
+        rot = 90
+    elseif dir == Direction.UP then
+        rot = 180
+    elseif dir == Direction.DOWN then
+        rot = 0
+    end
+
+    return rot
+end
+
 function rems:render_door_reminders()
     local room = game:GetRoom()
     local doors = {}
 
+    -- special doors:
+    -- heaven door
+    -- sheol trap door
+    local game_stage = game:GetLevel():GetStage()
+
+    local has_polaroid = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_POLAROID)
+    local has_negative = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_NEGATIVE)
+
+    -- is level right before cathedral / sheol and is a boss room
+    if (game_stage == LevelStage.STAGE4_2 or game_stage == LevelStage.STAGE5) and
+        room:GetType() == RoomType.ROOM_BOSS then
+        local OFFSET = Vector(0, 30)
+
+        if has_polaroid then
+            local HEAVEN_DOOR_TYPE = Isaac.GetEntityTypeByName("Heaven Door")
+            local HEAVEN_DOOR_VARIANT = Isaac.GetEntityVariantByName("Heaven Door")
+
+            local heaven_doors = Isaac.FindByType(HEAVEN_DOOR_TYPE, HEAVEN_DOOR_VARIANT, 0, true)
+
+            for _, hdoor in ipairs(heaven_doors) do
+                local scr_pos = Isaac.WorldToScreen(hdoor.Position)
+                static_sprites:SetFrame("ThePolaroid", 0)
+                static_sprites.Scale = Vector(0.8, 0.8)
+                static_sprites:Render(scr_pos + OFFSET)
+            end
+        end
+
+
+        if has_negative then
+            local grid_entities = self:get_current_room_grid_entities()
+
+            for _, entity in ipairs(grid_entities) do
+                -- is trapdoor?
+                if entity:GetType() == GridEntityType.GRID_TRAPDOOR and entity:GetVariant() == 0 then
+                    local scr_pos = Isaac.WorldToScreen(entity.Position)
+
+                    static_sprites:SetFrame("TheNegative", 0)
+                    static_sprites.Scale = Vector(0.8, 0.8)
+                    static_sprites:Render(scr_pos + OFFSET)
+                end
+            end
+        end
+    end
+
+    -- Normal doors
     for i = 0, 7 do
         local door = room:GetDoor(i)
         if door then
@@ -392,6 +460,10 @@ function rems:render_door_reminders()
         local is_mirror = game:GetRoom():IsMirrorWorld()
         local screen_pos = iutils.world_to_screen_ext(door.Position, is_mirror)
         local player = Isaac.GetPlayer()
+        local dir = door.Direction
+        local rot = self:direction_to_rotation_deg(dir)
+
+        local offset = Vector(0, -self:get_config().door_reminders_yoffset):Rotated(rot)
 
         if self:get_config().debug_mode then
             Isaac.RenderText(
@@ -411,10 +483,11 @@ function rems:render_door_reminders()
             alt_arrow:Update()
 
             local render_pos = Vector(
-                screen_pos.X, screen_pos.Y - 20
-            )
+                screen_pos.X, screen_pos.Y
+            ) + offset
 
             alt_arrow.Color = Color.Default
+            alt_arrow.Rotation = rot
 
             alt_arrow:Render(render_pos)
         end
@@ -435,10 +508,11 @@ function rems:render_door_reminders()
                 if is_mausoleum_meat_door then
                     if has_all_knife_pieces then
                         local render_pos = Vector(
-                            screen_pos.X, screen_pos.Y - 20
-                        )
+                            screen_pos.X, screen_pos.Y
+                        ) + offset
 
                         maus_knife_sprite:SetFrame("Static_PivotBottom", 0)
+                        maus_knife_sprite.Rotation = rot
                         maus_knife_sprite:Render(render_pos)
                     end
 
@@ -446,8 +520,11 @@ function rems:render_door_reminders()
                     card_fronts:SetFrame("00_TheFool", 0)
 
                     local render_pos = Vector(
-                        screen_pos.X, screen_pos.Y - 20
-                    )
+                        screen_pos.X, screen_pos.Y
+                    ) + offset
+
+                    card_fronts.Rotation = rot
+
                     card_fronts:Render(render_pos)
                 end
             end
@@ -467,9 +544,10 @@ function rems:render_door_reminders()
 
 
                 local render_pos = Vector(
-                    screen_pos.X, screen_pos.Y - 20
-                )
+                    screen_pos.X, screen_pos.Y
+                ) + offset
 
+                white_fireplace_notify.Rotation = rot
                 white_fireplace_notify:Render(render_pos)
             end
         end
@@ -783,26 +861,28 @@ function rems:on_post_render()
 
     local config = self:get_config()
 
-    self:handle_extra_info_timer()
+    if game:GetHUD():IsVisible() and ModConfigMenu.IsVisible == false then
+        self:handle_extra_info_timer()
 
-    if config.door_reminders_enabled then
-        self:render_door_reminders()
-    end
+        if config.door_reminders_enabled then
+            self:render_door_reminders()
+        end
 
-    if config.lost_death_icon_enabled then
-        self:render_lost_death_icon()
-    end
+        if config.lost_death_icon_enabled then
+            self:render_lost_death_icon()
+        end
 
-    if config.notify_info_enabled then
-        self:handle_special_room_notify()
-    end
+        if config.notify_info_enabled then
+            self:handle_special_room_notify()
+        end
 
-    if config.time_progress_enabled then
-        self:render_time_progress()
-    end
+        if config.time_progress_enabled then
+            self:render_time_progress()
+        end
 
-    if config.game_timer_enabled then
-        self:render_game_timer()
+        if config.game_timer_enabled then
+            self:render_game_timer()
+        end
     end
 
     -- KEYBOARD SPECIFIC CONTROLS --
