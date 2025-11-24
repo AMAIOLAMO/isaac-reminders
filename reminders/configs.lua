@@ -5,17 +5,6 @@
 local iserializer = require("reminders.iserializer")
 local Configs = {}
 
--- local function get_default_config_pure()
--- end
-
--- if we cannot find it in the storage, there may be a new value, we also assign it here
--- Configs.mt = {}
--- Configs.mt.__index = function(table, key)
---     local dconf = get_default_config_pure()
---     table[key] = dconf[key]
---     return dconf[key]
--- end
-
 function Configs.get_default_config()
     return {
         debug_mode = false,
@@ -32,6 +21,10 @@ function Configs.get_default_config()
         notify_info_offset = iserializer.encode_vector(Vector(0, 0)),
         notify_info_end_of_boss_notify = true,
         notify_info_conditional_ultra_secret = true,
+        notify_info_text_scale = 1.0,
+        notify_info_line_height = 15,
+        notify_info_show_room_icon = true,
+        notify_info_opacity = 1.0,
 
         icon_scale = 1.5,
 

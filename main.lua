@@ -315,16 +315,19 @@ function rems:render_room_icon(room_type, pos)
 end
 
 function rems:render_notify(alpha)
-    local LINE_HEIGHT = 15
-
     local width = Isaac.GetScreenWidth()
 
     local config = self:get_config()
 
+    local line_height = config.notify_info_line_height
+    local text_scale = config.notify_info_text_scale
+    local opacity = config.notify_info_opacity
+    alpha = alpha * opacity
+
     local notify_header = #self.notify_special_rooms == 0 and
         config.notify_text_header_ok or config.notify_text_header
         
-    local header_width = Isaac.GetTextWidth(notify_header)
+    local header_width = Isaac.GetTextWidth(notify_header) * text_scale
 
     local offset = iserializer.decode_vector(config.notify_info_offset)
 
@@ -334,9 +337,10 @@ function rems:render_notify(alpha)
         (width - header_width) / 2 + offset.X, offset.Y
     ) + global_offset
 
-    Isaac.RenderText(
+    Isaac.RenderScaledText(
         notify_header,
         render_pivot.X, render_pivot.Y,
+        text_scale, text_scale,
         1, 1, 1, alpha
     )
 
@@ -346,7 +350,7 @@ function rems:render_notify(alpha)
 
     for i, room in ipairs(self.notify_special_rooms) do
         assert(self.minimapapi_roomtype2icon, "Cannot draw icon!")
-        local line_height_offset = LINE_HEIGHT * i
+        local line_height_offset = line_height * i
 
         local rname = iutils.room_name_from_type(room.type)
 
@@ -354,20 +358,23 @@ function rems:render_notify(alpha)
         local icon = self.minimapapi_icons
 
         local icon_scale = self:get_config().icon_scale
-        local ICON_SIZE = 12
-        local icon_fsize = ICON_SIZE * icon_scale
+        local BASE_ICON_SIZE = 12
+        local icon_fsize = BASE_ICON_SIZE * icon_scale
 
-        local name_width = Isaac.GetTextWidth(rname)
+        local name_width = Isaac.GetTextWidth(rname) * text_scale
         local x_pivot = (width - name_width) / 2
 
-        icon.Color = Color(1, 1, 1, alpha)
-        icon:SetFrame(icon_id, 0)
-        icon.Scale = Vector(1, 1) * icon_scale
-        icon:Render(Vector(x_pivot - icon_fsize, render_pivot.Y + line_height_offset))
+        if config.notify_info_show_room_icon then
+            icon.Color = Color(1, 1, 1, alpha)
+            icon:SetFrame(icon_id, 0)
+            icon.Scale = Vector(1, 1) * icon_scale
+            icon:Render(Vector(x_pivot - icon_fsize, render_pivot.Y + line_height_offset))
+        end
 
-        Isaac.RenderText(
+        Isaac.RenderScaledText(
             rname,
             x_pivot, render_pivot.Y + line_height_offset,
+            text_scale, text_scale,
             1, 1, 1, alpha
         )
     end
@@ -377,7 +384,7 @@ function rems:render_lost_death_icon()
     local player = Isaac.GetPlayer()
     
     -- touched by white fire, turned into the lost
-    local is_lost_curse_effect = player:GetEffects():HasNullEffect(112)
+    local is_lost_curse_effect = player:GetEffects():HasNullEffect(NullItemID.ID_LOST_CURSE)
     
     -- devil beggars are slot machines :P
     local devil_beggars = Isaac.FindByType(EntityType.ENTITY_SLOT, 5, -1, true, false)

@@ -235,7 +235,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
                 mod:get_config().debug_mode = value
             end,
 
-            Info = { -- This can also be a function instead of a table
+            Info = {
                 "debug mode displays extra information",
                 "in debug console / while using the mod"
             }
@@ -289,7 +289,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
                 mod:get_config().icon_scale = value / 10
             end,
 
-            Info = { -- This can also be a function instead of a table
+            Info = {
                 "Changes the general icon scale for notify info"
             }
         }
@@ -316,7 +316,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
                 mod:get_config().notify_info_offset[1] = value
             end,
 
-            Info = { -- This can also be a function instead of a table
+            Info = {
                 "Changes the x offset of the map reminder info at the end of each boss",
             }
         }
@@ -340,12 +340,110 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
                 mod:get_config().notify_info_offset[2] = value
             end,
 
-            Info = { -- This can also be a function instead of a table
+            Info = {
                 "Changes the y offset of the map reminder info at the end of each boss",
             }
         }
     )
 
+    MCM.AddSpace(mod_name, "Visuals")
+
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_text_scale * 10
+            end,
+
+            Display = function()
+                return "Text Scale: " .. tostring(mod:get_config().notify_info_text_scale)
+            end,
+
+            Minimum = 0, Maximum = 100,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_text_scale = value / 10
+            end,
+
+            Info = {
+                "changes the text scale of the notify info",
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_line_height
+            end,
+
+            Display = function()
+                return "Line Height: " .. tostring(mod:get_config().notify_info_line_height)
+            end,
+
+            Minimum = 0, Maximum = 500,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_line_height = value
+            end,
+
+            Info = {
+                "changes the line height of the notify info",
+            }
+        }
+    )
+
+    MCM.AddSpace(mod_name, "Visuals")
+
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_show_room_icon
+            end,
+
+            Display = function()
+                return "Show room icons: " .. (mod:get_config().notify_info_show_room_icon and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_show_room_icon = value
+            end,
+
+            Info = {
+                "Toggles whether or not room icons should be shown",
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "Visuals")
+
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_opacity * 10
+            end,
+
+            Display = function()
+                return "Opacity: " .. tostring(mod:get_config().notify_info_opacity)
+            end,
+
+            Minimum = 0, Maximum = 100,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_opacity = value / 10
+            end,
+
+            Info = {
+                "changes the opacity (how NOT transparent the text is) of the notify info",
+            }
+        }
+    )
     MCM.AddSpace(mod_name, "Visuals")
 
     MCM.AddText(mod_name, "Visuals", "Unvisited Rooms", DEFAULT_TXT_COLOR)
