@@ -5,7 +5,7 @@
 local iserializer = require("reminders.iserializer")
 local Configs = {}
 
-function Configs.get_default_config()
+local function get_default_config_pure()
     return {
         debug_mode = false,
 
@@ -20,6 +20,7 @@ function Configs.get_default_config()
         notify_text_header_ok = "No Missed Special Rooms :)",
         notify_info_offset = iserializer.encode_vector(Vector(0, 0)),
         notify_info_end_of_boss_notify = true,
+        notify_info_conditional_ultra_secret = true,
 
         icon_scale = 1.5,
 
@@ -44,6 +45,29 @@ function Configs.get_default_config()
         game_timer_enabled = true,
         game_timer_offset = iserializer.encode_vector(Vector(0, 0)),
     }
+end
+
+-- if we cannot find it in the storage, there may be a new value, we also assign it here
+Configs.mt = {}
+Configs.mt.__index = function(table, key)
+    local dconf = get_default_config_pure()
+    table[key] = dconf[key]
+    return dconf[key]
+end
+
+function Configs.get_default_config()
+    local default_conf = get_default_config_pure()
+
+    return setmetatable(default_conf, Configs.mt)
+end
+
+function Configs.fill_missing_from_default_config(config_tbl)
+    local dconf = get_default_config_pure()
+    for k, v in ipairs(dconf) do
+        if config_tbl[k] == nil then
+            config_tbl[k] = v
+        end
+    end
 end
 
 return Configs

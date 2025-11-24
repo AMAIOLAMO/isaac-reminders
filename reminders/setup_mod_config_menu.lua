@@ -186,8 +186,32 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Info = {
-                "Toggles whether or not notify info should auto show after",
-                "A boss has been defeated"
+                "Toggles whether or not notify info should automatically",
+                "showup after a boss has been defeated"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "General")
+
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_conditional_ultra_secret
+            end,
+
+            Display = function()
+                return "Conditional Ultra Secret: " .. (mod:get_config().notify_info_conditional_ultra_secret and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_conditional_ultra_secret = value
+            end,
+
+            Info = {
+                "Toggles whether or not notify info should show Ultra Secret Rooms",
+                "If and only if any player has: Red Key / Cracked Key / Soul of Cain"
             }
         }
     )

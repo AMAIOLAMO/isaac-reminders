@@ -169,6 +169,22 @@ function rems:any_player_has_collectible(type)
     return false
 end
 
+function rems:any_player_has_card(type)
+    local player_count = game:GetNumPlayers()
+    
+    for i = 0, player_count - 1 do
+        local player = game:GetPlayer(i)
+
+        for j = 0, 3 do
+            if player:GetCard(j) == type then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
 -- naive way of implementing this
 function rems:get_current_room_grid_entities()
     local room = game:GetRoom()
@@ -260,12 +276,21 @@ function rems:update_notify_rooms()
         self.notify_special_rooms[i] = nil
     end
 
+    -- may require updating the notify rooms during pickup of collectible & cards
+    local can_open_ultra_secret = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_RED_KEY)
+        or self:any_player_has_card(Card.CARD_CRACKED_KEY) or self:any_player_has_card(Card.CARD_SOUL_CAIN)
 
     for _, room in ipairs(unvisited_special_rooms) do
         local desc = room.Descriptor
 
         -- Curse of the lost will not affect the display flags
         local should_notify = (room:IsVisible() and room:IsIconVisible()) or iutils.is_any_secret_room(room)
+
+        -- dont ultra secret when we dont have these collectibles
+        if self:get_config().notify_info_conditional_ultra_secret and
+            (room.Type == RoomType.ROOM_ULTRASECRET and can_open_ultra_secret == false) then
+            should_notify = false
+        end
 
         if should_notify then
             table.insert(self.notify_special_rooms, RoomNotify.new(room.Type))
@@ -719,6 +744,9 @@ function rems:on_post_game_started()
         local new_config_data = json.decode(json_data)
         self.config = new_config_data
         self:log_debug(string.format("Data loaded"))
+        self:log_debug(string.format("Filling missing data..."))
+        configs.fill_missing_from_default_config(self.config)
+        self:log_debug(string.format("Data filled."))
     end
 
     if card_fronts:IsLoaded() then
