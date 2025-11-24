@@ -5,7 +5,18 @@
 local iserializer = require("reminders.iserializer")
 local Configs = {}
 
-local function get_default_config_pure()
+-- local function get_default_config_pure()
+-- end
+
+-- if we cannot find it in the storage, there may be a new value, we also assign it here
+-- Configs.mt = {}
+-- Configs.mt.__index = function(table, key)
+--     local dconf = get_default_config_pure()
+--     table[key] = dconf[key]
+--     return dconf[key]
+-- end
+
+function Configs.get_default_config()
     return {
         debug_mode = false,
 
@@ -47,25 +58,22 @@ local function get_default_config_pure()
     }
 end
 
--- if we cannot find it in the storage, there may be a new value, we also assign it here
-Configs.mt = {}
-Configs.mt.__index = function(table, key)
-    local dconf = get_default_config_pure()
-    table[key] = dconf[key]
-    return dconf[key]
-end
+function Configs.clean_config_from_default(config_tbl)
+    local dconf = Configs.get_default_config()
 
-function Configs.get_default_config()
-    local default_conf = get_default_config_pure()
-
-    return setmetatable(default_conf, Configs.mt)
-end
-
-function Configs.fill_missing_from_default_config(config_tbl)
-    local dconf = get_default_config_pure()
-    for k, v in ipairs(dconf) do
+    -- fill up missing configs
+    for k, v in pairs(dconf) do
         if config_tbl[k] == nil then
             config_tbl[k] = v
+            print("[Reminders] Filled Config: " .. tostring(k))
+        end
+    end
+
+    -- remove ones that doesnt exist anymore
+    for k, _ in pairs(config_tbl) do
+        if dconf[k] == nil then
+            config_tbl[k] = nil
+            print("[Reminders] Removing Config:" .. tostring(k))
         end
     end
 end

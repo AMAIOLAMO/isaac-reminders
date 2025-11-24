@@ -733,7 +733,7 @@ end
 
 -- CALLBACKS --
 
-function rems:on_post_game_started()
+function rems:on_post_game_started(continued)
     self:log_debug("Game started")
 
     self.prev_frame_time = Isaac.GetTime()
@@ -745,9 +745,10 @@ function rems:on_post_game_started()
         self.config = new_config_data
         self:log_debug(string.format("Data loaded"))
         self:log_debug(string.format("Filling missing data..."))
-        configs.fill_missing_from_default_config(self.config)
+        configs.clean_config_from_default(self.config)
         self:log_debug(string.format("Data filled."))
     end
+
 
     if card_fronts:IsLoaded() then
         self:log_info("Loaded card sprites.")
@@ -888,6 +889,7 @@ function rems:on_post_render()
     if not MinimapAPI then
         return
     end
+
 
     local config = self:get_config()
 
