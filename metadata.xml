@@ -17,7 +17,7 @@ This mod can remind you:
 1. Alt path doors
 2. special rooms you haven't visited in the current floor (or you could just hold down MAP button)
 3. sheol / cathedral path based on polaroid / negative
-4. The lost (or Tainted lost) icon above blood donation machine & devil beggar (so you dont die with skill issue)
+4. The lost (or Tainted lost) icon above blood donation machine &amp; devil beggar (so you dont die with skill issue)
 5. Time progress that shows you how far you are into the game. Also shows you how close you are towards boss rush and hush!
 6. A small in game timer shown below time progress
 7. White fire icon on top of curse rooms when the current floor has white fire :)
@@ -26,9 +26,8 @@ This mod can remind you:
 This mod is fully [b]Open-Source[/b]! Check it out here on [url=https://github.com/AMAIOLAMO/isaac-reminders]Github[/url]!
 
 Hopefully this should help you in having less skill issues like I do :D
-HAVE FUN!
-</description>
-    <version>1.1</version>
+HAVE FUN!</description>
+    <version>1.2</version>
     <visibility>Public</visibility>
     <tag id="Tweaks"/>
     <tag id="Graphics"/>

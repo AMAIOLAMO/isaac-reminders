@@ -3,11 +3,6 @@
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
 
 -- The major purpose of this mod is to make things that are not obvious to be more obvious!
--- TODO:
--- 1. add alt path reminders (partially done)
---  -> add different directions of the alt_path arrow
--- 2. icons
-
 -- 3. TIME is past boss rush / hush, should make them fade a bit dark / switch them into nodes / add X to them
 
 local MOD_NAME = "Reminders"
