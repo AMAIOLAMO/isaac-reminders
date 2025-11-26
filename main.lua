@@ -5,6 +5,8 @@
 -- The major purpose of this mod is to make things that are not obvious to be more obvious!
 -- 3. TIME is past boss rush / hush, should make them fade a bit dark / switch them into nodes / add X to them
 
+-- BUG: Mini bosses with treasure map does not display color marks still, even if the icon is visible.
+
 local MOD_NAME = "Reminders"
 local rems = RegisterMod(MOD_NAME, 1)
 
@@ -13,6 +15,7 @@ local timerf = require("reminders.timerf")
 local iserializer = require("reminders.iserializer")
 local ilogger = require("reminders.ilogger")
 local iutils = require("reminders.iutils")
+local enums = require("reminders.enums")
 
 local setup_mod_config_menu = require("reminders.setup_mod_config_menu")
 
@@ -359,19 +362,22 @@ function rems:render_notify(alpha)
         local name_width = Isaac.GetTextWidth(rname) * text_scale
         local x_pivot = (width - name_width) / 2
 
-        if config.notify_info_show_room_icon then
+        -- TODO: add special ICON ONLY way of grid align of icons
+        if config.notify_info_type & enums.NotifyInfoType.NOTIFY_ICON ~= 0 then
             icon.Color = Color(1, 1, 1, alpha)
             icon:SetFrame(icon_id, 0)
             icon.Scale = Vector(1, 1) * icon_scale
             icon:Render(Vector(x_pivot - icon_fsize, render_pivot.Y + line_height_offset))
         end
 
-        Isaac.RenderScaledText(
-            rname,
-            x_pivot, render_pivot.Y + line_height_offset,
-            text_scale, text_scale,
-            1, 1, 1, alpha
-        )
+        if config.notify_info_type & enums.NotifyInfoType.NOTIFY_TEXT ~= 0 then
+            Isaac.RenderScaledText(
+                rname,
+                x_pivot, render_pivot.Y + line_height_offset,
+                text_scale, text_scale,
+                1, 1, 1, alpha
+            )
+        end
     end
 end
 

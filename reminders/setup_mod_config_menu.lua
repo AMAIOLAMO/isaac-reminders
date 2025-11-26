@@ -3,6 +3,7 @@
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
 local mcm_helper = require("reminders.mod_config_menu_helper")
 local iserializer = require("reminders.iserializer")
+local enums = require("reminders.enums")
 
 local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     local DEFAULT_TXT_COLOR = {.1, .2, .4}
@@ -400,25 +401,29 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
 
     MCM.AddSetting(
         mod_name, "Visuals", {
-            Type = MCM.OptionType.BOOLEAN,
+            Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
-                return mod:get_config().notify_info_show_room_icon
+                return mod:get_config().notify_info_type
             end,
 
             Display = function()
-                return "Show room icons: " .. (mod:get_config().notify_info_show_room_icon and "on" or "off")
+                return "Notify type: " .. enums.NotifyInfoType:to_description(mod:get_config().notify_info_type)
             end,
 
+            Minimum = enums.NotifyInfoType.NOTIFY_BEGIN,
+            Maximum = enums.NotifyInfoType.NOTIFY_END,
+
             OnChange = function(value)
-                mod:get_config().notify_info_show_room_icon = value
+                mod:get_config().notify_info_type = value
             end,
 
             Info = {
-                "Toggles whether or not room icons should be shown",
+                "Changes whether or not room icons / text should be shown",
             }
         }
     )
+    MCM.AddText(mod_name, "Visuals", "Note: Notify Icon Only is incomplete", {0.4, 0.4, 0.4})
     MCM.AddSpace(mod_name, "Visuals")
 
     MCM.AddSetting(

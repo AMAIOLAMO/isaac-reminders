@@ -3,6 +3,7 @@
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
 
 local iserializer = require("reminders.iserializer")
+local enums = require("reminders.enums")
 local Configs = {}
 
 function Configs.get_default_config()
@@ -23,7 +24,9 @@ function Configs.get_default_config()
         notify_info_conditional_ultra_secret = true,
         notify_info_text_scale = 1.0,
         notify_info_line_height = 15,
-        notify_info_show_room_icon = true,
+        notify_info_type = enums.NotifyInfoType.NOTIFY_ICON_TEXT,
+        -- notify_info_show_room_icon = true,
+        -- instead allow toggling of icon types
         notify_info_opacity = 1.0,
 
         icon_scale = 1.5,
