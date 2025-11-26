@@ -416,13 +416,13 @@ function rems:direction_to_rotation_deg(dir)
     local rot = 0
 
     if dir == Direction.LEFT then
-        rot = 270
+        rot = -90
     elseif dir == Direction.RIGHT then
         rot = 90
     elseif dir == Direction.UP then
-        rot = 180
-    elseif dir == Direction.DOWN then
         rot = 0
+    elseif dir == Direction.DOWN then
+        rot = 180
     end
 
     return rot
@@ -527,9 +527,11 @@ function rems:render_door_reminders()
         if door.TargetRoomType == RoomType.ROOM_BOSS then
 
             local is_mausoleum_meat_door = door:GetType() == 16 and door:GetVariant() == 3
+            local is_ascent_path = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or
+                level:IsAscent()
 
             -- is in mom's floor (possible XL floor edge case)
-            if level:GetStage() == LevelStage.STAGE3_2 then
+            if level:GetStage() == LevelStage.STAGE3_2 and is_ascent_path == false then
                 local has_all_knife_pieces = player:HasCollectible(CollectibleType.COLLECTIBLE_KNIFE_PIECE_1) and
                     player:HasCollectible(CollectibleType.COLLECTIBLE_KNIFE_PIECE_2)
 
@@ -552,7 +554,6 @@ function rems:render_door_reminders()
                     ) + offset
 
                     card_fronts.Rotation = rot
-
                     card_fronts:Render(render_pos)
                 end
             end
@@ -917,6 +918,9 @@ function rems:on_post_render()
         if config.game_timer_enabled then
             self:render_game_timer()
         end
+
+        -- BUM KILL REMINDERS :O (shocking ikr)
+        -- boolean GetStateFlag ( LevelStateFlag LevelStateFlag) (Level class)
     end
 
     -- KEYBOARD SPECIFIC CONTROLS --
