@@ -446,8 +446,8 @@ function rems:render_door_reminders()
     local has_polaroid = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_POLAROID)
     local has_negative = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_NEGATIVE)
 
-    -- is level right before cathedral / sheol and is a boss room
-    if (game_stage == LevelStage.STAGE4_2 or game_stage == LevelStage.STAGE5) and
+    -- is level right before cathedral / sheol (including hush) and is a boss room
+    if (game_stage == LevelStage.STAGE4_2 or game_stage == LevelStage.STAGE4_3 or game_stage == LevelStage.STAGE5) and
         room:GetType() == RoomType.ROOM_BOSS then
         local OFFSET = Vector(0, 30)
 
