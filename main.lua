@@ -3,7 +3,9 @@
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
 
 -- The major purpose of this mod is to make things that are not obvious to be more obvious!
--- 3. TIME is past boss rush / hush, should make them fade a bit dark / switch them into nodes / add X to them
+-- TODO IMPROVEMENT: bum kill reminder is a bit intrusive, maybe improve it, or make it a bit smaller?
+-- TODO: explosion immunity
+-- TODO: remove full dependency towards miniMAPI
 
 -- BUG: Mini bosses with treasure map does not display color marks still, even if the icon is visible.
 
@@ -54,6 +56,22 @@ local hush_icon      = load_static_png_sprite_16x16("gfx/reminders/sprites/hush_
 local boss_rush_icon = load_static_png_sprite_16x16("gfx/reminders/sprites/boss_rush_icon.png")
 
 local static_sprites = iutils.assert_sprite_load("gfx/reminders/static_sprites.anm2")
+
+-- useful function to render static sprites that automatically reset's certain settings
+-- data: pos, color, scale, rot
+local function render_static_sprite(anim_name, frame, data)
+    assert(data.pos, "Rendering static sprite without providing pos data")
+    data.color = data.color or Color.Default
+    data.scale = data.scale or Vector.One
+    data.rot = data.rot or 0
+
+    static_sprites.Color = data.color
+    static_sprites.Scale = data.scale
+    static_sprites.Rotation = data.rot
+
+    static_sprites:SetFrame(anim_name, frame)
+    static_sprites:Render(data.pos)
+end
 
 -- TODO: this is unstable in the future, we are relying on the game to give things
 local card_fronts = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
@@ -451,6 +469,8 @@ function rems:render_door_reminders()
         room:GetType() == RoomType.ROOM_BOSS then
         local OFFSET = Vector(0, 30)
 
+        static_sprites.Color = Color.Default
+
         if has_polaroid then
             local HEAVEN_DOOR_TYPE = Isaac.GetEntityTypeByName("Heaven Door")
             local HEAVEN_DOOR_VARIANT = Isaac.GetEntityVariantByName("Heaven Door")
@@ -459,9 +479,15 @@ function rems:render_door_reminders()
 
             for _, hdoor in ipairs(heaven_doors) do
                 local scr_pos = Isaac.WorldToScreen(hdoor.Position)
-                static_sprites:SetFrame("ThePolaroid", 0)
-                static_sprites.Scale = Vector(0.8, 0.8)
-                static_sprites:Render(scr_pos + OFFSET)
+                render_static_sprite(
+                    "ThePolaroid", 0, {
+                        pos = scr_pos + OFFSET,
+                        scale = Vector(0.8, 0.8)
+                    }
+                )
+                -- static_sprites:SetFrame("ThePolaroid", 0)
+                -- static_sprites.Scale = Vector(0.8, 0.8)
+                -- static_sprites:Render(scr_pos + OFFSET)
             end
         end
 
@@ -474,9 +500,15 @@ function rems:render_door_reminders()
                 if entity:GetType() == GridEntityType.GRID_TRAPDOOR and entity:GetVariant() == 0 then
                     local scr_pos = Isaac.WorldToScreen(entity.Position)
 
-                    static_sprites:SetFrame("TheNegative", 0)
-                    static_sprites.Scale = Vector(0.8, 0.8)
-                    static_sprites:Render(scr_pos + OFFSET)
+                    render_static_sprite(
+                        "TheNegative", 0, {
+                            pos = scr_pos + OFFSET,
+                            scale = Vector(0.8, 0.8)
+                        }
+                    )
+                    -- static_sprites:SetFrame("TheNegative", 0)
+                    -- static_sprites.Scale = Vector(0.8, 0.8)
+                    -- static_sprites:Render(scr_pos + OFFSET)
                 end
             end
         end
@@ -740,6 +772,48 @@ function rems:render_game_timer()
     end
 end
 
+function rems:render_bum_kill_reminders()
+    local level = game:GetLevel()
+
+    local is_bum_killed = level:GetStateFlag(LevelStateFlag.STATE_BUM_KILLED)
+    if is_bum_killed == true then
+        return
+    end
+    -- else
+
+    local slots = Isaac.FindByType(EntityType.ENTITY_SLOT, -1, -1, true, false)
+    local devil_beggar_var = 5
+    local normal_beggar_var = 4
+    local battery_bum_var = 13
+    local rotten_beggar_var = 18
+
+    local is_mirror = game:GetRoom():IsMirrorWorld()
+
+    for _, slot in ipairs(slots) do
+        if slot.Variant == devil_beggar_var or slot.Variant == normal_beggar_var or
+            slot.Variant == battery_bum_var or slot.Variant == rotten_beggar_var then
+
+            local scr_pos = iutils.world_to_screen_ext(slot.Position, is_mirror)
+            render_static_sprite(
+                "XCross", 0, {
+                    pos = scr_pos, color = Color(1, 1, 1, (math.sin(Isaac.GetTime() * 0.005) + 1) / 2)
+                }
+            )
+        end
+    end
+end
+
+function rems:render_explosion_immunity_reminder_for_bomb(bomb_entity)
+    local is_mirror = game:GetRoom():IsMirrorWorld()
+
+    local scr_pos = iutils.world_to_screen_ext(bomb_entity.Position, is_mirror)
+    local opacity = self:get_config().explosion_immunity_reminder_opacity
+
+    render_static_sprite("GreenCircleNoBorder", 0, {
+        pos = scr_pos, color = Color(1, 1, 1, opacity)
+    })
+end
+
 -- CALLBACKS --
 
 function rems:on_post_game_started(continued)
@@ -926,7 +1000,19 @@ function rems:on_post_render()
         end
 
         -- BUM KILL REMINDERS :O (shocking ikr)
-        -- boolean GetStateFlag ( LevelStateFlag LevelStateFlag) (Level class)
+        -- Greed mode has no effect even if we killed any bummies :)
+        -- thats just mass genocide amirite
+        local stage = game:GetLevel():GetStage()
+        -- Maybe consider STAGE_NULL??
+        local first_stage = LevelStage.STAGE1_1
+
+        if config.bum_kill_reminders_enabled and game:IsGreedMode() == false and stage ~= first_stage then
+            self:render_bum_kill_reminders()
+        end
+
+        -- if config.explosion_immunity_reminders_enabled then
+        --     self:render_explosion_immunity_reminders()
+        -- end
     end
 
     -- KEYBOARD SPECIFIC CONTROLS --
@@ -950,6 +1036,28 @@ function rems:on_post_render()
     self.prev_frame_time = Isaac.GetTime()
 end
 
+function rems:on_post_bomb_render(bomb_entity, _)
+    if not MinimapAPI then
+        return
+    end
+
+    local config = self:get_config()
+    if config.explosion_immunity_reminders_enabled == false then
+        return
+    end
+
+
+    local has_pyromaniac = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_PYROMANIAC)
+    local has_host_hat = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_HOST_HAT)
+
+    if not has_pyromaniac and not has_host_hat then
+        return
+    end
+    -- else
+
+    self:render_explosion_immunity_reminder_for_bomb(bomb_entity)
+end
+
 function rems:on_reset_config()
     self:reset_config()
 end
@@ -971,3 +1079,5 @@ rems:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, rems.on_post_new_floor)
 rems:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, rems.on_pre_spawn_clean_award)
 
 rems:AddCallback(ModCallbacks.MC_EXECUTE_CMD, rems.on_execute_cmd)
+
+rems:AddCallback(ModCallbacks.MC_POST_BOMB_RENDER, rems.on_post_bomb_render)

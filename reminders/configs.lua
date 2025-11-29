@@ -51,6 +51,11 @@ function Configs.get_default_config()
 
         game_timer_enabled = true,
         game_timer_offset = iserializer.encode_vector(Vector(0, 0)),
+
+        bum_kill_reminders_enabled = true,
+
+        explosion_immunity_reminders_enabled = true,
+        explosion_immunity_reminder_opacity = 0.5,
     }
 end
 

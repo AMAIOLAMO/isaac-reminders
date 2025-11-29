@@ -217,6 +217,56 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
         }
     )
     MCM.AddSpace(mod_name, "General")
+    
+    MCM.AddText(mod_name, "General", "Bum kill reminders", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().bum_kill_reminders_enabled
+            end,
+
+            Display = function()
+                return "enabled: " .. (mod:get_config().bum_kill_reminders_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().bum_kill_reminders_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not bum / beggars should show kill reminders",
+                "For the current floor"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "General")
+
+    MCM.AddText(mod_name, "General", "Explosion Immunity Reminders", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().explosion_immunity_reminders_enabled
+            end,
+
+            Display = function()
+                return "enabled: " .. (mod:get_config().explosion_immunity_reminders_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().explosion_immunity_reminders_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether to show on explosion(i.e. bombs, troll bombs) that",
+                "Isaac has explosion immunity"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "General")
 
     MCM.AddText(mod_name, "General", "Developer", DEFAULT_TXT_COLOR)
 
@@ -604,6 +654,33 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
 
             Info = {
                 "Shows or hides the hush icon in the time progress",
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "Visuals")
+
+    MCM.AddText(mod_name, "Visuals", "Explosion Immunity Reminders", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().explosion_immunity_reminder_opacity * 10
+            end,
+
+            Display = function()
+                return "Opacity: " .. tostring(mod:get_config().explosion_immunity_reminder_opacity)
+            end,
+
+            Minimum = 0, Maximum = 100,
+
+            OnChange = function(value)
+                mod:get_config().explosion_immunity_reminder_opacity = value / 10
+            end,
+
+            Info = {
+                "changes the opacity (how NOT transparent the reminder is)",
+                "of the explosion immunity reminder"
             }
         }
     )
