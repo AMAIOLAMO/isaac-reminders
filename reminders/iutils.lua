@@ -55,12 +55,14 @@ end
 
 -- utility to get actual game time
 function IUtils.get_game_time(game)
+    local total_milliseconds = math.floor(game.TimeCounter * (10 / 3))
     local total_seconds = math.floor(game.TimeCounter / 30)
     local total_minutes = math.floor(total_seconds / 60)
     local total_hours = math.floor(total_minutes / 60)
 
     return {
         total_secs = total_seconds,
+        ms = math.fmod(total_milliseconds, 99),
         secs = math.fmod(total_seconds, 60),
         mins = math.fmod(total_minutes, 60),
         hours = total_hours

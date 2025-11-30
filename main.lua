@@ -766,17 +766,28 @@ function rems:render_time_progress()
 end
 
 function rems:render_game_timer()
+    local config = self:get_config()
+
     local w = Isaac.GetScreenWidth()
     local game_time = iutils.get_game_time(game)
 
-    local time_str = string.format("%02.0f:%02.0f:%02.0f", game_time.hours, game_time.mins, game_time.secs)
+    local time_str = config.game_timer_subseconds_enabled and string.format(
+        "%02.0f:%02.0f:%02.0f.%02.f", game_time.hours, game_time.mins, game_time.secs, game_time.ms
+    ) or string.format(
+        "%02.0f:%02.0f:%02.0f", game_time.hours, game_time.mins, game_time.secs
+    )
+
 
     local offset = iserializer.decode_vector(self:get_config().game_timer_offset)
 
     if self.extra_info_timer:max() == false then
-        Isaac.RenderText(
+        local scale = self:get_config().game_timer_scale
+
+        Isaac.RenderScaledText(
             time_str,
-            w / 2 - Isaac.GetTextWidth(time_str) / 2 + offset.X, 25 + offset.Y, 0.8, 0.8, 0.8, 1
+            w / 2 - Isaac.GetTextWidth(time_str) * scale / 2 + offset.X, 25 + offset.Y,
+            scale, scale,
+            0.8, 0.8, 0.8, 1
         )
     end
 end

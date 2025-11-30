@@ -685,6 +685,55 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
         }
     )
     MCM.AddSpace(mod_name, "Visuals")
+
+    MCM.AddText(mod_name, "Visuals", "Game Timer", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().game_timer_scale * 100
+            end,
+
+            Display = function()
+                return "Scale: " .. tostring(mod:get_config().game_timer_scale)
+            end,
+
+            Minimum = 0, Maximum = 1000,
+
+            OnChange = function(value)
+                mod:get_config().game_timer_scale = value / 100
+            end,
+
+            Info = {
+                "Changes the scale of the game timer shown above"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "Visuals")
+
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().game_timer_subseconds_enabled
+            end,
+
+            Display = function()
+                return "Enable Subseconds: " .. (mod:get_config().game_timer_subseconds_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().game_timer_subseconds_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not to have a more accurate timing beside seconds",
+                "Examples => ON: 59:59:59.99, OFF: 59:59:59"
+            }
+        }
+    )
 end
 
 return setup_mod_config_menu

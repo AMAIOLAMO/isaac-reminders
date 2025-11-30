@@ -17,6 +17,7 @@ function Configs.get_default_config()
         normal_color_marked = iserializer.encode_color(Color(1, 1, 0)),
 
         notify_info_enabled = true,
+        -- TODO: should move all of the text headers to be simply just a constant
         notify_text_header = "=== ![Missed Special Rooms]! ===",
         notify_text_header_ok = "No Missed Special Rooms :)",
         notify_info_offset = iserializer.encode_vector(Vector(0, 0)),
@@ -25,8 +26,6 @@ function Configs.get_default_config()
         notify_info_text_scale = 1.0,
         notify_info_line_height = 15,
         notify_info_type = enums.NotifyInfoType.NOTIFY_ICON_TEXT,
-        -- notify_info_show_room_icon = true,
-        -- instead allow toggling of icon types
         notify_info_opacity = 1.0,
 
         icon_scale = 1.5,
@@ -51,6 +50,8 @@ function Configs.get_default_config()
 
         game_timer_enabled = true,
         game_timer_offset = iserializer.encode_vector(Vector(0, 0)),
+        game_timer_subseconds_enabled = true,
+        game_timer_scale = 0.8,
 
         bum_kill_reminders_enabled = true,
 
