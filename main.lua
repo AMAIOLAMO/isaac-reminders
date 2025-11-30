@@ -708,11 +708,12 @@ function rems:render_time_progress()
     local game_time = iutils.get_game_time(game)
 
     local HIDE_TIME_MINS = 30
+
     local should_hide = self.extra_info_timer:max() or
         game_time.mins > HIDE_TIME_MINS or game_time.hours > 1
 
     if should_hide then
-        -- TODO HACK instead of -50, we should calculate the difference between current pos with 0
+        -- TODO HACK: instead of -50, we should calculate the difference between current pos with 0
         self.time_progress_anim_pos_offset = lerpv(
             self.time_progress_anim_pos_offset, Vector(0, -50 - config_offset.Y), self.dt_ms * ANIM_SPEED
         )
@@ -777,17 +778,17 @@ function rems:render_game_timer()
         "%02.0f:%02.0f:%02.0f", game_time.hours, game_time.mins, game_time.secs
     )
 
-
     local offset = iserializer.decode_vector(self:get_config().game_timer_offset)
 
     if self.extra_info_timer:max() == false then
-        local scale = self:get_config().game_timer_scale
+        local scale = config.game_timer_scale
+        local opacity = config.game_timer_opacity
 
         Isaac.RenderScaledText(
             time_str,
             w / 2 - Isaac.GetTextWidth(time_str) * scale / 2 + offset.X, 25 + offset.Y,
             scale, scale,
-            0.8, 0.8, 0.8, 1
+            0.8, 0.8, 0.8, opacity
         )
     end
 end

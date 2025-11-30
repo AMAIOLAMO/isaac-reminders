@@ -687,22 +687,20 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     MCM.AddSpace(mod_name, "Visuals")
 
     MCM.AddText(mod_name, "Visuals", "Game Timer", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
+    mcm_helper.add_float_setting(
         mod_name, "Visuals", {
-            Type = MCM.OptionType.NUMBER,
+            Precision = 2,
 
             CurrentSetting = function()
-                return mod:get_config().game_timer_scale * 100
+                return mod:get_config().game_timer_scale
             end,
 
             Display = function()
                 return "Scale: " .. tostring(mod:get_config().game_timer_scale)
             end,
 
-            Minimum = 0, Maximum = 1000,
-
             OnChange = function(value)
-                mod:get_config().game_timer_scale = value / 100
+                mod:get_config().game_timer_scale = value
             end,
 
             Info = {
@@ -710,7 +708,29 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
-    MCM.AddSpace(mod_name, "Visuals")
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().game_timer_opacity * 10
+            end,
+
+            Display = function()
+                return "Opacity: " .. tostring(mod:get_config().game_timer_opacity)
+            end,
+
+            Minimum = 0, Maximum = 100,
+
+            OnChange = function(value)
+                mod:get_config().game_timer_opacity = value / 10
+            end,
+
+            Info = {
+                "Changes the opacity (how NOT transparent it is) of the game timer"
+            }
+        }
+    )
 
     MCM.AddSetting(
         mod_name, "Visuals", {

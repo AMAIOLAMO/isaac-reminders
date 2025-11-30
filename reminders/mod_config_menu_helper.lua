@@ -3,6 +3,33 @@
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
 local ModConfigMenuHelper = {}
 
+function ModConfigMenuHelper.add_float_setting(mod_name, category, args)
+    local MCM = ModConfigMenu
+    assert(MCM, "Cannot find mod config menu!")
+
+    local step = math.floor(10 ^ args.Precision)
+
+    MCM.AddSetting(
+        mod_name, category, {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return args.CurrentSetting() * step
+            end,
+
+            Display = args.Display,
+
+            Minimum = 0, Maximum = step * 10,
+
+            OnChange = function(value)
+                args.OnChange(value / step)
+            end,
+
+            Info = args.Info
+        }
+    )
+end
+
 function ModConfigMenuHelper.add_vector_setting(mod_name, category, args)
     local MCM = ModConfigMenu
     assert(MCM, "Cannot find mod config menu!")

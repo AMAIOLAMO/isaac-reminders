@@ -52,6 +52,7 @@ function Configs.get_default_config()
         game_timer_offset = iserializer.encode_vector(Vector(0, 0)),
         game_timer_subseconds_enabled = true,
         game_timer_scale = 0.8,
+        game_timer_opacity = 0.9,
 
         bum_kill_reminders_enabled = true,
 
