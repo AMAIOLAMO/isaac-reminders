@@ -71,6 +71,11 @@ end
 -- TODO: maybe support translation?
 -- TODO: move to another file
 IUtils.room_names = {
+    [RoomType.ROOM_NULL] = "NULL Room",
+    [RoomType.ROOM_DEFAULT] = "Default Room",
+
+    [RoomType.ROOM_ERROR]   = "Error Room",
+
     [RoomType.ROOM_SECRET]      = "Secret Room",
     [RoomType.ROOM_SUPERSECRET] = "Super Secret Room",
     [RoomType.ROOM_ULTRASECRET] = "Ultra Secret Room",
@@ -86,15 +91,22 @@ IUtils.room_names = {
     [RoomType.ROOM_ISAACS] = "Bedroom",
     [RoomType.ROOM_BARREN] = "Barren Bedroom",
 
-    [RoomType.ROOM_CHEST]       = "Chest Room",
-    [RoomType.ROOM_DICE]        = "Dice Room",
-    [RoomType.ROOM_CURSE]       = "Curse Room",
-    [RoomType.ROOM_MINIBOSS]    = "Miniboss Room",
+    [RoomType.ROOM_CHEST]    = "Chest Room",
+    [RoomType.ROOM_DICE]     = "Dice Room",
+    [RoomType.ROOM_CURSE]    = "Curse Room",
 
     [RoomType.ROOM_DEVIL] = "Devil Room",
     [RoomType.ROOM_ANGEL] = "Angel Room",
 
-    [RoomType.ROOM_BOSS] = "Boss Room",
+    [RoomType.ROOM_DUNGEON] = "Dungeon Room(Crawlspace)",
+
+
+    [RoomType.ROOM_MINIBOSS] = "Miniboss Room",
+    [RoomType.ROOM_BOSS]     = "Boss Room",
+
+    [RoomType.ROOM_SECRET_EXIT] = "Alt Path Room",
+    [RoomType.ROOM_BLUE] = "Blue Womb Room",
+    [RoomType.ROOM_DEATHMATCH] = "Deathmatch room",
 }
 
 function IUtils.room_name_from_type(room_type)

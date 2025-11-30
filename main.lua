@@ -340,8 +340,10 @@ function rems:render_notify(alpha)
     local opacity = config.notify_info_opacity
     alpha = alpha * opacity
 
+    -- fallback to a solution
     local notify_header = #self.notify_special_rooms == 0 and
         config.notify_text_header_ok or config.notify_text_header
+        or "Notify header is somehow nil! Reset Config to fix this."
         
     local header_width = Isaac.GetTextWidth(notify_header) * text_scale
 
@@ -368,9 +370,14 @@ function rems:render_notify(alpha)
         assert(self.minimapapi_roomtype2icon, "Cannot draw icon!")
         local line_height_offset = line_height * i
 
-        local rname = iutils.room_name_from_type(room.type)
+        -- fall back to displaying room type
+        local rname = iutils.room_name_from_type(room.type) or
+            ("NIL ROOM of type: " .. room.type)
 
-        local icon_id = self.minimapapi_roomtype2icon[room.type]
+        -- default fall back icon to secret room icon
+        local icon_id = self.minimapapi_roomtype2icon[room.type] or
+            self.minimapapi_roomtype2icon[RoomType.ROOM_SECRET]
+
         local icon = self.minimapapi_icons
 
         local icon_scale = self:get_config().icon_scale
@@ -396,6 +403,8 @@ function rems:render_notify(alpha)
                 1, 1, 1, alpha
             )
         end
+
+        -- ::continue::
     end
 end
 
