@@ -114,7 +114,7 @@ if MinimapAPI then
         [RoomType.ROOM_SACRIFICE] = "IconSacrificeRoom",
         [RoomType.ROOM_LIBRARY] = "IconLibrary",
         [RoomType.ROOM_ARCADE] = "IconArcade",
-        [RoomType.ROOM_CHALLENGE] = "IconChallengeRoom",
+        [RoomType.ROOM_CHALLENGE] = "IconAmbushRoom", -- TODO: add boss challenge room support
 
         [RoomType.ROOM_ISAACS] = "IconIsaacsRoom",
         [RoomType.ROOM_BARREN] = "IconBarrenRoom",

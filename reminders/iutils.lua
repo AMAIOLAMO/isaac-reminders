@@ -69,7 +69,6 @@ end
 
 -- Room names
 -- TODO: maybe support translation?
--- TODO: move to another file
 IUtils.room_names = {
     [RoomType.ROOM_NULL] = "NULL Room",
     [RoomType.ROOM_DEFAULT] = "Default Room",
