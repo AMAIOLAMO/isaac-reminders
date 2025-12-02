@@ -4,7 +4,6 @@
 
 -- The major purpose of this mod is to make things that are not obvious to be more obvious!
 -- TODO IMPROVEMENT: bum kill reminder is a bit intrusive, maybe improve it, or make it a bit smaller?
--- TODO: explosion immunity
 -- TODO: remove full dependency towards miniMAPI
 
 -- BUG: Mini bosses with treasure map does not display color marks still, even if the icon is visible.
@@ -169,6 +168,22 @@ rems.notify_info_start_fade = 4
 function rems:start_notify_info()
     self:update_notify_rooms()
     self.notify_info_timer:reset()
+end
+
+function rems:player_any_of(predicate)
+    assert(predicate, "Predicate cannot be nil")
+
+    local player_count = game:GetNumPlayers()
+    
+    for i = 0, player_count - 1 do
+        local player = game:GetPlayer(i)
+
+        if predicate(player) then
+            return true
+        end
+    end
+
+    return false
 end
 
 function rems:any_player_has_collectible(type)
@@ -427,18 +442,19 @@ function rems:render_lost_death_icon()
 
         for _, devil_beggar in ipairs(devil_beggars) do
             local is_mirror = game:GetRoom():IsMirrorWorld()
-            local screen_pos = iutils.world_to_screen_ext(devil_beggar.Position, is_mirror)
+            local scr_pos = iutils.world_to_screen_ext(devil_beggar.Position, is_mirror)
 
             lost_death_icon:Render(Vector(
-                screen_pos.X, screen_pos.Y - config.lost_death_devil_beggar_offset
+                scr_pos.X, scr_pos.Y - config.lost_death_devil_beggar_offset
             ))
         end
 
         for _, dono in ipairs(blood_donos) do
-            local screen_pos = Isaac.WorldToScreen(dono.Position)
+            local is_mirror = game:GetRoom():IsMirrorWorld()
+            local scr_pos = iutils.world_to_screen_ext(devil_beggar.Position, is_mirror)
 
             lost_death_icon:Render(Vector(
-                screen_pos.X, screen_pos.Y - config.lost_death_dono_offset
+                scr_pos.X, scr_pos.Y - config.lost_death_dono_offset
             ))
         end
     end
@@ -494,9 +510,6 @@ function rems:render_door_reminders()
                         scale = Vector(0.8, 0.8)
                     }
                 )
-                -- static_sprites:SetFrame("ThePolaroid", 0)
-                -- static_sprites.Scale = Vector(0.8, 0.8)
-                -- static_sprites:Render(scr_pos + OFFSET)
             end
         end
 
@@ -515,9 +528,6 @@ function rems:render_door_reminders()
                             scale = Vector(0.8, 0.8)
                         }
                     )
-                    -- static_sprites:SetFrame("TheNegative", 0)
-                    -- static_sprites.Scale = Vector(0.8, 0.8)
-                    -- static_sprites:Render(scr_pos + OFFSET)
                 end
             end
         end
@@ -1068,10 +1078,14 @@ function rems:on_post_bomb_render(bomb_entity, _)
     end
 
 
-    local has_pyromaniac = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_PYROMANIAC)
-    local has_host_hat = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_HOST_HAT)
+    local has_explosive_immunity = self:player_any_of(
+        function(player)
+            return player:HasCollectible(CollectibleType.COLLECTIBLE_PYROMANIAC) or
+                player:HasCollectible(CollectibleType.COLLECTIBLE_HOST_HAT)
+        end
+    )
 
-    if not has_pyromaniac and not has_host_hat then
+    if not has_explosive_immunity then
         return
     end
     -- else
