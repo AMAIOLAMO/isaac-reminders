@@ -451,7 +451,7 @@ function rems:render_lost_death_icon()
 
         for _, dono in ipairs(blood_donos) do
             local is_mirror = game:GetRoom():IsMirrorWorld()
-            local scr_pos = iutils.world_to_screen_ext(devil_beggar.Position, is_mirror)
+            local scr_pos = iutils.world_to_screen_ext(dono.Position, is_mirror)
 
             lost_death_icon:Render(Vector(
                 scr_pos.X, scr_pos.Y - config.lost_death_dono_offset
@@ -821,12 +821,24 @@ function rems:render_bum_kill_reminders()
     local is_mirror = game:GetRoom():IsMirrorWorld()
 
     for _, slot in ipairs(slots) do
-        if slot.Variant == devil_beggar_var or slot.Variant == normal_beggar_var or
-            slot.Variant == battery_bum_var or slot.Variant == rotten_beggar_var then
+        local ANGEL_DEAL = 0
+        local DEVIL_DEAL = 1
+        local ALL_DEALS = 2
 
-            local scr_pos = iutils.world_to_screen_ext(slot.Position, is_mirror)
+        local deal_frame = ANGEL_DEAL
+        local scr_pos = iutils.world_to_screen_ext(slot.Position, is_mirror)
+
+        local BEGGAR_2_DEAL_FRAME = {
+            [devil_beggar_var] = ANGEL_DEAL, [normal_beggar_var] = ALL_DEALS,
+            [battery_bum_var] = ALL_DEALS, [rotten_beggar_var] = ALL_DEALS
+        }
+
+        local is_deal_affecting_beggar = BEGGAR_2_DEAL_FRAME[slot.Variant] ~= nil
+
+        -- reference https://bindingofisaacrebirth.fandom.com/wiki/Beggar
+        if is_deal_affecting_beggar then
             render_static_sprite(
-                "XCross", 0, {
+                "Deals", BEGGAR_2_DEAL_FRAME[slot.Variant], {
                     pos = scr_pos, color = Color(1, 1, 1, (math.sin(Isaac.GetTime() * 0.005) + 1) / 2)
                 }
             )
