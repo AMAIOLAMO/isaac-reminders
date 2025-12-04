@@ -44,12 +44,11 @@ local minimap_icons = iutils.assert_sprite_load("gfx/reminders/minimap_icons.anm
 -- TODO: to optimize all of these, we could put all of them in one single spritesheet
 -- and have different frames of animation
 local notify_sprite          = load_static_png_sprite_16x16("gfx/reminders/sprites/notify.png")
-local white_fireplace_notify =  load_static_png_sprite_16x16("gfx/reminders/sprites/white_fireplace_notify.png")
+local white_fireplace_notify = load_static_png_sprite_16x16("gfx/reminders/sprites/white_fireplace_notify.png")
 local lost_death_icon        = load_static_png_sprite_16x16("gfx/reminders/sprites/lost_death_icon.png")
 local maus_knife_sprite      = load_static_png_sprite_16x16("gfx/reminders/sprites/maus_knife.png")
 
 local node_tiny      = load_static_png_sprite_16x16("gfx/reminders/sprites/node_tiny.png")
-local node_regular   = load_static_png_sprite_16x16("gfx/reminders/sprites/node_regular.png")
 local clock_sprite   = load_static_png_sprite_16x16("gfx/reminders/sprites/clock.png")
 local hush_icon      = load_static_png_sprite_16x16("gfx/reminders/sprites/hush_icon.png")
 local boss_rush_icon = load_static_png_sprite_16x16("gfx/reminders/sprites/boss_rush_icon.png")
@@ -779,7 +778,22 @@ function rems:render_explosion_immunity_reminder_for_bomb(bomb_entity)
     local scr_pos = iutils.world_to_screen_ext(bomb_entity.Position, is_mirror)
     local opacity = self:get_config().explosion_immunity_reminder_opacity
 
-    render_static_sprite("GreenCircleNoBorder", 0, {
+    local config = self.config
+    local size = config.explosion_immunity_reminder_size
+
+    local frame = 0
+
+    if size == enums.Sizes.SIZES_SMALL then
+        frame = 0
+
+    elseif size == enums.Sizes.SIZES_MEDIUM then
+        frame = 1
+
+    elseif size == enums.Sizes.SIZES_LARGE then
+        frame = 2
+    end
+
+    render_static_sprite("GreenCircleNoBorder", frame, {
         pos = scr_pos, color = Color(1, 1, 1, opacity)
     })
 end

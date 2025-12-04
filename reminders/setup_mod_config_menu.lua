@@ -684,6 +684,29 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().explosion_immunity_reminder_size
+            end,
+
+            Display = function()
+                return "Green Circle Size: " .. (enums.Sizes:to_description(mod:get_config().explosion_immunity_reminder_size))
+            end,
+
+            Minimum = enums.Sizes.SIZES_BEGIN, Maximum = enums.Sizes.SIZES_END,
+
+            OnChange = function(value)
+                mod:get_config().explosion_immunity_reminder_size = value
+            end,
+
+            Info = {
+                "changes how large the circle around the bombs should be",
+            }
+        }
+    )
     MCM.AddSpace(mod_name, "Visuals")
 
     MCM.AddText(mod_name, "Visuals", "Game Timer", DEFAULT_TXT_COLOR)

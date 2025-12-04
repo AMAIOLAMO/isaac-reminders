@@ -58,6 +58,7 @@ function Configs.get_default_config()
 
         explosion_immunity_reminders_enabled = true,
         explosion_immunity_reminder_opacity = 0.5,
+        explosion_immunity_reminder_size = enums.Sizes.SIZES_SMALL,
     }
 end
 
