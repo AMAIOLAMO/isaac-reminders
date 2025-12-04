@@ -38,7 +38,8 @@ local function load_static_png_sprite_16x16(png_path)
 end
 
 
-local alt_arrow = iutils.assert_sprite_load("gfx/reminders/alt_arrow.anm2")
+local alt_arrow     = iutils.assert_sprite_load("gfx/reminders/alt_arrow.anm2")
+local minimap_icons = iutils.assert_sprite_load("gfx/reminders/minimap_icons.anm2")
 
 -- TODO: to optimize all of these, we could put all of them in one single spritesheet
 -- and have different frames of animation
@@ -96,41 +97,35 @@ end
 
 
 rems.notify_special_rooms = {}
+rems.roomtype2icon = {
+    [RoomType.ROOM_SECRET]      = "IconSecretRoom",
+    [RoomType.ROOM_SUPERSECRET] = "IconSuperSecretRoom",
+    [RoomType.ROOM_ULTRASECRET] = "IconUltraSecretRoom",
+
+    [RoomType.ROOM_SHOP]        = "IconShop",
+    [RoomType.ROOM_TREASURE]    = "IconTreasureRoom",
+    [RoomType.ROOM_SACRIFICE]   = "IconSacrificeRoom",
+    [RoomType.ROOM_LIBRARY]     = "IconLibrary",
+    [RoomType.ROOM_ARCADE]      = "IconArcade",
+    [RoomType.ROOM_CHALLENGE]   = "IconAmbushRoom", -- TODO: add boss challenge room support
+
+    [RoomType.ROOM_ISAACS]      = "IconIsaacsRoom",
+    [RoomType.ROOM_BARREN]      = "IconBarrenRoom",
+
+    [RoomType.ROOM_CHEST]       = "IconChestRoom",
+    [RoomType.ROOM_DICE]        = "IconDiceRoom",
+    [RoomType.ROOM_PLANETARIUM] = "IconPlanetarium",
+    [RoomType.ROOM_CURSE]       = "IconCurseRoom",
+    [RoomType.ROOM_MINIBOSS]    = "IconMiniboss",
+
+    [RoomType.ROOM_DEVIL]       = "IconDevilRoom",
+    [RoomType.ROOM_ANGEL]       = "IconAngelRoom",
+
+    [RoomType.ROOM_BOSS]        = "IconBoss",
+}
 
 -- HACK: this is not stable, as it depends on the resources of another mod.
 -- But Im lazy, so we have this for now.
-
--- TODO: Minimap Dependency
-if MinimapAPI then
-    rems.minimapapi_icons = iutils.assert_sprite_load("gfx/ui/minimapapi_icons.anm2", true)
-
-    rems.minimapapi_roomtype2icon = {
-        [RoomType.ROOM_SECRET]      = "IconSecretRoom",
-        [RoomType.ROOM_SUPERSECRET] = "IconSuperSecretRoom",
-        [RoomType.ROOM_ULTRASECRET] = "IconUltraSecretRoom",
-
-        [RoomType.ROOM_SHOP]        = "IconShop",
-        [RoomType.ROOM_TREASURE]    = "IconTreasureRoom",
-        [RoomType.ROOM_SACRIFICE]   = "IconSacrificeRoom",
-        [RoomType.ROOM_LIBRARY]     = "IconLibrary",
-        [RoomType.ROOM_ARCADE]      = "IconArcade",
-        [RoomType.ROOM_CHALLENGE]   = "IconAmbushRoom", -- TODO: add boss challenge room support
-
-        [RoomType.ROOM_ISAACS]      = "IconIsaacsRoom",
-        [RoomType.ROOM_BARREN]      = "IconBarrenRoom",
-
-        [RoomType.ROOM_CHEST]       = "IconChestRoom",
-        [RoomType.ROOM_DICE]        = "IconDiceRoom",
-        [RoomType.ROOM_PLANETARIUM] = "IconPlanetarium",
-        [RoomType.ROOM_CURSE]       = "IconCurseRoom",
-        [RoomType.ROOM_MINIBOSS]    = "IconMiniboss",
-
-        [RoomType.ROOM_DEVIL]       = "IconDevilRoom",
-        [RoomType.ROOM_ANGEL]       = "IconAngelRoom",
-
-        [RoomType.ROOM_BOSS]        = "IconBoss",
-    }
-end
 
 rems.dt_ms = 0
 rems.prev_frame_time = 0.0
@@ -291,11 +286,11 @@ end
 
 function rems:render_room_icon(room_type, pos)
     -- TODO: Minimap Dependency
-    assert(self.minimapapi_icons and self.minimapapi_roomtype2icon, "Minimapapi icons are not loaded")
-    local icon_anm_name = self.minimapapi_roomtype2icon[room_type]
+    -- assert(self.minimapapi_icons and self.roomtype2icon, "Minimapapi icons are not loaded")
+    local icon_anm_name = self.roomtype2icon[room_type]
     assert(icon_anm_name, "Cannot find associate roomtype: " .. tostring(room_type) .. "and their icon")
 
-    local icons = self.minimapapi_icons
+    local icons = minimap_icons
     local icon_scale = self:get_config().icon_scale
 
     icons:SetFrame(icon_anm_name, 0)
@@ -340,7 +335,7 @@ function rems:render_notify(alpha)
     notify_sprite:Render(render_pivot + Vector(-32, 0))
 
     for i, room in ipairs(self.notify_special_rooms) do
-        assert(self.minimapapi_roomtype2icon, "Cannot draw icon!")
+        assert(self.roomtype2icon, "Cannot draw icon!")
         local line_height_offset = line_height * i
 
         -- fall back to displaying room type
@@ -348,10 +343,10 @@ function rems:render_notify(alpha)
             ("NIL ROOM of type: " .. room.type)
 
         -- default fall back icon to secret room icon
-        local icon_id = self.minimapapi_roomtype2icon[room.type] or
-            self.minimapapi_roomtype2icon[RoomType.ROOM_SECRET]
+        local icon_id = self.roomtype2icon[room.type] or
+            self.roomtype2icon[RoomType.ROOM_SECRET]
 
-        local icon = self.minimapapi_icons
+        local icons = minimap_icons
 
         local icon_scale = self:get_config().icon_scale
         local BASE_ICON_SIZE = 12
@@ -362,10 +357,10 @@ function rems:render_notify(alpha)
 
         -- TODO: add special ICON ONLY way of grid align of icons
         if config.notify_info_type & enums.NotifyInfoType.NOTIFY_ICON ~= 0 then
-            icon.Color = Color(1, 1, 1, alpha)
-            icon:SetFrame(icon_id, 0)
-            icon.Scale = Vector(1, 1) * icon_scale
-            icon:Render(Vector(x_pivot - icon_fsize, render_pivot.Y + line_height_offset))
+            icons.Color = Color(1, 1, 1, alpha)
+            icons:SetFrame(icon_id, 0)
+            icons.Scale = Vector(1, 1) * icon_scale
+            icons:Render(Vector(x_pivot - icon_fsize, render_pivot.Y + line_height_offset))
         end
 
         if config.notify_info_type & enums.NotifyInfoType.NOTIFY_TEXT ~= 0 then
@@ -444,8 +439,8 @@ function rems:render_door_reminders()
     -- sheol trap door
     local game_stage = game:GetLevel():GetStage()
 
-    local has_polaroid = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_POLAROID)
-    local has_negative = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_NEGATIVE)
+    local has_polaroid = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_POLAROID)
+    local has_negative = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_NEGATIVE)
 
     -- is level right before cathedral / sheol (including hush) and is a boss room
     if (game_stage == LevelStage.STAGE4_2 or game_stage == LevelStage.STAGE4_3 or game_stage == LevelStage.STAGE5) and
