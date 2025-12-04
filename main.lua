@@ -77,8 +77,6 @@ local card_fronts     = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
 local polaroid_sprite = load_static_png_sprite_16x16("gfx/reminders/sprites/collectibles_327_thepolaroid.png")
 local negative_sprite = load_static_png_sprite_16x16("gfx/reminders/sprites/collectibles_328_thenegative.png")
 
-rems.marked_rooms = {}
-
 rems.config = configs.get_default_config()
 
 function rems:reset_config()
@@ -123,9 +121,6 @@ rems.roomtype2icon = {
 
     [RoomType.ROOM_BOSS]        = "IconBoss",
 }
-
--- HACK: this is not stable, as it depends on the resources of another mod.
--- But Im lazy, so we have this for now.
 
 rems.dt_ms = 0
 rems.prev_frame_time = 0.0
@@ -181,25 +176,6 @@ function rems:get_current_room_grid_entities()
     end
 
     return grid_entities
-end
-
-
-function rems:mark_room(room)
-    self.marked_rooms[room.Position] = {
-        pos = room.Position,
-        original_color = room.Color
-    }
-
-    room.Color = iserializer.decode_color(self:get_config().normal_color_marked)
-end
-
-function rems:unmark_room(room)
-    room.Color = self.marked_rooms[room.Position].original_color
-    self.marked_rooms[room.Position] = nil
-end
-
-function rems:is_room_marked(room)
-    return self.marked_rooms[room.Position] ~= nil
 end
 
 
@@ -286,7 +262,6 @@ end
 
 function rems:render_room_icon(room_type, pos)
     -- TODO: Minimap Dependency
-    -- assert(self.minimapapi_icons and self.roomtype2icon, "Minimapapi icons are not loaded")
     local icon_anm_name = self.roomtype2icon[room_type]
     assert(icon_anm_name, "Cannot find associate roomtype: " .. tostring(room_type) .. "and their icon")
 
@@ -914,12 +889,6 @@ function rems:on_post_new_floor()
     end
     -- else
     
-    -- clear entries on new floor
-    local marked_rooms_size = #self.marked_rooms
-    for k, v in ipairs(self.marked_rooms) do
-        self.marked_rooms[k] = nil
-    end
-
     self:log_debug("new floor entered, cleared all marks")
 
     if self:get_config().map_special_colormarks_enabled then
@@ -1016,26 +985,6 @@ function rems:on_post_render()
         --     self:render_explosion_immunity_reminders()
         -- end
     end
-
-    -- KEYBOARD SPECIFIC CONTROLS --
-    if config.debug_mode then
-        if Input.IsButtonTriggered(Keyboard.KEY_N, 0) then
-            self:log_debug("N pressed, toggle marking of room")
-            --
-            -- TODO: Minimap Dependency
-            local current_room = MinimapAPI:GetCurrentRoom()
-
-            if self:is_room_marked(current_room) then
-                self:unmark_room(current_room)
-                self:log_debug("room unmarked")
-            else
-                self:mark_room(current_room)
-                self:log_debug("room marked")
-            end
-        end
-
-    end
-
 
     self.prev_frame_time = Isaac.GetTime()
 end
