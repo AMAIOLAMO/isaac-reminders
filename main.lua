@@ -994,10 +994,6 @@ function rems:on_post_render()
         if config.bum_kill_reminders_enabled and game:IsGreedMode() == false and stage ~= first_stage then
             self:render_bum_kill_reminders()
         end
-
-        -- if config.explosion_immunity_reminders_enabled then
-        --     self:render_explosion_immunity_reminders()
-        -- end
     end
 
     self.prev_frame_time = Isaac.GetTime()
