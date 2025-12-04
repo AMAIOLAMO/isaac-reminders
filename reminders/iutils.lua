@@ -114,5 +114,73 @@ function IUtils.room_name_from_type(room_type)
     return IUtils.room_names[room_type]
 end
 
+function IUtils.player_any_of(game, predicate)
+    assert(predicate, "Predicate cannot be nil")
+
+    local player_count = game:GetNumPlayers()
+    
+    for i = 0, player_count - 1 do
+        local player = game:GetPlayer(i)
+
+        if predicate(player) then
+            return true
+        end
+    end
+
+    return false
+end
+
+function IUtils.any_player_has_collectible(game, type)
+    local player_count = game:GetNumPlayers()
+    
+    for i = 0, player_count - 1 do
+        local player = game:GetPlayer(i)
+
+        if player:HasCollectible(type) then
+            return true
+        end
+    end
+
+    return false
+end
+
+function IUtils.any_player_has_card(game, type)
+    local player_count = game:GetNumPlayers()
+    
+    for i = 0, player_count - 1 do
+        local player = game:GetPlayer(i)
+
+        for j = 0, 3 do
+            if player:GetCard(j) == type then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+
+-- types form:
+-- {
+--      [Card.CARD_CRACKED_KEY] = true,
+--      [Card.CARD_XXX] = true,
+-- }
+-- For fast indexing.
+function IUtils.any_player_has_cards(game, types)
+    local player_count = game:GetNumPlayers()
+    
+    for i = 0, player_count - 1 do
+        local player = game:GetPlayer(i)
+
+        for j = 0, 3 do
+            if types[player:GetCard(j)] ~= nil then
+                return true
+            end
+        end
+    end
+
+    return false
+end
 
 return IUtils

@@ -3,7 +3,6 @@
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
 
 -- The major purpose of this mod is to make things that are not obvious to be more obvious!
--- TODO IMPROVEMENT: bum kill reminder is a bit intrusive, maybe improve it, or make it a bit smaller?
 -- TODO: remove full dependency towards miniMAPI
 
 -- BUG: Mini bosses with treasure map does not display color marks still, even if the icon is visible.
@@ -11,12 +10,12 @@
 local MOD_NAME = "Reminders"
 local rems = RegisterMod(MOD_NAME, 1)
 
-local json = require("reminders.lib.json")
-local timerf = require("reminders.timerf")
+local json        = require("reminders.lib.json")
+local timerf      = require("reminders.timerf")
 local iserializer = require("reminders.iserializer")
-local ilogger = require("reminders.ilogger")
-local iutils = require("reminders.iutils")
-local enums = require("reminders.enums")
+local ilogger     = require("reminders.ilogger")
+local iutils      = require("reminders.iutils")
+local enums       = require("reminders.enums")
 
 local setup_mod_config_menu = require("reminders.setup_mod_config_menu")
 
@@ -73,7 +72,7 @@ local function render_static_sprite(anim_name, frame, data)
 end
 
 -- TODO: this is unstable in the future, we are relying on the game to give things
-local card_fronts = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
+local card_fronts     = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
 local polaroid_sprite = load_static_png_sprite_16x16("gfx/reminders/sprites/collectibles_327_thepolaroid.png")
 local negative_sprite = load_static_png_sprite_16x16("gfx/reminders/sprites/collectibles_328_thenegative.png")
 
@@ -100,34 +99,36 @@ rems.notify_special_rooms = {}
 
 -- HACK: this is not stable, as it depends on the resources of another mod.
 -- But Im lazy, so we have this for now.
+
+-- TODO: Minimap Dependency
 if MinimapAPI then
     rems.minimapapi_icons = iutils.assert_sprite_load("gfx/ui/minimapapi_icons.anm2", true)
 
     rems.minimapapi_roomtype2icon = {
-        [RoomType.ROOM_SECRET] = "IconSecretRoom",
+        [RoomType.ROOM_SECRET]      = "IconSecretRoom",
         [RoomType.ROOM_SUPERSECRET] = "IconSuperSecretRoom",
         [RoomType.ROOM_ULTRASECRET] = "IconUltraSecretRoom",
 
-        [RoomType.ROOM_SHOP] = "IconShop",
-        [RoomType.ROOM_TREASURE] = "IconTreasureRoom",
-        [RoomType.ROOM_SACRIFICE] = "IconSacrificeRoom",
-        [RoomType.ROOM_LIBRARY] = "IconLibrary",
-        [RoomType.ROOM_ARCADE] = "IconArcade",
-        [RoomType.ROOM_CHALLENGE] = "IconAmbushRoom", -- TODO: add boss challenge room support
+        [RoomType.ROOM_SHOP]        = "IconShop",
+        [RoomType.ROOM_TREASURE]    = "IconTreasureRoom",
+        [RoomType.ROOM_SACRIFICE]   = "IconSacrificeRoom",
+        [RoomType.ROOM_LIBRARY]     = "IconLibrary",
+        [RoomType.ROOM_ARCADE]      = "IconArcade",
+        [RoomType.ROOM_CHALLENGE]   = "IconAmbushRoom", -- TODO: add boss challenge room support
 
-        [RoomType.ROOM_ISAACS] = "IconIsaacsRoom",
-        [RoomType.ROOM_BARREN] = "IconBarrenRoom",
+        [RoomType.ROOM_ISAACS]      = "IconIsaacsRoom",
+        [RoomType.ROOM_BARREN]      = "IconBarrenRoom",
 
-        [RoomType.ROOM_CHEST] = "IconChestRoom",
-        [RoomType.ROOM_DICE] = "IconDiceRoom",
+        [RoomType.ROOM_CHEST]       = "IconChestRoom",
+        [RoomType.ROOM_DICE]        = "IconDiceRoom",
         [RoomType.ROOM_PLANETARIUM] = "IconPlanetarium",
-        [RoomType.ROOM_CURSE] = "IconCurseRoom",
-        [RoomType.ROOM_MINIBOSS] = "IconMiniboss",
+        [RoomType.ROOM_CURSE]       = "IconCurseRoom",
+        [RoomType.ROOM_MINIBOSS]    = "IconMiniboss",
 
-        [RoomType.ROOM_DEVIL] = "IconDevilRoom",
-        [RoomType.ROOM_ANGEL] = "IconAngelRoom",
+        [RoomType.ROOM_DEVIL]       = "IconDevilRoom",
+        [RoomType.ROOM_ANGEL]       = "IconAngelRoom",
 
-        [RoomType.ROOM_BOSS] = "IconBoss",
+        [RoomType.ROOM_BOSS]        = "IconBoss",
     }
 end
 
@@ -170,52 +171,6 @@ function rems:start_notify_info()
     self.notify_info_timer:reset()
 end
 
-function rems:player_any_of(predicate)
-    assert(predicate, "Predicate cannot be nil")
-
-    local player_count = game:GetNumPlayers()
-    
-    for i = 0, player_count - 1 do
-        local player = game:GetPlayer(i)
-
-        if predicate(player) then
-            return true
-        end
-    end
-
-    return false
-end
-
-function rems:any_player_has_collectible(type)
-    local player_count = game:GetNumPlayers()
-    
-    for i = 0, player_count - 1 do
-        local player = game:GetPlayer(i)
-
-        if player:HasCollectible(type) then
-            return true
-        end
-    end
-
-    return false
-end
-
-function rems:any_player_has_card(type)
-    local player_count = game:GetNumPlayers()
-    
-    for i = 0, player_count - 1 do
-        local player = game:GetPlayer(i)
-
-        for j = 0, 3 do
-            if player:GetCard(j) == type then
-                return true
-            end
-        end
-    end
-
-    return false
-end
-
 -- naive way of implementing this
 function rems:get_current_room_grid_entities()
     local room = game:GetRoom()
@@ -256,6 +211,7 @@ end
 function rems:update_room_color_marks()
     local special_rooms = {}
 
+    -- TODO: Minimap dependency
     for _, room in ipairs(MinimapAPI:GetLevel()) do
         if iutils.is_special_room(room) then
             table.insert(special_rooms, room)
@@ -289,6 +245,7 @@ function rems:update_room_color_marks()
 end
 
 function rems:get_unvisited_special_rooms()
+    -- TODO: Minimap dependency
     assert(MinimapAPI, "Cannot find MinimapAPI!")
     local rooms = {}
     
@@ -308,8 +265,8 @@ function rems:update_notify_rooms()
     end
 
     -- may require updating the notify rooms during pickup of collectible & cards
-    local can_open_ultra_secret = self:any_player_has_collectible(CollectibleType.COLLECTIBLE_RED_KEY)
-        or self:any_player_has_card(Card.CARD_CRACKED_KEY) or self:any_player_has_card(Card.CARD_SOUL_CAIN)
+    local can_open_ultra_secret = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_RED_KEY)
+        or iutils.any_player_has_card(game, Card.CARD_CRACKED_KEY) or iutils.any_player_has_card(game, Card.CARD_SOUL_CAIN)
 
     for _, room in ipairs(unvisited_special_rooms) do
         local desc = room.Descriptor
@@ -333,6 +290,7 @@ function rems:update_notify_rooms()
 end
 
 function rems:render_room_icon(room_type, pos)
+    -- TODO: Minimap Dependency
     assert(self.minimapapi_icons and self.minimapapi_roomtype2icon, "Minimapapi icons are not loaded")
     local icon_anm_name = self.minimapapi_roomtype2icon[room_type]
     assert(icon_anm_name, "Cannot find associate roomtype: " .. tostring(room_type) .. "and their icon")
@@ -717,29 +675,28 @@ function rems:render_time_progress()
 
     local game_time = iutils.get_game_time(game)
 
-    local HIDE_TIME_MINS = 30
+    local HIDE_TIME_TOTAL_SECS = 30 * 60
 
-    local should_hide = self.extra_info_timer:max() or
-        game_time.mins > HIDE_TIME_MINS or game_time.hours > 1
+    local should_hide = self.extra_info_timer:max() or game_time.total_secs >= HIDE_TIME_TOTAL_SECS
+
+    local lerp_target = Vector.Zero
 
     if should_hide then
         -- TODO HACK: instead of -50, we should calculate the difference between current pos with 0
-        self.time_progress_anim_pos_offset = lerpv(
-            self.time_progress_anim_pos_offset, Vector(0, -50 - config_offset.Y), self.dt_ms * ANIM_SPEED
-        )
-    else
-        self.time_progress_anim_pos_offset = lerpv(
-            self.time_progress_anim_pos_offset, Vector(0, 0), self.dt_ms * ANIM_SPEED
-        )
+        lerp_target = Vector(0, -50 - config_offset.Y)
     end
+
+    self.time_progress_anim_pos_offset = lerpv(
+        self.time_progress_anim_pos_offset, lerp_target, self.dt_ms * ANIM_SPEED
+    )
 
     local total_offset = config_offset +
         self.time_progress_anim_pos_offset
 
-    clock_sprite.Color = Color(1, 1, 1, opacity)
-    node_tiny.Color = Color(1, 1, 1, opacity * node_opacity)
+    clock_sprite.Color   = Color(1, 1, 1, opacity)
+    node_tiny.Color      = Color(1, 1, 1, opacity * node_opacity)
     boss_rush_icon.Color = Color(1, 1, 1, opacity)
-    hush_icon.Color = Color(1, 1, 1, opacity)
+    hush_icon.Color      = Color(1, 1, 1, opacity)
 
     local length = w * config.time_progress_width_percent
     local sections = 30 / 5 -- divide in 5 minutes
@@ -895,6 +852,7 @@ function rems:on_post_game_started(continued)
     end
 
     -- should load
+    -- TODO: Minimap dependency
     if MinimapAPI then
         self:log_info("Minimap Found.")
         local config = self:get_config()
@@ -924,6 +882,7 @@ function rems:on_execute_cmd(command, args)
 end
 
 function rems:on_post_new_room()
+    -- minimap Dependency
     if not MinimapAPI then
         return
     end
@@ -954,6 +913,7 @@ function rems:on_post_new_room()
 end
 
 function rems:on_post_new_floor()
+    -- TODO: Minimap Dependency
     if not MinimapAPI then
         return
     end
@@ -975,6 +935,7 @@ function rems:on_post_new_floor()
 end
 
 function rems:on_pre_spawn_clean_award(_rng)
+    -- TODO: Minimap Dependency
     if not MinimapAPI then
         return
     end
@@ -998,6 +959,7 @@ function rems:on_pre_spawn_clean_award(_rng)
 end
 
 function rems:on_boss_completed(boss_room)
+    -- TODO: Minimap Dependency
     if not MinimapAPI then
         return
     end
@@ -1009,6 +971,8 @@ end
 
 
 function rems:on_post_render()
+    -- TODO: Minimap Dependency
+
     local MS2SECS = 1 / 1000
     self.dt_ms = (Isaac.GetTime() - self.prev_frame_time) * MS2SECS
 
@@ -1062,6 +1026,8 @@ function rems:on_post_render()
     if config.debug_mode then
         if Input.IsButtonTriggered(Keyboard.KEY_N, 0) then
             self:log_debug("N pressed, toggle marking of room")
+            --
+            -- TODO: Minimap Dependency
             local current_room = MinimapAPI:GetCurrentRoom()
 
             if self:is_room_marked(current_room) then
@@ -1080,6 +1046,7 @@ function rems:on_post_render()
 end
 
 function rems:on_post_bomb_render(bomb_entity, _)
+    -- TODO: Minimap Dependency
     if not MinimapAPI then
         return
     end
@@ -1090,7 +1057,7 @@ function rems:on_post_bomb_render(bomb_entity, _)
     end
 
 
-    local has_explosive_immunity = self:player_any_of(
+    local has_explosive_immunity = iutils.player_any_of(game,
         function(player)
             return player:HasCollectible(CollectibleType.COLLECTIBLE_PYROMANIAC) or
                 player:HasCollectible(CollectibleType.COLLECTIBLE_HOST_HAT)
