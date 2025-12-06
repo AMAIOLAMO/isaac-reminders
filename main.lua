@@ -388,13 +388,15 @@ function rems:render_lost_death_icon()
 
 end
 
-function rems:direction_to_rotation_deg(dir)
+function rems:direction_to_rotation_deg(dir, mirror_x)
     local rot = 0
+    mirror_x = mirror_x or false
 
     if dir == Direction.LEFT then
-        rot = -90
+        rot = mirror_x and 90 or -90
     elseif dir == Direction.RIGHT then
-        rot = 90
+        rot = mirror_x and -90 or 90
+
     elseif dir == Direction.UP then
         rot = 0
     elseif dir == Direction.DOWN then
@@ -469,11 +471,13 @@ function rems:render_door_reminders()
     end
 
     for _, door in ipairs(doors) do
+        -- in mirror world, everything in the game is flipped. but sadly
+        -- drawing of all sprites from the mod is not, so we have to manually account for that
         local is_mirror = game:GetRoom():IsMirrorWorld()
         local screen_pos = iutils.world_to_screen_ext(door.Position, is_mirror)
         local player = Isaac.GetPlayer()
         local dir = door.Direction
-        local rot = self:direction_to_rotation_deg(dir)
+        local rot = self:direction_to_rotation_deg(dir, is_mirror)
 
         local offset = Vector(0, -self:get_config().door_reminders_yoffset):Rotated(rot)
 
