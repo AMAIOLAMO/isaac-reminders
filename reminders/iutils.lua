@@ -131,6 +131,7 @@ function IUtils.player_any_of(game, predicate)
 end
 
 function IUtils.any_player_has_collectible(game, type)
+    assert(game, "game cannot be nil")
     local player_count = game:GetNumPlayers()
     
     for i = 0, player_count - 1 do
@@ -145,6 +146,7 @@ function IUtils.any_player_has_collectible(game, type)
 end
 
 function IUtils.any_player_has_card(game, type)
+    assert(game, "game cannot be nil")
     local player_count = game:GetNumPlayers()
     
     for i = 0, player_count - 1 do

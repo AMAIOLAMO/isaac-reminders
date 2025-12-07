@@ -46,7 +46,6 @@ local minimap_icons = iutils.assert_sprite_load("gfx/reminders/minimap_icons.anm
 local notify_sprite          = load_static_png_sprite_16x16("gfx/reminders/sprites/notify.png")
 local white_fireplace_notify = load_static_png_sprite_16x16("gfx/reminders/sprites/white_fireplace_notify.png")
 local lost_death_icon        = load_static_png_sprite_16x16("gfx/reminders/sprites/lost_death_icon.png")
-local maus_knife_sprite      = load_static_png_sprite_16x16("gfx/reminders/sprites/maus_knife.png")
 
 local node_tiny      = load_static_png_sprite_16x16("gfx/reminders/sprites/node_tiny.png")
 local clock_sprite   = load_static_png_sprite_16x16("gfx/reminders/sprites/clock.png")
@@ -492,7 +491,6 @@ function rems:render_door_reminders()
             )
         end
 
-        -- TODO: based on direction, rotate the sprite's pivot point
         -- alt path doors mark
         if door.TargetRoomType == RoomType.ROOM_SECRET_EXIT then
             alt_arrow:Play("Idle")
@@ -529,9 +527,13 @@ function rems:render_door_reminders()
                             screen_pos.X, screen_pos.Y
                         ) + offset
 
-                        maus_knife_sprite:SetFrame("Static_PivotBottom", 0)
-                        maus_knife_sprite.Rotation = rot
-                        maus_knife_sprite:Render(render_pos)
+                        local FULL_MAUSOLEUM_KNIFE_FRAME = 2
+
+                        render_static_sprite(
+                            "Knives", FULL_MAUSOLEUM_KNIFE_FRAME, {
+                                pos = render_pos, rot = rot
+                            }
+                        )
                     end
 
                 else
@@ -802,6 +804,65 @@ function rems:render_explosion_immunity_reminder_for_bomb(bomb_entity)
     })
 end
 
+function rems:render_knife_piece_reminders()
+    local grid_entities = self:get_current_room_grid_entities()
+
+    local has_knife_piece_1 = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_KNIFE_PIECE_1)
+    local has_knife_piece_2 = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_KNIFE_PIECE_2)
+
+    local KNIFE_PIECE_1_FRAME = 0
+    local KNIFE_PIECE_2_FRAME = 1
+    local NOTIFY_QUESTION_MARK_FRAME = 1
+
+    local is_mirror = game:GetRoom():IsMirrorWorld()
+    local level = game:GetLevel()
+
+    local animation_y_offset = math.sin(Isaac.GetTime() * 0.001) * 5
+
+    -- check dross / downpour
+    if has_knife_piece_1 == false and level:GetStage() == LevelStage.STAGE1_2 and
+    (level:GetStageType() == StageType.STAGETYPE_REPENTANCE or level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
+        local grid_entities = self:get_current_room_grid_entities()
+
+        for _, entity in ipairs(grid_entities) do
+            -- is trapdoor?
+            if entity:GetType() == GridEntityType.GRID_TRAPDOOR and entity:GetVariant() == 0 then
+                local scr_pos = iutils.world_to_screen_ext(entity.Position, is_mirror)
+
+                render_static_sprite("Knives", KNIFE_PIECE_1_FRAME, {
+                    pos = scr_pos + Vector(-10, -20 + animation_y_offset)
+                })
+
+                render_static_sprite("Notify", NOTIFY_QUESTION_MARK_FRAME, {
+                    pos = scr_pos + Vector(10, -20 + animation_y_offset)
+                })
+            end
+        end
+    end
+
+    -- mines and ashpit
+    if has_knife_piece_2 == false and level:GetStage() == LevelStage.STAGE2_2 and
+    (level:GetStageType() == StageType.STAGETYPE_REPENTANCE or level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
+        local grid_entities = self:get_current_room_grid_entities()
+
+        for _, entity in ipairs(grid_entities) do
+            -- is trapdoor?
+            if entity:GetType() == GridEntityType.GRID_TRAPDOOR and entity:GetVariant() == 0 then
+                local scr_pos = iutils.world_to_screen_ext(entity.Position, is_mirror)
+
+                render_static_sprite("Knives", KNIFE_PIECE_2_FRAME, {
+                    pos = scr_pos + Vector(-10, -20 + animation_y_offset)
+                })
+
+                render_static_sprite("Notify", NOTIFY_QUESTION_MARK_FRAME, {
+                    pos = scr_pos + Vector(10, -20 + animation_y_offset)
+                })
+            end
+        end
+
+    end
+end
+
 -- CALLBACKS --
 
 function rems:on_post_game_started(continued)
@@ -986,6 +1047,10 @@ function rems:on_post_render()
 
         if config.game_timer_enabled then
             self:render_game_timer()
+        end
+
+        if config.knife_piece_reminders_enabled then
+            self:render_knife_piece_reminders()
         end
 
         -- BUM KILL REMINDERS :O (shocking ikr)
