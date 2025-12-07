@@ -822,8 +822,6 @@ function rems:render_knife_piece_reminders()
     -- check dross / downpour
     if has_knife_piece_1 == false and level:GetStage() == LevelStage.STAGE1_2 and
     (level:GetStageType() == StageType.STAGETYPE_REPENTANCE or level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
-        local grid_entities = self:get_current_room_grid_entities()
-
         for _, entity in ipairs(grid_entities) do
             -- is trapdoor?
             if entity:GetType() == GridEntityType.GRID_TRAPDOOR and entity:GetVariant() == 0 then
@@ -843,8 +841,6 @@ function rems:render_knife_piece_reminders()
     -- mines and ashpit
     if has_knife_piece_2 == false and level:GetStage() == LevelStage.STAGE2_2 and
     (level:GetStageType() == StageType.STAGETYPE_REPENTANCE or level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
-        local grid_entities = self:get_current_room_grid_entities()
-
         for _, entity in ipairs(grid_entities) do
             -- is trapdoor?
             if entity:GetType() == GridEntityType.GRID_TRAPDOOR and entity:GetVariant() == 0 then
