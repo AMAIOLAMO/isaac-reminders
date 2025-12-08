@@ -38,7 +38,6 @@ local function load_static_png_sprite_16x16(png_path)
 end
 
 
-local alt_arrow     = iutils.assert_sprite_load("gfx/reminders/alt_arrow.anm2")
 local minimap_icons = iutils.assert_sprite_load("gfx/reminders/minimap_icons.anm2")
 
 -- TODO: to optimize all of these, we could put all of them in one single spritesheet
@@ -493,17 +492,18 @@ function rems:render_door_reminders()
 
         -- alt path doors mark
         if door.TargetRoomType == RoomType.ROOM_SECRET_EXIT then
-            alt_arrow:Play("Idle")
-            alt_arrow:Update()
+            local animation_scale = math.sin(Isaac.GetTime() * 0.003) * 5
+            local animation_offset = Vector(0, -1):Rotated(rot) * animation_scale -- up vector
 
             local render_pos = Vector(
                 screen_pos.X, screen_pos.Y
-            ) + offset
+            ) + offset + animation_offset
 
-            alt_arrow.Color = Color.Default
-            alt_arrow.Rotation = rot
-
-            alt_arrow:Render(render_pos)
+            render_static_sprite(
+                "ArrowPivotBottom", 0, {
+                    pos = render_pos, rot = rot
+                }
+            )
         end
 
         -- special boss door fool card on special stage
@@ -817,7 +817,10 @@ function rems:render_knife_piece_reminders()
     local is_mirror = game:GetRoom():IsMirrorWorld()
     local level = game:GetLevel()
 
-    local animation_y_offset = math.sin(Isaac.GetTime() * 0.001) * 5
+    local ANIMATION_TIME_DIFF = 0.5
+    local animation_y_offset1 = math.sin(Isaac.GetTime() * 0.001) * 5.5
+    local animation_y_offset2 = math.sin(Isaac.GetTime() * 0.001 + ANIMATION_TIME_DIFF) * 5.5
+    local GAP = 8
 
     -- check dross / downpour
     if has_knife_piece_1 == false and level:GetStage() == LevelStage.STAGE1_2 and
@@ -828,11 +831,11 @@ function rems:render_knife_piece_reminders()
                 local scr_pos = iutils.world_to_screen_ext(entity.Position, is_mirror)
 
                 render_static_sprite("Knives", KNIFE_PIECE_1_FRAME, {
-                    pos = scr_pos + Vector(-10, -20 + animation_y_offset)
+                    pos = scr_pos + Vector(-GAP, -20 + animation_y_offset1)
                 })
 
                 render_static_sprite("Notify", NOTIFY_QUESTION_MARK_FRAME, {
-                    pos = scr_pos + Vector(10, -20 + animation_y_offset)
+                    pos = scr_pos + Vector(GAP, -20 + animation_y_offset2)
                 })
             end
         end
@@ -847,11 +850,11 @@ function rems:render_knife_piece_reminders()
                 local scr_pos = iutils.world_to_screen_ext(entity.Position, is_mirror)
 
                 render_static_sprite("Knives", KNIFE_PIECE_2_FRAME, {
-                    pos = scr_pos + Vector(-10, -20 + animation_y_offset)
+                    pos = scr_pos + Vector(-10, -20 + animation_y_offset1)
                 })
 
                 render_static_sprite("Notify", NOTIFY_QUESTION_MARK_FRAME, {
-                    pos = scr_pos + Vector(10, -20 + animation_y_offset)
+                    pos = scr_pos + Vector(10, -20 + animation_y_offset1)
                 })
             end
         end
