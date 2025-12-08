@@ -71,11 +71,11 @@ local function render_static_sprite(anim_name, frame, data)
 end
 
 -- TODO: this is unstable in the future, we are relying on the game to give things
-local card_fronts     = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
-local polaroid_sprite = load_static_png_sprite_16x16("gfx/reminders/sprites/collectibles_327_thepolaroid.png")
-local negative_sprite = load_static_png_sprite_16x16("gfx/reminders/sprites/collectibles_328_thenegative.png")
+local card_fronts = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
 
 rems.config = configs.get_default_config()
+
+
 
 function rems:reset_config()
     self.config = configs.get_default_config()

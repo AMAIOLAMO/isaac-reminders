@@ -789,7 +789,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "Enable Subseconds: " .. (mod:get_config().game_timer_subseconds_enabled and "on" or "off")
+                return "Subseconds Enabled: " .. (mod:get_config().game_timer_subseconds_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -802,6 +802,37 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
+
+    -- TODO: instead of doing it like this, (since tables are iterated randomly)
+    local CREDITS = {
+        ["Mod Made By"] = { "CxRedix" },
+        ["Sprites"] = { "All done by me :D", "(Except in game sprites)" },
+        ["Programming"] = { "All done by me" },
+
+        ["Special Thanks"] = {
+            "Mod Config Menu Pure & MiniMAPI",
+
+            "A lot of helpful feedback from",
+            "extremethreat1",
+
+            "The original Pyromaniac Reminder",
+            "-- Barney(Steam)",
+
+            "The original Don't Forget",
+            "(knife piece reminder)",
+            "-- I sniff seats(Steam)"
+        }
+    }
+
+    for section, lines in pairs(CREDITS) do
+        mcm_helper.add_label_setting(mod_name, "Credits", section)
+    
+        for _, line in ipairs(lines) do
+            mcm_helper.add_label_setting(mod_name, "Credits", line)
+        end
+
+        MCM.AddSpace(mod_name, "Credits")
+    end
 end
 
 return setup_mod_config_menu

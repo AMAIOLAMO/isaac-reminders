@@ -3,6 +3,47 @@
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
 local IUtils = {}
 
+-- Room names
+-- TODO: maybe support translation?
+IUtils.room_names = {
+    [RoomType.ROOM_NULL] = "NULL Room",
+    [RoomType.ROOM_DEFAULT] = "Default Room",
+
+    [RoomType.ROOM_ERROR]   = "Error Room",
+
+    [RoomType.ROOM_SECRET]      = "Secret Room",
+    [RoomType.ROOM_SUPERSECRET] = "Super Secret Room",
+    [RoomType.ROOM_ULTRASECRET] = "Ultra Secret Room",
+
+    [RoomType.ROOM_SHOP]        = "Shop",
+    [RoomType.ROOM_TREASURE]    = "Treasure Room",
+    [RoomType.ROOM_SACRIFICE]   = "Sacrifice Room",
+    [RoomType.ROOM_LIBRARY]     = "Library",
+    [RoomType.ROOM_ARCADE]      = "Arcade",
+    [RoomType.ROOM_CHALLENGE]   = "Challenge Room",
+    [RoomType.ROOM_PLANETARIUM] = "Planetarium",
+
+    [RoomType.ROOM_ISAACS] = "Bedroom",
+    [RoomType.ROOM_BARREN] = "Barren Bedroom",
+
+    [RoomType.ROOM_CHEST]    = "Chest Room",
+    [RoomType.ROOM_DICE]     = "Dice Room",
+    [RoomType.ROOM_CURSE]    = "Curse Room",
+
+    [RoomType.ROOM_DEVIL] = "Devil Room",
+    [RoomType.ROOM_ANGEL] = "Angel Room",
+
+    [RoomType.ROOM_DUNGEON] = "Dungeon Room(Crawlspace)",
+
+
+    [RoomType.ROOM_MINIBOSS] = "Miniboss Room",
+    [RoomType.ROOM_BOSS]     = "Boss Room",
+
+    [RoomType.ROOM_SECRET_EXIT] = "Alt Path Room",
+    [RoomType.ROOM_BLUE] = "Blue Womb Room",
+    [RoomType.ROOM_DEATHMATCH] = "Deathmatch room",
+}
+
 function IUtils.is_any_secret_room(room)
     return room.Descriptor and
         (room.Type == RoomType.ROOM_SECRET or
@@ -68,47 +109,6 @@ function IUtils.get_game_time(game)
         hours = total_hours
     }
 end
-
--- Room names
--- TODO: maybe support translation?
-IUtils.room_names = {
-    [RoomType.ROOM_NULL] = "NULL Room",
-    [RoomType.ROOM_DEFAULT] = "Default Room",
-
-    [RoomType.ROOM_ERROR]   = "Error Room",
-
-    [RoomType.ROOM_SECRET]      = "Secret Room",
-    [RoomType.ROOM_SUPERSECRET] = "Super Secret Room",
-    [RoomType.ROOM_ULTRASECRET] = "Ultra Secret Room",
-
-    [RoomType.ROOM_SHOP]        = "Shop",
-    [RoomType.ROOM_TREASURE]    = "Treasure Room",
-    [RoomType.ROOM_SACRIFICE]   = "Sacrifice Room",
-    [RoomType.ROOM_LIBRARY]     = "Library",
-    [RoomType.ROOM_ARCADE]      = "Arcade",
-    [RoomType.ROOM_CHALLENGE]   = "Challenge Room",
-    [RoomType.ROOM_PLANETARIUM] = "Planetarium",
-
-    [RoomType.ROOM_ISAACS] = "Bedroom",
-    [RoomType.ROOM_BARREN] = "Barren Bedroom",
-
-    [RoomType.ROOM_CHEST]    = "Chest Room",
-    [RoomType.ROOM_DICE]     = "Dice Room",
-    [RoomType.ROOM_CURSE]    = "Curse Room",
-
-    [RoomType.ROOM_DEVIL] = "Devil Room",
-    [RoomType.ROOM_ANGEL] = "Angel Room",
-
-    [RoomType.ROOM_DUNGEON] = "Dungeon Room(Crawlspace)",
-
-
-    [RoomType.ROOM_MINIBOSS] = "Miniboss Room",
-    [RoomType.ROOM_BOSS]     = "Boss Room",
-
-    [RoomType.ROOM_SECRET_EXIT] = "Alt Path Room",
-    [RoomType.ROOM_BLUE] = "Blue Womb Room",
-    [RoomType.ROOM_DEATHMATCH] = "Deathmatch room",
-}
 
 function IUtils.room_name_from_type(room_type)
     return IUtils.room_names[room_type]

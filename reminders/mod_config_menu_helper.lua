@@ -88,9 +88,12 @@ function ModConfigMenuHelper.add_vector_setting(mod_name, category, args)
 end
 
 function ModConfigMenuHelper.add_color_setting(mod_name, category, args)
-    ModConfigMenu.AddSetting(
+    local MCM = ModConfigMenu
+    assert(MCM, "Cannot find mod config menu!")
+
+    MCM.AddSetting(
         mod_name, category, {
-            Type = ModConfigMenu.OptionType.NUMBER,
+            Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
                 return args.CurrentSetting().R * 255
@@ -116,9 +119,9 @@ function ModConfigMenuHelper.add_color_setting(mod_name, category, args)
         }
     )
 
-    ModConfigMenu.AddSetting(
+    MCM.AddSetting(
         mod_name, category, {
-            Type = ModConfigMenu.OptionType.NUMBER,
+            Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
                 return args.CurrentSetting().G * 255
@@ -144,9 +147,9 @@ function ModConfigMenuHelper.add_color_setting(mod_name, category, args)
         }
     )
 
-    ModConfigMenu.AddSetting(
+    MCM.AddSetting(
         mod_name, category, {
-            Type = ModConfigMenu.OptionType.NUMBER,
+            Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
                 return args.CurrentSetting().B * 255
@@ -169,6 +172,21 @@ function ModConfigMenuHelper.add_color_setting(mod_name, category, args)
             Info = {
                 "the blue color",
             }
+        }
+    )
+end
+
+function ModConfigMenuHelper.add_label_setting(mod_name, category, label_text)
+    local MCM = ModConfigMenu
+    assert(MCM, "Cannot find mod config menu!")
+
+    MCM.AddSetting(
+        mod_name, category, {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function() end,
+            Display = function() return label_text end,
+            OnChange = function(_) end,
         }
     )
 end
