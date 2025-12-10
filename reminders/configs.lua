@@ -47,6 +47,7 @@ function Configs.get_default_config()
 
         time_progress_boss_rush_icon_enabled = true,
         time_progress_hush_icon_enabled = true,
+        time_progress_disable_in_greed = true,
 
         game_timer_enabled = true,
         game_timer_offset = iserializer.encode_vector(Vector(0, 0)),

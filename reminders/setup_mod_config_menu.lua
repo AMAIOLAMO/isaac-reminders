@@ -69,6 +69,28 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
         }
     )
 
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().time_progress_disable_in_greed
+            end,
+
+            Display = function()
+                return "Disable in greed mode: " .. (mod:get_config().time_progress_disable_in_greed and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().time_progress_disable_in_greed = value
+            end,
+
+            Info = {
+                "Whether or not to disable time progress in greed mode always",
+            }
+        }
+    )
+
     MCM.AddSpace(mod_name, "General")
 
     MCM.AddText(mod_name, "General", "Game Timer", DEFAULT_TXT_COLOR)

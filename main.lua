@@ -1040,9 +1040,18 @@ function rems:on_post_render()
             self:handle_special_room_notify()
         end
 
+        local is_greed = game:IsGreedMode()
+
         if config.time_progress_enabled then
-            self:render_time_progress()
+            if config.time_progress_disable_in_greed and is_greed == false then
+                self:render_time_progress()
+            end
+
+            if config.time_progress_disable_in_greed == false then
+                self:render_time_progress()
+            end
         end
+
 
         if config.game_timer_enabled then
             self:render_game_timer()
@@ -1059,7 +1068,7 @@ function rems:on_post_render()
         -- Maybe consider STAGE_NULL??
         local first_stage = LevelStage.STAGE1_1
 
-        if config.bum_kill_reminders_enabled and game:IsGreedMode() == false and stage ~= first_stage then
+        if config.bum_kill_reminders_enabled and is_greed == false and stage ~= first_stage then
             self:render_bum_kill_reminders()
         end
     end
