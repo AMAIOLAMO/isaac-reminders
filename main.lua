@@ -512,12 +512,20 @@ function rems:render_door_reminders()
         local level = game:GetLevel()
         if door.TargetRoomType == RoomType.ROOM_BOSS then
 
+            local is_xl = level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0
+
             local is_mausoleum_meat_door = door:GetType() == 16 and door:GetVariant() == 3
             local is_ascent_path = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or
                 level:IsAscent()
 
             -- is in mom's floor (possible XL floor edge case)
-            if level:GetStage() == LevelStage.STAGE3_2 and is_ascent_path == false then
+            -- which in this case would be LevelStage.STAGE3_1 for XL floors
+        
+            local should_show_fool_card =
+                (level:GetStage() == LevelStage.STAGE3_1 and is_xl) or
+                (level:GetStage() == LevelStage.STAGE3_2 and is_xl == false)
+
+            if should_show_fool_card and is_ascent_path == false then
                 local has_all_knife_pieces = player:HasCollectible(CollectibleType.COLLECTIBLE_KNIFE_PIECE_1) and
                     player:HasCollectible(CollectibleType.COLLECTIBLE_KNIFE_PIECE_2)
 
