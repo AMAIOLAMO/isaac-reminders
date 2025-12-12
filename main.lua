@@ -10,12 +10,13 @@
 local MOD_NAME = "Reminders"
 local rems = RegisterMod(MOD_NAME, 1)
 
-local json        = require("reminders.lib.json")
-local timerf      = require("reminders.timerf")
-local iserializer = require("reminders.iserializer")
-local ilogger     = require("reminders.ilogger")
-local iutils      = require("reminders.iutils")
-local enums       = require("reminders.enums")
+local json         = require("reminders.lib.json")
+local timerf       = require("reminders.timerf")
+local iserializer  = require("reminders.iserializer")
+local ilogger      = require("reminders.ilogger")
+local iutils       = require("reminders.iutils")
+local enums        = require("reminders.enums")
+local stack_offset = require("reminders.stacked_offset")
 
 local setup_mod_config_menu = require("reminders.setup_mod_config_menu")
 
@@ -636,9 +637,10 @@ local function lerpv(a, b, t)
 end
 
 rems.time_progress_anim_pos_offset = Vector(0, 0)
+rems.timer_offset_stack = stack_offset.new()
 
-function rems:render_time_progress(should_hide)
-    assert(should_hide ~= nil, "should_hide should not be nil")
+function rems:render_time_progress(offset_stack)
+    assert(offset_stack ~= nil, "offset_stack should not be nil")
 
     local w = Isaac.GetScreenWidth()
     local h = Isaac.GetScreenHeight()
@@ -662,6 +664,13 @@ function rems:render_time_progress(should_hide)
 
     local lerp_target = Vector.Zero
 
+    local game_time = iutils.get_game_time(game)
+    local HIDE_TIME_TOTAL_SECS = 30 * 60
+
+    local should_hide = self.extra_info_timer:max() or
+        game_time.total_secs >= HIDE_TIME_TOTAL_SECS
+
+
     if should_hide then
         -- TODO HACK: instead of -50, we should calculate the difference between current pos with 0
         lerp_target = Vector(0, -50 - config_offset.Y)
@@ -674,6 +683,8 @@ function rems:render_time_progress(should_hide)
     local total_offset = config_offset +
         self.time_progress_anim_pos_offset
 
+    local CLOCK_HEIGHT = 20
+
     clock_sprite.Color   = Color(1, 1, 1, opacity)
     node_tiny.Color      = Color(1, 1, 1, opacity * node_opacity)
     boss_rush_icon.Color = Color(1, 1, 1, opacity)
@@ -683,9 +694,11 @@ function rems:render_time_progress(should_hide)
     local sections = 30 / 5 -- divide in 5 minutes
     local section_len = length / sections
 
+    local SECTION_BODY_HEIGHT = 5
+
     for i = 0, sections do
         local node_pos = Vector(
-            w / 2 - length / 2 + section_len * i + total_offset.X, 20 + total_offset.Y
+            w / 2 - length / 2 + section_len * i + total_offset.X, CLOCK_HEIGHT + total_offset.Y
         )
 
         -- boss rush
@@ -712,13 +725,14 @@ function rems:render_time_progress(should_hide)
     clock_sprite:Render(Vector(
         w / 2 - length / 2 + length * progress + total_offset.X, 10 + total_offset.Y
     ))
+
+    offset_stack:push_static(
+        math.max(CLOCK_HEIGHT + total_offset.Y + SECTION_BODY_HEIGHT, 0)
+    )
 end
 
-rems.game_timer_y_animated_offset = 0
-
-function rems:render_game_timer(time_progress_hidden)
-    assert(time_progress_hidden ~= nil, "time_progress_hidden shouldn't be nil")
-
+function rems:render_game_timer(offset_stack)
+    assert(offset_stack ~= nil, "offsets cannot be nil")
     local config = self:get_config()
 
     local w = Isaac.GetScreenWidth()
@@ -737,21 +751,10 @@ function rems:render_game_timer(time_progress_hidden)
         local scale = config.game_timer_scale
         local opacity = config.game_timer_opacity
 
-        local target = 25 + offset.Y
-
-        if time_progress_hidden then
-            target = offset.Y
-        end
-
-        self.game_timer_y_animated_offset = lerpf(
-            self.game_timer_y_animated_offset, target,
-            self.dt_ms * 20
-        )
-
         Isaac.RenderScaledText(
             time_str,
             w / 2 - Isaac.GetTextWidth(time_str) * scale / 2 + offset.X,
-            self.game_timer_y_animated_offset,
+            offset_stack:current() + offset.Y,
             scale, scale,
             0.8, 0.8, 0.8, opacity
         )
@@ -1065,26 +1068,22 @@ function rems:on_post_render()
 
         local is_greed = game:IsGreedMode()
 
-        local game_time = iutils.get_game_time(game)
-        local HIDE_TIME_TOTAL_SECS = 30 * 60
-
-        local should_hide_time_progress = self.extra_info_timer:max() or
-            game_time.total_secs >= HIDE_TIME_TOTAL_SECS
-
         if config.time_progress_enabled then
             if config.time_progress_disable_in_greed and is_greed == false then
-                self:render_time_progress(should_hide_time_progress)
+                self:render_time_progress(self.timer_offset_stack)
             end
 
             if config.time_progress_disable_in_greed == false then
-                self:render_time_progress(should_hide_time_progress)
+                self:render_time_progress(self.timer_offset_stack)
             end
         end
 
 
         if config.game_timer_enabled then
-            self:render_game_timer(should_hide_time_progress or not config.time_progress_enabled)
+            self:render_game_timer(self.timer_offset_stack)
         end
+
+        self.timer_offset_stack:clear()
 
         if config.knife_piece_reminders_enabled then
             self:render_knife_piece_reminders()
