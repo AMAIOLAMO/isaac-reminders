@@ -637,7 +637,9 @@ end
 
 rems.time_progress_anim_pos_offset = Vector(0, 0)
 
-function rems:render_time_progress()
+function rems:render_time_progress(should_hide)
+    assert(should_hide ~= nil, "should_hide should not be nil")
+
     local w = Isaac.GetScreenWidth()
     local h = Isaac.GetScreenHeight()
 
@@ -657,10 +659,6 @@ function rems:render_time_progress()
     local ANIM_SPEED = 4.0
 
     local game_time = iutils.get_game_time(game)
-
-    local HIDE_TIME_TOTAL_SECS = 30 * 60
-
-    local should_hide = self.extra_info_timer:max() or game_time.total_secs >= HIDE_TIME_TOTAL_SECS
 
     local lerp_target = Vector.Zero
 
@@ -716,7 +714,11 @@ function rems:render_time_progress()
     ))
 end
 
-function rems:render_game_timer()
+rems.game_timer_y_animated_offset = 0
+
+function rems:render_game_timer(time_progress_hidden)
+    assert(time_progress_hidden ~= nil, "time_progress_hidden shouldn't be nil")
+
     local config = self:get_config()
 
     local w = Isaac.GetScreenWidth()
@@ -728,15 +730,28 @@ function rems:render_game_timer()
         "%02.0f:%02.0f:%02.0f", game_time.hours, game_time.mins, game_time.secs
     )
 
+    -- TODO: instead we should utilize game_progress's box offset
     local offset = iserializer.decode_vector(self:get_config().game_timer_offset)
 
     if self.extra_info_timer:max() == false then
         local scale = config.game_timer_scale
         local opacity = config.game_timer_opacity
 
+        local target = 25 + offset.Y
+
+        if time_progress_hidden then
+            target = offset.Y
+        end
+
+        self.game_timer_y_animated_offset = lerpf(
+            self.game_timer_y_animated_offset, target,
+            self.dt_ms * 20
+        )
+
         Isaac.RenderScaledText(
             time_str,
-            w / 2 - Isaac.GetTextWidth(time_str) * scale / 2 + offset.X, 25 + offset.Y,
+            w / 2 - Isaac.GetTextWidth(time_str) * scale / 2 + offset.X,
+            self.game_timer_y_animated_offset,
             scale, scale,
             0.8, 0.8, 0.8, opacity
         )
@@ -1050,19 +1065,25 @@ function rems:on_post_render()
 
         local is_greed = game:IsGreedMode()
 
+        local game_time = iutils.get_game_time(game)
+        local HIDE_TIME_TOTAL_SECS = 30 * 60
+
+        local should_hide_time_progress = self.extra_info_timer:max() or
+            game_time.total_secs >= HIDE_TIME_TOTAL_SECS
+
         if config.time_progress_enabled then
             if config.time_progress_disable_in_greed and is_greed == false then
-                self:render_time_progress()
+                self:render_time_progress(should_hide_time_progress)
             end
 
             if config.time_progress_disable_in_greed == false then
-                self:render_time_progress()
+                self:render_time_progress(should_hide_time_progress)
             end
         end
 
 
         if config.game_timer_enabled then
-            self:render_game_timer()
+            self:render_game_timer(should_hide_time_progress or not config.time_progress_enabled)
         end
 
         if config.knife_piece_reminders_enabled then

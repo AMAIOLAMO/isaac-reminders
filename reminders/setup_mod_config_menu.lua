@@ -757,6 +757,16 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     MCM.AddSpace(mod_name, "Visuals")
 
     MCM.AddText(mod_name, "Visuals", "Game Timer", DEFAULT_TXT_COLOR)
+    mcm_helper.add_vector_setting(mod_name, "Visuals", {
+        CurrentSetting = function()
+            return iserializer.decode_vector(mod:get_config().game_timer_offset)
+        end,
+
+        OnChange = function(value)
+            mod:get_config().game_timer_offset = iserializer.encode_vector(value)
+        end
+    })
+
     mcm_helper.add_float_setting(
         mod_name, "Visuals", {
             Precision = 2,
