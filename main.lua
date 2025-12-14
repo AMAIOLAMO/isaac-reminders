@@ -895,14 +895,6 @@ function rems:render_knife_piece_reminders()
 end
 
 function rems:render_secret_room_placeholders()
-    if self.extra_info_timer:max() == false then
-        return
-    end
-
-
-    local room = game:GetRoom()
-    local is_mirror = room:IsMirrorWorld()
-
     local ROOMS_TO_NOT_SHOW = {
         [RoomType.ROOM_BOSS]            = true,
         [RoomType.ROOM_SUPERSECRET]     = true,
@@ -918,6 +910,31 @@ function rems:render_secret_room_placeholders()
         [RoomType.ROOM_DUNGEON]         = true,
         [RoomType.ROOM_BOSSRUSH]        = true,
     }
+
+    local EASY_ROOM_SHAPES = {
+        [RoomShape.ROOMSHAPE_1x1] = true,
+        [RoomShape.ROOMSHAPE_IH]  = true,
+        [RoomShape.ROOMSHAPE_IV]  = true,
+        [RoomShape.ROOMSHAPE_IIV] = true,
+        [RoomShape.ROOMSHAPE_IIH] = true,
+    }
+
+    if self.extra_info_timer:max() == false then
+        return
+    end
+
+
+    local room = game:GetRoom()
+    local is_mirror = room:IsMirrorWorld()
+    local room_shape = room:GetRoomShape()
+    
+    -- crazy long name amirite xD
+    if self:get_config().secret_room_placeholder_only_hard_to_find_enabled then
+        -- early return the easy ones
+        if EASY_ROOM_SHAPES[room_shape] ~= nil then
+            return
+        end
+    end
 
     if ROOMS_TO_NOT_SHOW[room:GetType()] ~= nil then
         return

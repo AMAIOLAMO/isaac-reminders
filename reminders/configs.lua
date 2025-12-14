@@ -64,6 +64,7 @@ function Configs.get_default_config()
         knife_piece_reminders_enabled = true,
 
         secret_room_placeholder_enabled = true,
+        secret_room_placeholder_only_hard_to_find_enabled = false,
     }
 end
 

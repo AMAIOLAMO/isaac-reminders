@@ -337,6 +337,28 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
+
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().secret_room_placeholder_only_hard_to_find_enabled
+            end,
+
+            Display = function()
+                return "Only hard / bigger rooms: " .. (mod:get_config().secret_room_placeholder_only_hard_to_find_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().secret_room_placeholder_only_hard_to_find_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not to only show up placeholders for harder(bigger) rooms"
+            }
+        }
+    )
     MCM.AddSpace(mod_name, "General")
 
     MCM.AddText(mod_name, "General", "Developer", DEFAULT_TXT_COLOR)
