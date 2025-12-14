@@ -566,7 +566,7 @@ function rems:render_door_reminders()
 
         -- only display white fire when they are not the lost (since there is no reason to touch white fire)
         if player_type ~= PlayerType.PLAYER_THELOST and player_type ~= PlayerType.PLAYER_THELOST_B then
-            if door.TargetRoomType == RoomType.ROOM_CURSE and
+            if door.TargetRoomType == RoomType.ROOM_CURSE and is_mirror == false and
                 ((level:GetStage() == LevelStage.STAGE1_2 and is_xl == false) or (level:GetStage() == LevelStage.STAGE1_1 and is_xl)) and
                 (level:GetStageType() == StageType.STAGETYPE_REPENTANCE or level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
                 white_fireplace_notify:SetFrame("Static_PivotBottom", 0)
