@@ -62,6 +62,8 @@ function Configs.get_default_config()
         explosion_immunity_reminder_size = enums.Sizes.SIZES_SMALL,
 
         knife_piece_reminders_enabled = true,
+
+        secret_room_placeholder_enabled = true,
     }
 end
 

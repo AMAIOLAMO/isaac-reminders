@@ -185,4 +185,18 @@ function IUtils.any_player_has_cards(game, types)
     return false
 end
 
+function IUtils.doorslot_to_dir(door_slot)
+    if door_slot == DoorSlot.LEFT0 or door_slot == DoorSlot.LEFT1 then
+        return Direction.LEFT
+    elseif door_slot == DoorSlot.RIGHT0 or door_slot == DoorSlot.RIGHT1 then
+        return Direction.RIGHT
+    elseif door_slot == DoorSlot.UP0 or door_slot == DoorSlot.UP1 then
+        return Direction.UP
+    elseif door_slot == DoorSlot.DOWN0 or door_slot == DoorSlot.DOWN1 then
+        return Direction.DOWN
+    end
+
+    assert(false, string.format("invalid door_slot given: %d", door_slot))
+end
+
 return IUtils

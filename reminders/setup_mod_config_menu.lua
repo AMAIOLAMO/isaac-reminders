@@ -315,6 +315,30 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
     MCM.AddSpace(mod_name, "General")
 
+    MCM.AddText(mod_name, "General", "Potential Secret Room Placeholders", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().secret_room_placeholder_enabled
+            end,
+
+            Display = function()
+                return "enabled: " .. (mod:get_config().secret_room_placeholder_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().secret_room_placeholder_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not to show potential secret room placeholders"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "General")
+
     MCM.AddText(mod_name, "General", "Developer", DEFAULT_TXT_COLOR)
 
     MCM.AddSetting(

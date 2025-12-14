@@ -16,7 +16,7 @@ local iserializer  = require("reminders.iserializer")
 local ilogger      = require("reminders.ilogger")
 local iutils       = require("reminders.iutils")
 local enums        = require("reminders.enums")
-local stack_offset = require("reminders.stacked_offset")
+local offset_stack = require("reminders.offset_stack")
 
 local setup_mod_config_menu = require("reminders.setup_mod_config_menu")
 
@@ -51,6 +51,8 @@ local node_tiny      = load_static_png_sprite_16x16("gfx/reminders/sprites/node_
 local clock_sprite   = load_static_png_sprite_16x16("gfx/reminders/sprites/clock.png")
 local hush_icon      = load_static_png_sprite_16x16("gfx/reminders/sprites/hush_icon.png")
 local boss_rush_icon = load_static_png_sprite_16x16("gfx/reminders/sprites/boss_rush_icon.png")
+
+local secret_room_placeholder = iutils.assert_sprite_load("gfx/reminders/secret_room_placeholder.anm2")
 
 local static_sprites = iutils.assert_sprite_load("gfx/reminders/static_sprites.anm2")
 
@@ -511,9 +513,9 @@ function rems:render_door_reminders()
         
         -- TODO: edge case -> gehenna does not have ascent door
         local level = game:GetLevel()
-        if door.TargetRoomType == RoomType.ROOM_BOSS then
+        local is_xl = level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0
 
-            local is_xl = level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0
+        if door.TargetRoomType == RoomType.ROOM_BOSS then
 
             local is_mausoleum_meat_door = door:GetType() == 16 and door:GetVariant() == 3
             local is_ascent_path = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or
@@ -521,7 +523,6 @@ function rems:render_door_reminders()
 
             -- is in mom's floor (possible XL floor edge case)
             -- which in this case would be LevelStage.STAGE3_1 for XL floors
-        
             local should_show_fool_card =
                 (level:GetStage() == LevelStage.STAGE3_1 and is_xl) or
                 (level:GetStage() == LevelStage.STAGE3_2 and is_xl == false)
@@ -566,7 +567,7 @@ function rems:render_door_reminders()
         -- only display white fire when they are not the lost (since there is no reason to touch white fire)
         if player_type ~= PlayerType.PLAYER_THELOST and player_type ~= PlayerType.PLAYER_THELOST_B then
             if door.TargetRoomType == RoomType.ROOM_CURSE and
-                level:GetStage() == LevelStage.STAGE1_2 and
+                ((level:GetStage() == LevelStage.STAGE1_2 and is_xl == false) or (level:GetStage() == LevelStage.STAGE1_1 and is_xl)) and
                 (level:GetStageType() == StageType.STAGETYPE_REPENTANCE or level:GetStageType() == StageType.STAGETYPE_REPENTANCE_B) then
                 white_fireplace_notify:SetFrame("Static_PivotBottom", 0)
 
@@ -636,8 +637,13 @@ local function lerpv(a, b, t)
     )
 end
 
+-- maps a value from one range to another linearly
+local function mapf(v, a1, b1, a2, b2)
+    return ((v - a1) / (b1 - a1)) * (b2 - a2) + a2
+end
+
 rems.time_progress_anim_pos_offset = Vector(0, 0)
-rems.timer_offset_stack = stack_offset.new()
+rems.timer_offset_stack = offset_stack.new()
 
 function rems:render_time_progress(offset_stack)
     assert(offset_stack ~= nil, "offset_stack should not be nil")
@@ -888,6 +894,75 @@ function rems:render_knife_piece_reminders()
     end
 end
 
+function rems:render_secret_room_placeholders()
+    if self.extra_info_timer:max() == false then
+        return
+    end
+
+
+    local room = game:GetRoom()
+    local is_mirror = room:IsMirrorWorld()
+
+    local ROOMS_TO_NOT_SHOW = {
+        [RoomType.ROOM_BOSS]            = true,
+        [RoomType.ROOM_SUPERSECRET]     = true,
+        [RoomType.ROOM_SECRET]          = true,
+        [RoomType.ROOM_ERROR]           = true,
+        [RoomType.ROOM_DEVIL]           = true,
+        [RoomType.ROOM_ANGEL]           = true,
+        [RoomType.ROOM_BLACK_MARKET]    = true,
+        [RoomType.ROOM_GREED_EXIT]      = true,
+        [RoomType.ROOM_SECRET_EXIT]     = true,
+        [RoomType.ROOM_TELEPORTER_EXIT] = true,
+        [RoomType.ROOM_TELEPORTER]      = true,
+        [RoomType.ROOM_DUNGEON]         = true,
+        [RoomType.ROOM_BOSSRUSH]        = true,
+    }
+
+    if ROOMS_TO_NOT_SHOW[room:GetType()] ~= nil then
+        return
+    end
+
+    for slot=0, DoorSlot.NUM_DOOR_SLOTS do
+        if room:IsDoorSlotAllowed(slot) == false then
+            goto continue
+        end
+        local door = room:GetDoor(slot)
+
+        if door ~= nil then
+            if door:IsOpen() then
+                goto continue
+            end
+            -- else not open
+
+            -- exception for secret rooms
+            if door.TargetRoomType ~= RoomType.ROOM_SECRET and door.TargetRoomType ~= RoomType.ROOM_SUPERSECRET then
+                goto continue
+            end
+        end
+        -- else
+
+        local world_pos = room:GetDoorSlotPosition(slot)
+        local scr_pos   = iutils.world_to_screen_ext(world_pos, is_mirror)
+
+        local opacity = mapf(
+            math.sin(Isaac.GetTime() * 0.001),
+            -1, 1, 0.5, 1
+        )
+
+        local dir = iutils.doorslot_to_dir(slot)
+
+        secret_room_placeholder.Color    = Color(1, 1, 1, opacity)
+        secret_room_placeholder.Rotation = self:direction_to_rotation_deg(dir, is_mirror)
+        secret_room_placeholder.Scale    = Vector.One * (1 + math.sin(Isaac.GetTime() * 0.003) * 0.1 + 0.1)
+
+        secret_room_placeholder:SetFrame("Main", 0)
+        secret_room_placeholder:Render(scr_pos)
+
+        ::continue::
+    end
+end
+
 -- CALLBACKS --
 
 function rems:on_post_game_started(continued)
@@ -1054,33 +1129,13 @@ function rems:on_post_render()
     if game:GetHUD():IsVisible() and ModConfigMenu.IsVisible == false then
         self:handle_extra_info_timer()
 
+        -- in game
         if config.door_reminders_enabled then
             self:render_door_reminders()
         end
 
         if config.lost_death_icon_enabled then
             self:render_lost_death_icon()
-        end
-
-        if config.notify_info_enabled then
-            self:handle_special_room_notify()
-        end
-
-        local is_greed = game:IsGreedMode()
-
-        if config.time_progress_enabled then
-            if config.time_progress_disable_in_greed and is_greed == false then
-                self:render_time_progress(self.timer_offset_stack)
-            end
-
-            if config.time_progress_disable_in_greed == false then
-                self:render_time_progress(self.timer_offset_stack)
-            end
-        end
-
-
-        if config.game_timer_enabled then
-            self:render_game_timer(self.timer_offset_stack)
         end
 
         self.timer_offset_stack:clear()
@@ -1098,6 +1153,31 @@ function rems:on_post_render()
 
         if config.bum_kill_reminders_enabled and is_greed == false and stage ~= first_stage then
             self:render_bum_kill_reminders()
+        end
+
+        if config.secret_room_placeholder_enabled then
+            self:render_secret_room_placeholders()
+        end
+
+        -- UI, should be drawn as an overlay
+        if config.notify_info_enabled then
+            self:handle_special_room_notify()
+        end
+
+        local is_greed = game:IsGreedMode()
+
+        if config.time_progress_enabled then
+            if config.time_progress_disable_in_greed and is_greed == false then
+                self:render_time_progress(self.timer_offset_stack)
+            end
+
+            if config.time_progress_disable_in_greed == false then
+                self:render_time_progress(self.timer_offset_stack)
+            end
+        end
+
+        if config.game_timer_enabled then
+            self:render_game_timer(self.timer_offset_stack)
         end
     end
 
