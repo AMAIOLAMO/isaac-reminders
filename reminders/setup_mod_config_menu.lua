@@ -190,7 +190,6 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
-    MCM.AddSpace(mod_name, "General")
 
     MCM.AddSetting(
         mod_name, "General", {
@@ -214,7 +213,6 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
-    MCM.AddSpace(mod_name, "General")
 
     MCM.AddSetting(
         mod_name, "General", {
@@ -340,6 +338,35 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
 
     MCM.AddSetting(
         mod_name, "General", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().secret_room_placeholder_display_trigger
+            end,
+
+            Display = function()
+                return "Display trigger: " .. enums.DisplayTrigger:to_description(
+                    mod:get_config().secret_room_placeholder_display_trigger
+                )
+            end,
+
+            Minimum = enums.DisplayTrigger.TRIGGER_BEGIN,
+            Maximum = enums.DisplayTrigger.TRIGGER_END,
+
+            OnChange = function(value)
+                mod:get_config().secret_room_placeholder_display_trigger = value
+            end,
+
+            Info = {
+                "Switches between different kinds of display mode:",
+                "Always = Always displays",
+                "On Extra Info = Displays only when holding map button"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "General", {
             Type = MCM.OptionType.BOOLEAN,
 
             CurrentSetting = function()
@@ -356,6 +383,29 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
 
             Info = {
                 "Toggles whether or not to only show up placeholders for harder(bigger) rooms"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().secret_room_placeholder_only_clear_rooms_enabled
+            end,
+
+            Display = function()
+                return "Enable only when room cleared: " ..
+                    (mod:get_config().secret_room_placeholder_only_clear_rooms_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().secret_room_placeholder_only_clear_rooms_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not placeholders should show up ONLY when room is cleared"
             }
         }
     )
@@ -898,7 +948,11 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
 
             "The original Don't Forget",
             "(knife piece reminder)",
-            "-- I sniff seats(Steam)"
+            "-- I sniff seats(Steam)",
+
+
+            "Original Secret Room Placeholder Mod",
+            "-- HeliOS(Steam)"
         }
     }
 

@@ -919,17 +919,24 @@ function rems:render_secret_room_placeholders()
         [RoomShape.ROOMSHAPE_IIH] = true,
     }
 
-    if self.extra_info_timer:max() == false then
+    local config = self:get_config()
+
+    if config.secret_room_placeholder_display_trigger == enums.DisplayTrigger.TRIGGER_EXTRA_INFO
+        and self.extra_info_timer:max() == false then
         return
     end
 
-
     local room = game:GetRoom()
+
+    if config.secret_room_placeholder_only_clear_rooms_enabled and room:IsClear() == false then
+        return
+    end
+
     local is_mirror = room:IsMirrorWorld()
     local room_shape = room:GetRoomShape()
     
     -- crazy long name amirite xD
-    if self:get_config().secret_room_placeholder_only_hard_to_find_enabled then
+    if config.secret_room_placeholder_only_hard_to_find_enabled then
         -- early return the easy ones
         if EASY_ROOM_SHAPES[room_shape] ~= nil then
             return

@@ -64,7 +64,9 @@ function Configs.get_default_config()
         knife_piece_reminders_enabled = true,
 
         secret_room_placeholder_enabled = true,
+        secret_room_placeholder_display_trigger = enums.DisplayTrigger.TRIGGER_EXTRA_INFO,
         secret_room_placeholder_only_hard_to_find_enabled = false,
+        secret_room_placeholder_only_clear_rooms_enabled = true,
     }
 end
 

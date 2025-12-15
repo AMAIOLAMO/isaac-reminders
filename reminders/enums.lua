@@ -23,14 +23,21 @@ local enums = {
         NOTIFY_ICON_TEXT = 3,
         NOTIFY_END       = 3
     },
+
     Sizes = {
         SIZES_BEGIN  = 1,
         SIZES_SMALL  = 1,
         SIZES_MEDIUM = 2,
         SIZES_LARGE  = 3,
         SIZES_END    = 3,
-    }
+    },
 
+    DisplayTrigger = {
+        TRIGGER_BEGIN      = 1,
+        TRIGGER_ALWAYS     = 1,
+        TRIGGER_EXTRA_INFO = 2,
+        TRIGGER_END        = 2,
+    },
 }
 
 function enums.NotifyInfoType:to_description(type)
@@ -43,6 +50,8 @@ function enums.NotifyInfoType:to_description(type)
     elseif type == self.NOTIFY_TEXT then
         return "Notify Text Only"
     end
+
+    assert(false, "unexpected type")
 end
 
 function enums.Sizes:to_description(type)
@@ -55,6 +64,19 @@ function enums.Sizes:to_description(type)
     elseif type == self.SIZES_LARGE then
         return "Large"
     end
+
+    assert(false, "unexpected type")
+end
+
+function enums.DisplayTrigger:to_description(type)
+    if type == self.TRIGGER_ALWAYS then
+        return "Always"
+
+    elseif type == self.TRIGGER_EXTRA_INFO then
+        return "On Extra Info"
+    end
+
+    assert(false, "unexpected type")
 end
 
 return enums
