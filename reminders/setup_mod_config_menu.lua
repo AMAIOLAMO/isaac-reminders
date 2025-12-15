@@ -29,7 +29,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().map_special_colormarks_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().map_special_colormarks_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -55,7 +55,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().time_progress_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().time_progress_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -103,7 +103,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().game_timer_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().game_timer_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -127,7 +127,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().lost_death_icon_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().lost_death_icon_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -152,7 +152,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().door_reminders_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().door_reminders_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -177,7 +177,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().notify_info_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().notify_info_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -248,7 +248,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().bum_kill_reminders_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().bum_kill_reminders_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -273,7 +273,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().explosion_immunity_reminders_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().explosion_immunity_reminders_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -298,7 +298,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().knife_piece_reminders_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().knife_piece_reminders_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -323,7 +323,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "enabled: " .. (mod:get_config().secret_room_placeholder_enabled and "on" or "off")
+                return "Enabled: " .. (mod:get_config().secret_room_placeholder_enabled and "on" or "off")
             end,
 
             OnChange = function(value)

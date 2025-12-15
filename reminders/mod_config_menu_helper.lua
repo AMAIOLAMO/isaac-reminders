@@ -191,4 +191,31 @@ function ModConfigMenuHelper.add_label_setting(mod_name, category, label_text)
     )
 end
 
+function ModConfigMenuHelper.add_ref_setting(mod_name, category, tbl_ref, item_name, args)
+    local MCM = ModConfigMenu
+    assert(MCM, "Cannot find mod config menu!")
+
+    MCM.AddSetting(
+        mod_name, category, {
+            Type = args.Type,
+            
+            CurrentSetting = function()
+                return tbl_ref[item_name]
+            end,
+
+            Display = function()
+                return args.Display(tbl_ref[item_name])
+            end,
+
+            OnChange = function(value)
+                return tbl_ref[item_name]
+            end,
+
+            Minimum = args.Minimum, Maximum = args.Maximum,
+
+            Info = args.Info,
+        }
+    )
+end
+
 return ModConfigMenuHelper
