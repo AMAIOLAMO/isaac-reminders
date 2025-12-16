@@ -1001,9 +1001,13 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             "(knife piece reminder)",
             "-- I sniff seats(Steam)",
 
+            "Original Idea of Secret Room Placeholder",
+            "Secretroom Placeholder Mod",
+            "-- HeliOS(Steam)",
 
-            "Original Secret Room Placeholder Mod",
-            "-- HeliOS(Steam)"
+            "Original Idea of Near Death Reminder",
+            "Critical Damage Mod",
+            "-- Harvester(Steam)"
         }
     }
 

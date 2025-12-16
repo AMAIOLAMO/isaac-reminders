@@ -72,6 +72,9 @@ function Configs.get_default_config()
 
         near_death_effect_enabled = true,
         near_death_effect_strength = 0.2,
+
+        -- COTU = curse of the unknown(aka you cant see your heart containers)
+        near_death_effect_bypass_COTU = false,
     }
 end
 
