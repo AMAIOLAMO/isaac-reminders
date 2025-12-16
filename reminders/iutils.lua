@@ -211,4 +211,10 @@ function IUtils.get_total_heart_units(player)
         + soul_heart_count + bone_heart_count + rotten_heart_count
 end
 
+-- includes wooden cross, holy mantle, blanket and holy card
+function IUtils.get_total_mantle_effect_count(player)
+    return (player:GetEffects():HasNullEffect(NullItemID.ID_HOLY_CARD) and 1 or 0) +
+        player:GetEffects():GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE)
+end
+
 return IUtils

@@ -1242,12 +1242,12 @@ function rems:get_shader_params(shader_name)
         local total_heart_units = iutils.get_total_heart_units(main_player)
         
         -- holy mantle, wooden cross, blanket are all considered holy mantle effects
-        local mantle_count = (main_player:GetEffects():HasNullEffect(NullItemID.ID_HOLY_CARD) and 1 or 0) +
-            main_player:GetEffects():GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE)
+        local mantle_count = iutils.get_total_mantle_effect_count(main_player)
 
         local is_lost_or_tlost = main_player:GetPlayerType() == PlayerType.PLAYER_THELOST or
             main_player:GetPlayerType() == PlayerType.PLAYER_THELOST_B
 
+        -- TODO: make the number 2 to be customizable
         local is_near_death = (total_heart_units + mantle_count) <= 2
         
         -- special case for lost and tlost
