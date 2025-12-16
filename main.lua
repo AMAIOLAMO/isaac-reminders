@@ -1260,7 +1260,7 @@ function rems:get_shader_params(shader_name)
             Strength = strength,
         }
 
-        return params;
+        return params
     end
 end
 

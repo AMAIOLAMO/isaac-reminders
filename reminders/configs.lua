@@ -7,6 +7,8 @@ local enums = require("reminders.enums")
 local Configs = {}
 
 function Configs.get_default_config()
+    -- must conform to these few types:
+    -- number, boolean, table / array, strings 
     return {
         debug_mode = false,
 
@@ -73,6 +75,7 @@ function Configs.get_default_config()
     }
 end
 
+-- TODO: while cleaning config, also check if the type is equal, since lua is duck-typed
 function Configs.clean_config_from_default(config_tbl)
     local dconf = Configs.get_default_config()
 

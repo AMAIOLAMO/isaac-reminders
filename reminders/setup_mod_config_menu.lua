@@ -411,7 +411,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
     MCM.AddSpace(mod_name, "General")
 
-    MCM.AddText(mod_name, "General", "Near Death Effect", DEFAULT_TXT_COLOR)
+    MCM.AddText(mod_name, "General", "Near Death Reminders", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "General", {
             Type = MCM.OptionType.BOOLEAN,
