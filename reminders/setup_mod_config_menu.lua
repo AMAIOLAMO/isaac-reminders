@@ -1012,6 +1012,34 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
         }
     )
 
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().near_death_effect_shader_type
+            end,
+
+            Display = function()
+                return "Shader Type: " .. enums.NearDeathEffectShader:to_description(
+                    mod:get_config().near_death_effect_shader_type
+                )
+            end,
+
+            Minimum = enums.NearDeathEffectShader.EFFECT_SHADER_BEGIN,
+            Maximum = enums.NearDeathEffectShader.EFFECT_SHADER_END,
+
+            OnChange = function(value)
+                mod:get_config().near_death_effect_shader_type = value
+            end,
+
+            Info = {
+                "Changes the near death effect type",
+                "Currently there are two types: Circle and Surround"
+            }
+        }
+    )
+
     -- TODO: instead of doing it like this, (since tables are iterated randomly)
     local CREDITS = {
         ["Mod Made By"] = { "CxRedix" },

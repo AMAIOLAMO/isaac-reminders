@@ -1238,7 +1238,22 @@ end
 function rems:get_shader_params(shader_name)
     local config = self:get_config()
 
-    if shader_name == "near_death_vignette" then
+    local circle_shader_name = "near_death_vignette_circle"
+    local surround_shader_name = "near_death_vignette_surround"
+
+    local disable_params = { Time = 0, Strength = 0.0 }
+
+    if shader_name == circle_shader_name and
+        config.near_death_effect_shader_type ~= enums.NearDeathEffectShader.EFFECT_SHADER_CIRCLE then
+        return disable_params 
+    end
+
+    if shader_name == surround_shader_name and
+        config.near_death_effect_shader_type ~= enums.NearDeathEffectShader.EFFECT_SHADER_SURROUND then
+        return disable_params 
+    end
+
+    if shader_name == circle_shader_name or shader_name == surround_shader_name then
         local main_player = Isaac.GetPlayer()
 
         local total_hit_units = iutils.get_total_hit_units(main_player)

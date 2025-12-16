@@ -38,6 +38,13 @@ local enums = {
         TRIGGER_EXTRA_INFO = 2,
         TRIGGER_END        = 2,
     },
+
+    NearDeathEffectShader = {
+        EFFECT_SHADER_BEGIN    = 1,
+        EFFECT_SHADER_CIRCLE   = 1,
+        EFFECT_SHADER_SURROUND = 2,
+        EFFECT_SHADER_END      = 2,
+    },
 }
 
 function enums.NotifyInfoType:to_description(type)
@@ -74,6 +81,17 @@ function enums.DisplayTrigger:to_description(type)
 
     elseif type == self.TRIGGER_EXTRA_INFO then
         return "On Extra Info"
+    end
+
+    assert(false, "unexpected type")
+end
+
+function enums.NearDeathEffectShader:to_description(type)
+    if type == self.EFFECT_SHADER_CIRCLE then
+        return "Circle"
+
+    elseif type == self.EFFECT_SHADER_SURROUND then
+        return "Surround"
     end
 
     assert(false, "unexpected type")
