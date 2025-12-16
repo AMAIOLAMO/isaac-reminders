@@ -67,6 +67,9 @@ function Configs.get_default_config()
         secret_room_placeholder_display_trigger = enums.DisplayTrigger.TRIGGER_EXTRA_INFO,
         secret_room_placeholder_only_hard_to_find_enabled = false,
         secret_room_placeholder_only_clear_rooms_enabled = true,
+
+        near_death_effect_enabled = true,
+        near_death_effect_strength = 0.2,
     }
 end
 

@@ -1235,6 +1235,35 @@ function rems:on_post_bomb_render(bomb_entity, _)
     self:render_explosion_immunity_reminder_for_bomb(bomb_entity)
 end
 
+function rems:get_shader_params(shader_name)
+    if shader_name == "near_death_vignette" then
+        local main_player = Isaac.GetPlayer()
+
+        local is_lost_or_tlost = main_player:GetPlayerType() == PlayerType.PLAYER_THELOST or
+            main_player:GetPlayerType() == PlayerType.PLAYER_THELOST_B
+
+        local total_heart_units = iutils.get_total_heart_units(main_player)
+
+        local is_near_death = total_heart_units <= 2
+
+        local is_curse_of_unknown = game:GetLevel():GetCurses() & LevelCurse.CURSE_OF_THE_UNKNOWN ~= 0
+
+        local config = self:get_config()
+
+        local strength = (
+            is_near_death and not is_curse_of_unknown and not is_lost_or_tlost
+            and config.near_death_effect_enabled
+        ) and config.near_death_effect_strength or 0.0
+
+        local params = {
+            Time = Isaac.GetFrameCount(),
+            Strength = strength,
+        }
+
+        return params;
+    end
+end
+
 function rems:on_reset_config()
     self:reset_config()
 end
@@ -1258,3 +1287,4 @@ rems:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, rems.on_pre_spawn_clean_
 rems:AddCallback(ModCallbacks.MC_EXECUTE_CMD, rems.on_execute_cmd)
 
 rems:AddCallback(ModCallbacks.MC_POST_BOMB_RENDER, rems.on_post_bomb_render)
+rems:AddCallback(ModCallbacks.MC_GET_SHADER_PARAMS, rems.get_shader_params)

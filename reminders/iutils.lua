@@ -199,4 +199,16 @@ function IUtils.doorslot_to_dir(door_slot)
     assert(false, string.format("invalid door_slot given: %d", door_slot))
 end
 
+function IUtils.get_total_heart_units(player)
+    -- black hearts are considered types of soul hearts as well
+    -- each bone heart is treated as half a heart
+    local soul_heart_count = player:GetSoulHearts()
+    local bone_heart_count = player:GetBoneHearts()
+    -- somehow rotten hearts are considered 2 units of red hearts by the game
+    -- but when u take damage, its' literally half a red heart (aka 1 unit only)
+    local rotten_heart_count = player:GetRottenHearts()
+    return (player:GetHearts() - rotten_heart_count * 2)
+        + soul_heart_count + bone_heart_count + rotten_heart_count
+end
+
 return IUtils

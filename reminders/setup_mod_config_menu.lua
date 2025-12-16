@@ -411,6 +411,56 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
     MCM.AddSpace(mod_name, "General")
 
+    MCM.AddText(mod_name, "General", "Near Death Effect", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().near_death_effect_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().near_death_effect_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().near_death_effect_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not to display an effect when the player is",
+                "on low critical health"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().near_death_effect_strength * 10
+            end,
+
+            Display = function()
+                return "Effect Strength: " .. tostring(mod:get_config().near_death_effect_strength)
+            end,
+
+            Minimum = 0, Maximum = 10,
+
+            OnChange = function(value)
+                mod:get_config().near_death_effect_strength = value / 10
+            end,
+
+            Info = {
+                "Changes the near death effect strength"
+            }
+        }
+    )
+
+    MCM.AddSpace(mod_name, "General")
+
     MCM.AddText(mod_name, "General", "Developer", DEFAULT_TXT_COLOR)
 
     MCM.AddSetting(
@@ -884,6 +934,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
+
     MCM.AddSetting(
         mod_name, "Visuals", {
             Type = MCM.OptionType.NUMBER,
