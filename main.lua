@@ -356,7 +356,7 @@ function rems:render_lost_death_icon()
     
     -- touched by white fire, turned into the lost
     local is_lost_curse_effect = player:GetEffects():HasNullEffect(NullItemID.ID_LOST_CURSE)
-    
+
     -- devil beggars are slot machines :P
     local devil_beggars = Isaac.FindByType(EntityType.ENTITY_SLOT, 5, -1, true, false)
     local blood_donos = Isaac.FindByType(EntityType.ENTITY_SLOT, 2, -1, true, false)
@@ -1239,19 +1239,28 @@ function rems:get_shader_params(shader_name)
     if shader_name == "near_death_vignette" then
         local main_player = Isaac.GetPlayer()
 
+        local total_heart_units = iutils.get_total_heart_units(main_player)
+        
+        -- holy mantle, wooden cross, blanket are all considered holy mantle effects
+        local mantle_count = (main_player:GetEffects():HasNullEffect(NullItemID.ID_HOLY_CARD) and 1 or 0) +
+            main_player:GetEffects():GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE)
+
         local is_lost_or_tlost = main_player:GetPlayerType() == PlayerType.PLAYER_THELOST or
             main_player:GetPlayerType() == PlayerType.PLAYER_THELOST_B
 
-        local total_heart_units = iutils.get_total_heart_units(main_player)
-
-        local is_near_death = total_heart_units <= 2
+        local is_near_death = (total_heart_units + mantle_count) <= 2
+        
+        -- special case for lost and tlost
+        if is_lost_or_tlost then
+            is_near_death = mantle_count == 0
+        end
 
         local is_curse_of_unknown = game:GetLevel():GetCurses() & LevelCurse.CURSE_OF_THE_UNKNOWN ~= 0
 
         local config = self:get_config()
 
         local strength = (
-            is_near_death and not is_curse_of_unknown and not is_lost_or_tlost
+            is_near_death and not is_curse_of_unknown
             and config.near_death_effect_enabled
         ) and config.near_death_effect_strength or 0.0
 
