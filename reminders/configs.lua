@@ -72,6 +72,10 @@ function Configs.get_default_config()
 
         near_death_effect_enabled = true,
         near_death_effect_strength = 0.2,
+        -- how much units of damage left to be able to take
+        -- to show this (for example 2 units is 1 full red heart, 2 bone hearts, and 1 full soul heart
+        -- or 2 mantles)
+        near_death_effect_hit_units_threshold = 2,
 
         -- COTU = curse of the unknown(aka you cant see your heart containers)
         near_death_effect_bypass_COTU = false,

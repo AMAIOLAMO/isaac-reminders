@@ -440,21 +440,25 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
-                return mod:get_config().near_death_effect_strength * 10
+                return mod:get_config().near_death_effect_hit_units_threshold
             end,
 
             Display = function()
-                return "Effect Strength: " .. tostring(mod:get_config().near_death_effect_strength)
+                return "Hit Units Threshold: " .. mod:get_config().near_death_effect_hit_units_threshold
             end,
 
-            Minimum = 0, Maximum = 10,
+            Minimum = 1,
+            Maximum = 20,
 
             OnChange = function(value)
-                mod:get_config().near_death_effect_strength = value / 10
+                mod:get_config().near_death_effect_hit_units_threshold = value
             end,
 
             Info = {
-                "Changes the near death effect strength"
+                "Threshold for how many hits remaining for isaac to show the near death effect",
+                "1 unit = half a red heart / soul heart / black heart = 1 bone heart",
+                "= 1 holy mantle / holy card / wooden cross / blanket mantle",
+                "This is ignored in The Lost / Tainted Lost"
             }
         }
     )
@@ -978,6 +982,32 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             Info = {
                 "Toggles whether or not to have a more accurate timing beside seconds",
                 "Examples => ON: 59:59:59.99, OFF: 59:59:59"
+            }
+        }
+    )
+
+    MCM.AddSpace(mod_name, "Visuals")
+    MCM.AddText(mod_name, "Visuals", "Near Death Reminder", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().near_death_effect_strength * 10
+            end,
+
+            Display = function()
+                return "Effect Strength: " .. tostring(mod:get_config().near_death_effect_strength)
+            end,
+
+            Minimum = 0, Maximum = 10,
+
+            OnChange = function(value)
+                mod:get_config().near_death_effect_strength = value / 10
+            end,
+
+            Info = {
+                "Changes the near death effect strength"
             }
         }
     )

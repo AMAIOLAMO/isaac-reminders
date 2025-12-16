@@ -199,7 +199,9 @@ function IUtils.doorslot_to_dir(door_slot)
     assert(false, string.format("invalid door_slot given: %d", door_slot))
 end
 
-function IUtils.get_total_heart_units(player)
+-- calculates the total hit units (aka, how many half red heart damage can isaac take)
+-- does not account for lost's invisible half soul heart
+function IUtils.get_total_hit_units(player)
     -- black hearts are considered types of soul hearts as well
     -- each bone heart is treated as half a heart
     local soul_heart_count = player:GetSoulHearts()

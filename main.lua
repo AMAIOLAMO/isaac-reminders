@@ -1236,10 +1236,12 @@ function rems:on_post_bomb_render(bomb_entity, _)
 end
 
 function rems:get_shader_params(shader_name)
+    local config = self:get_config()
+
     if shader_name == "near_death_vignette" then
         local main_player = Isaac.GetPlayer()
 
-        local total_heart_units = iutils.get_total_heart_units(main_player)
+        local total_hit_units = iutils.get_total_hit_units(main_player)
         
         -- holy mantle, wooden cross, blanket are all considered holy mantle effects
         local mantle_count = iutils.get_total_mantle_effect_count(main_player)
@@ -1247,8 +1249,7 @@ function rems:get_shader_params(shader_name)
         local is_lost_or_tlost = main_player:GetPlayerType() == PlayerType.PLAYER_THELOST or
             main_player:GetPlayerType() == PlayerType.PLAYER_THELOST_B
 
-        -- TODO: make the number 2 to be customizable
-        local is_near_death = (total_heart_units + mantle_count) <= 2
+        local is_near_death = (total_hit_units + mantle_count) <= config.near_death_effect_hit_units_threshold
         
         -- special case for lost and tlost
         if is_lost_or_tlost then
@@ -1257,12 +1258,19 @@ function rems:get_shader_params(shader_name)
 
         local is_curse_of_unknown = game:GetLevel():GetCurses() & LevelCurse.CURSE_OF_THE_UNKNOWN ~= 0
 
-        local config = self:get_config()
+        local strength = 0.0
 
-        local strength = (
-            is_near_death and not is_curse_of_unknown
-            and config.near_death_effect_enabled
-        ) and config.near_death_effect_strength or 0.0
+        if config.near_death_effect_enabled then
+
+            -- should bypass curse of the unknown or not
+            if config.near_death_effect_bypass_COTU and is_near_death then
+                strength = config.near_death_effect_strength
+
+            elseif is_near_death and not is_curse_of_unknown then
+                strength = config.near_death_effect_strength
+            end
+
+        end
 
         local params = {
             Time = Isaac.GetFrameCount(),
