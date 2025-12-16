@@ -1241,7 +1241,7 @@ function rems:get_shader_params(shader_name)
     local circle_shader_name = "near_death_vignette_circle"
     local surround_shader_name = "near_death_vignette_surround"
 
-    local disable_params = { Time = 0, Strength = 0.0 }
+    local disable_params = { Time = 0, Strength = 0.0, Opacity = 0.0 }
 
     if shader_name == circle_shader_name and
         config.near_death_effect_shader_type ~= enums.NearDeathEffectShader.EFFECT_SHADER_CIRCLE then
@@ -1290,6 +1290,7 @@ function rems:get_shader_params(shader_name)
         local params = {
             Time = Isaac.GetFrameCount(),
             Strength = strength,
+            Opacity = config.near_death_effect_opacity,
         }
 
         return params

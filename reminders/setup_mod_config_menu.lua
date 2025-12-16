@@ -1017,6 +1017,30 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
+                return mod:get_config().near_death_effect_opacity * 10
+            end,
+
+            Display = function()
+                return "Effect Opacity: " .. tostring(mod:get_config().near_death_effect_opacity)
+            end,
+
+            Minimum = 0, Maximum = 10,
+
+            OnChange = function(value)
+                mod:get_config().near_death_effect_opacity = value / 10
+            end,
+
+            Info = {
+                "Changes the opacity(aka how NOT transparent it is) of the death effect"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Visuals", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
                 return mod:get_config().near_death_effect_shader_type
             end,
 

@@ -3,6 +3,7 @@
         <parameters>
             <param name="Time" type="float"/>
             <param name="Strength" type="float"/>
+            <param name="Opacity" type="float"/>
         </parameters>
 
         <vertex><![CDATA[
@@ -13,6 +14,7 @@
             attribute float Scale;
             attribute float Time;
             attribute float Strength;
+            attribute float Opacity;
 
             varying vec4 Color0;
             varying vec2 TexCoord0;
@@ -20,6 +22,7 @@
             varying float ScaleOut;
             varying float TimeOut;
             varying float StrengthOut;
+            varying float OpacityOut;
 
             uniform mat4 Transform;
             void main(void)
@@ -31,6 +34,7 @@
                 StrengthOut = Strength;
                 Color0 = Color;
                 TexCoord0 = TexCoord;
+                OpacityOut = Opacity;
 
                 gl_Position = Transform * vec4(Position.xyz, 1.0);
             }
@@ -43,6 +47,7 @@
             varying lowp float ScaleOut;
             varying lowp float TimeOut;
             varying lowp float StrengthOut;
+            varying lowp float OpacityOut;
 
             uniform sampler2D Texture0;
             void main(void)
@@ -60,6 +65,7 @@
                 float final_strength = clamp(StrengthOut, 0.0f, 1.0f) * 0.5f;
 
                 vignette = smoothstep(0.5f - (sin(TimeOut * 0.05f) * 0.5 + 0.5) * final_strength, 1.0f, vignette);
+                vignette *= OpacityOut;
 
                 vec4 Color = mix(original_color, vec4(1, 0, 0, 1), vignette);
                 gl_FragColor = Color;
@@ -72,6 +78,7 @@
         <parameters>
             <param name="Time" type="float"/>
             <param name="Strength" type="float"/>
+            <param name="Opacity" type="float"/>
         </parameters>
 
         <vertex><![CDATA[
@@ -82,6 +89,7 @@
             attribute float Scale;
             attribute float Time;
             attribute float Strength;
+            attribute float Opacity;
 
             varying vec4 Color0;
             varying vec2 TexCoord0;
@@ -89,6 +97,7 @@
             varying float ScaleOut;
             varying float TimeOut;
             varying float StrengthOut;
+            varying float OpacityOut;
 
             uniform mat4 Transform;
             void main(void)
@@ -100,6 +109,7 @@
                 StrengthOut = Strength;
                 Color0 = Color;
                 TexCoord0 = TexCoord;
+                OpacityOut = Opacity;
 
                 gl_Position = Transform * vec4(Position.xyz, 1.0);
             }
@@ -112,6 +122,7 @@
             varying lowp float ScaleOut;
             varying lowp float TimeOut;
             varying lowp float StrengthOut;
+            varying lowp float OpacityOut;
 
             uniform sampler2D Texture0;
             void main(void)
@@ -123,10 +134,11 @@
                 uv *= 1.0 - uv.yx;
                 float vignette = uv.x * uv.y * 16.0; // 16.0 is the intensity
 
-                float final_strength = pow(clamp(StrengthOut, 0.0, 1.0), 2.0);
-                vignette = pow(vignette, (sin(TimeOut * 0.05) * 0.5 + 0.5) * final_strength);
+                float final_strength = pow(clamp(StrengthOut, 0.0, 1.0), 1.6);
+                vignette = 1.0 - pow(vignette, (sin(TimeOut * 0.05) * 0.5 + 0.5) * final_strength);
+                vignette *= OpacityOut;
 
-                vec4 Color = mix(vec4(1, 0, 0, 1), original_color, vignette);
+                vec4 Color = mix(original_color, vec4(1, 0, 0, 1), vignette);
                 gl_FragColor = Color;
             }
         ]]></fragment>

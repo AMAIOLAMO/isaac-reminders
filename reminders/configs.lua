@@ -80,6 +80,7 @@ function Configs.get_default_config()
         -- COTU = curse of the unknown(aka you cant see your heart containers)
         near_death_effect_bypass_COTU = false,
         near_death_effect_shader_type = enums.NearDeathEffectShader.EFFECT_SHADER_SURROUND,
+        near_death_effect_opacity     = 0.8,
     }
 end
 
