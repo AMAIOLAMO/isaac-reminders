@@ -25,7 +25,7 @@ local game = Game()
 local sfx_manager = SFXManager()
 
 -- SETUP --
-local configs = require("reminders.configs")
+local configs = include("reminders.configs")
 
 local function load_static_png_sprite_16x16(png_path)
     local sprite = Sprite()
@@ -89,8 +89,8 @@ rems.extra_info_timer = timerf.new(0.5, 0)
 local RoomNotify = {}
 RoomNotify.__index = RoomNotify
 
-function RoomNotify.new(rtype)
-    return setmetatable({ type = rtype }, RoomNotify)
+function RoomNotify.new(rtype, rcount)
+    return setmetatable({ type = rtype, count = rcount }, RoomNotify)
 end
 
 
@@ -231,9 +231,12 @@ end
 
 function rems:update_notify_rooms()
     local unvisited_special_rooms = self:get_unvisited_special_rooms()
-    for i in ipairs(self.notify_special_rooms) do
-        self.notify_special_rooms[i] = nil
+    for k, _ in pairs(self.notify_special_rooms) do
+        self.notify_special_rooms[k] = nil
     end
+    -- for i in ipairs(self.notify_special_rooms) do
+    --     self.notify_special_rooms[i] = nil
+    -- end
 
     -- may require updating the notify rooms during pickup of collectible & cards
     local can_open_ultra_secret = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_RED_KEY)
@@ -252,7 +255,12 @@ function rems:update_notify_rooms()
         end
 
         if should_notify then
-            table.insert(self.notify_special_rooms, RoomNotify.new(room.Type))
+            if self.notify_special_rooms[room.Type] == nil then
+                self.notify_special_rooms[room.Type] = RoomNotify.new(room.Type, 1)
+            else
+                self.notify_special_rooms[room.Type].count = 
+                    self.notify_special_rooms[room.Type].count + 1
+            end
         end
 
     end
@@ -283,9 +291,18 @@ function rems:render_notify(alpha)
     local opacity = config.notify_info_opacity
     alpha = alpha * opacity
 
+    local notify_text_header = "=== ![Missed Special Rooms]! ==="
+    local notify_text_header_ok = "No Missed Special Rooms :)"
+
+    local has_special_room = false
+    for _k, _v in pairs(self.notify_special_rooms) do
+        has_special_room = true
+        break
+    end
+    
     -- fallback to a solution
-    local notify_header = #self.notify_special_rooms == 0 and
-        config.notify_text_header_ok or config.notify_text_header
+    local notify_header = has_special_room and
+        notify_text_header or notify_text_header_ok
         or "Notify header is somehow nil! Reset Config to fix this."
         
     local header_width = Isaac.GetTextWidth(notify_header) * text_scale
@@ -309,13 +326,20 @@ function rems:render_notify(alpha)
     notify_sprite:SetFrame(notify_sprite:GetDefaultAnimation(), 0)
     notify_sprite:Render(render_pivot + Vector(-32, 0))
 
-    for i, room in ipairs(self.notify_special_rooms) do
+    local line_no = 1
+    for k, room in pairs(self.notify_special_rooms) do
         assert(self.roomtype2icon, "Cannot draw icon!")
-        local line_height_offset = line_height * i
+        local line_height_offset = line_height * line_no
 
         -- fall back to displaying room type
         local rname = iutils.room_name_from_type(room.type) or
             ("NIL ROOM of type: " .. room.type)
+
+        local rlabel = rname
+
+        if room.count > 1 then
+            rlabel = string.format("%s x%d", rlabel, room.count)
+        end
 
         -- default fall back icon to secret room icon
         local icon_id = self.roomtype2icon[room.type] or
@@ -327,7 +351,7 @@ function rems:render_notify(alpha)
         local BASE_ICON_SIZE = 12
         local icon_fsize = BASE_ICON_SIZE * icon_scale
 
-        local name_width = Isaac.GetTextWidth(rname) * text_scale
+        local name_width = Isaac.GetTextWidth(rlabel) * text_scale
         local x_pivot = (width - name_width) / 2
 
         -- TODO: add special ICON ONLY way of grid align of icons
@@ -340,14 +364,14 @@ function rems:render_notify(alpha)
 
         if config.notify_info_type & enums.NotifyInfoType.NOTIFY_TEXT ~= 0 then
             Isaac.RenderScaledText(
-                rname,
+                rlabel,
                 x_pivot, render_pivot.Y + line_height_offset,
                 text_scale, text_scale,
                 1, 1, 1, alpha
             )
         end
 
-        -- ::continue::
+        line_no = line_no + 1
     end
 end
 

@@ -19,9 +19,6 @@ function Configs.get_default_config()
         normal_color_marked = iserializer.encode_color(Color(1, 1, 0)),
 
         notify_info_enabled = true,
-        -- TODO: should move all of the text headers to be simply just a constant
-        notify_text_header = "=== ![Missed Special Rooms]! ===",
-        notify_text_header_ok = "No Missed Special Rooms :)",
         notify_info_offset = iserializer.encode_vector(Vector(0, 0)),
         notify_info_end_of_boss_notify = true,
         notify_info_conditional_ultra_secret = true,
