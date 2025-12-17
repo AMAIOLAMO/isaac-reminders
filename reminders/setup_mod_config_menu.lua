@@ -1,9 +1,9 @@
 -- AUTHOR: CxRedix
 -- Copyright 2025 CxRedix
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
-local mcm_helper = require("reminders.mod_config_menu_helper")
-local iserializer = require("reminders.iserializer")
-local enums = require("reminders.enums")
+local mcm_helper  = include("reminders.mod_config_menu_helper")
+local iserializer = include("reminders.iserializer")
+local enums       = include("reminders.enums")
 
 local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     local DEFAULT_TXT_COLOR = {.1, .2, .4}

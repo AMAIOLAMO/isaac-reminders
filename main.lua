@@ -10,15 +10,15 @@
 local MOD_NAME = "Reminders"
 local rems = RegisterMod(MOD_NAME, 1)
 
-local json         = require("reminders.lib.json")
-local timerf       = require("reminders.timerf")
-local iserializer  = require("reminders.iserializer")
-local ilogger      = require("reminders.ilogger")
-local iutils       = require("reminders.iutils")
-local enums        = require("reminders.enums")
-local offset_stack = require("reminders.offset_stack")
+local json         = include("reminders.lib.json")
+local timerf       = include("reminders.timerf")
+local iserializer  = include("reminders.iserializer")
+local ilogger      = include("reminders.ilogger")
+local iutils       = include("reminders.iutils")
+local enums        = include("reminders.enums")
+local offset_stack = include("reminders.offset_stack")
 
-local setup_mod_config_menu = require("reminders.setup_mod_config_menu")
+local setup_mod_config_menu = include("reminders.setup_mod_config_menu")
 
 -- GAME --
 local game = Game()
@@ -987,7 +987,112 @@ function rems:render_secret_room_placeholders()
     end
 end
 
+function rems:render_schoolbag_reminder()
+    local config = self:get_config()
+    local is_mirror = game:GetRoom():IsMirrorWorld()
+
+    -- pedestals are entity pickups
+    -- renders for schoolbag
+    local pedestals = Isaac.FindByType(EntityType.ENTITY_PICKUP, 100, -1, true)
+
+    local has_active_item_pedestal = false
+
+    for _, pedestal in ipairs(pedestals) do
+        if pedestal.SubType == 0 then
+            goto continue
+        end
+
+        local collectible_conf = Isaac.GetItemConfig():GetCollectible(pedestal.SubType)
+
+        if collectible_conf.Type ~= ItemType.ITEM_ACTIVE then
+            goto continue
+        end
+
+        has_active_item_pedestal = true
+
+        ::continue::
+    end
+
+    if has_active_item_pedestal then
+        local player_count = game:GetNumPlayers()
+        
+        for i = 0, player_count - 1 do
+            local player = game:GetPlayer(i)
+
+            if player:HasCollectible(CollectibleType.COLLECTIBLE_SCHOOLBAG) then
+                local offset = Vector(0, config.schoolbag_reminder_yoffset)
+                local scr_pos = iutils.world_to_screen_ext(player.Position, is_mirror)
+
+                render_static_sprite(
+                    "SchoolbagPivotCenter", 0, {
+                        pos = scr_pos + offset
+                    }
+                )
+            end
+        end
+
+    end
+end
+
+function rems:render_item_reminders()
+    -- renders grid
+    local cell_size = Vector(16, 16)
+    local padding   = Vector(5, 5)
+    local offset    = Vector(0, 0)
+
+    local scale     = 1.0
+
+    local items = {}
+
+    local ITEM_ASSOCIATE_REMINDERS = {
+        [CollectibleType.COLLECTIBLE_SOCKS] = enums.ItemReminderFrame.IREMINDER_ORPHAN_SOCKS,
+    }
+
+    for c, v in pairs(ITEM_ASSOCIATE_REMINDERS) do
+        if iutils.any_player_has_collectible(game, c) then
+            table.insert(items, v)
+        end
+    end
+
+    local item_count = #items
+    local column_count = 10
+
+    if item_count < column_count then
+        column_count = item_count
+    end
+
+    local bottom_center = Vector(
+        Isaac.GetScreenWidth() * 0.5,
+        Isaac.GetScreenHeight()
+    )
+
+    local row_count = math.ceil(item_count / column_count)
+
+    for y=0, row_count - 1 do
+        local render_count = item_count > column_count and column_count or item_count
+        item_count = item_count - render_count
+
+        for x=0, render_count - 1 do
+
+            render_static_sprite(
+                "ItemReminders", items[y * row_count + x + 1], {
+                    pos = Vector(
+                        x * (cell_size.X * scale + padding.X),
+                        y * (cell_size.Y * scale + padding.Y)
+                    ) + bottom_center
+                        + Vector(0, -1) * row_count * (cell_size.Y * scale + padding.Y)
+                        + Vector(-1, 0) * column_count * (cell_size.X * scale + padding.X) * 0.5,
+                    scale = Vector.One * scale
+                }
+            )
+
+        end
+    end
+end
+
+---------------
 -- CALLBACKS --
+---------------
 
 function rems:on_post_game_started(continued)
     self:log_debug("Game started")
@@ -1203,9 +1308,17 @@ function rems:on_post_render()
         if config.game_timer_enabled then
             self:render_game_timer(self.timer_offset_stack)
         end
+
+        self:render_item_reminders()
     end
 
     self.prev_frame_time = Isaac.GetTime()
+end
+
+function rems:on_post_player_render(player, render_offset)
+    if self:get_config().schoolbag_reminder_enabled then
+        self:render_schoolbag_reminder()
+    end
 end
 
 function rems:on_post_bomb_render(bomb_entity, _)
@@ -1316,8 +1429,10 @@ rems:AddCallback(ModCallbacks.MC_POST_RENDER, rems.on_post_render)
 rems:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, rems.on_post_new_room)
 rems:AddCallback(ModCallbacks.MC_POST_NEW_LEVEL, rems.on_post_new_floor)
 rems:AddCallback(ModCallbacks.MC_PRE_SPAWN_CLEAN_AWARD, rems.on_pre_spawn_clean_award)
+rems:AddCallback(ModCallbacks.MC_POST_PLAYER_RENDER, rems.on_post_player_render)
 
 rems:AddCallback(ModCallbacks.MC_EXECUTE_CMD, rems.on_execute_cmd)
 
 rems:AddCallback(ModCallbacks.MC_POST_BOMB_RENDER, rems.on_post_bomb_render)
 rems:AddCallback(ModCallbacks.MC_GET_SHADER_PARAMS, rems.get_shader_params)
+

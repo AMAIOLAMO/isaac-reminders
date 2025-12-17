@@ -45,6 +45,11 @@ local enums = {
         EFFECT_SHADER_SURROUND = 2,
         EFFECT_SHADER_END      = 2,
     },
+
+    ItemReminderFrame = {
+        IREMINDER_SCHOOLBAG    = 0,
+        IREMINDER_ORPHAN_SOCKS = 1,
+    }
 }
 
 function enums.NotifyInfoType:to_description(type)

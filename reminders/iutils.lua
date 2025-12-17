@@ -95,6 +95,9 @@ function IUtils.assert_sprite_load(gfx_path, should_load)
 end
 
 -- utility to get actual game time
+-- returns {
+--  total_secs: number, ms: number, secs: number, mins: number, hours: number
+-- }
 function IUtils.get_game_time(game)
     local total_milliseconds = math.floor(game.TimeCounter * (10 / 3))
     local total_seconds = math.floor(game.TimeCounter / 30)

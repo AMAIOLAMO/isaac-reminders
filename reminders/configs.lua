@@ -81,6 +81,9 @@ function Configs.get_default_config()
         near_death_effect_bypass_COTU = false,
         near_death_effect_shader_type = enums.NearDeathEffectShader.EFFECT_SHADER_SURROUND,
         near_death_effect_opacity     = 0.8,
+
+        schoolbag_reminder_enabled = true,
+        schoolbag_reminder_yoffset = 10,
     }
 end
 
