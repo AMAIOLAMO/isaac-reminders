@@ -1336,7 +1336,8 @@ function rems:on_post_render()
             self:render_game_timer(self.timer_offset_stack)
         end
 
-        self:render_item_reminders()
+        -- incomplete
+        -- self:render_item_reminders()
     end
 
     self.prev_frame_time = Isaac.GetTime()

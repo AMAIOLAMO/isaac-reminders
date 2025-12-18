@@ -5,466 +5,13 @@ local mcm_helper  = include("reminders.mod_config_menu_helper")
 local iserializer = include("reminders.iserializer")
 local enums       = include("reminders.enums")
 
-local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
-    local DEFAULT_TXT_COLOR = {.1, .2, .4}
+local MCM = ModConfigMenu
 
-    local MCM = ModConfigMenu
+local DEFAULT_TXT_COLOR = {.1, .2, .4}
+
+local function setup_general(mod_name, mod, on_reset_config_callback)
     assert(MCM, "Cannot Find Mod Config Menu!")
-
-    -- clean up mod config menu
-    if MCM.GetCategoryIDByName(mod_name) ~= nil then
-        MCM.RemoveCategory(mod_name)
-    end
     
-
-    -- GENERAL SECTION --
-
-    MCM.AddText(mod_name, "General", "Map Special Room Colormarks", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().map_special_colormarks_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().map_special_colormarks_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().map_special_colormarks_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether or not to have color marks (visited, unvisited) special rooms",
-                "on the minimap(REFRESH REQUIRED -> enter exit room OR quit and rejoin run / game)"
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "General")
-
-
-    MCM.AddText(mod_name, "General", "Time Progress", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().time_progress_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().time_progress_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().time_progress_enabled = value
-            end,
-
-            Info = {
-                "Toggles the visibility of the time progress shown at the top",
-                "Time progress is used to indicate boss rush / hush"
-            }
-        }
-    )
-
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().time_progress_disable_in_greed
-            end,
-
-            Display = function()
-                return "Disable in greed mode: " .. (mod:get_config().time_progress_disable_in_greed and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().time_progress_disable_in_greed = value
-            end,
-
-            Info = {
-                "Whether or not to disable time progress in greed mode always",
-            }
-        }
-    )
-
-    MCM.AddSpace(mod_name, "General")
-
-    MCM.AddText(mod_name, "General", "Game Timer", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().game_timer_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().game_timer_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().game_timer_enabled = value
-            end,
-
-            Info = {
-                "Toggles the visibility of the game timer shown at the top"
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "General")
-
-    MCM.AddText(mod_name, "General", "Lost Death Donation Notify", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().lost_death_icon_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().lost_death_icon_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().lost_death_icon_enabled = value
-            end,
-
-            Info = {
-                "Toggles the visibility of an icon whether or not to show you will die",
-                "if donated to a blood donation machine / a devil beggar"
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "General")
-
-    MCM.AddText(mod_name, "General", "Door Reminders", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().door_reminders_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().door_reminders_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().door_reminders_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether or not to display door reminders in the first place",
-                "For example, white fire icon above curse room in floors with white fire"
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "General")
-
-    MCM.AddText(mod_name, "General", "Notify Info", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().notify_info_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().notify_info_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().notify_info_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether or not notify info should be enabled",
-                "Notify info shows the reminder of special rooms unvisited this floor"
-            }
-        }
-    )
-
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().notify_info_end_of_boss_notify
-            end,
-
-            Display = function()
-                return "Should notify after boss complete: " .. (mod:get_config().notify_info_end_of_boss_notify and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().notify_info_end_of_boss_notify = value
-            end,
-
-            Info = {
-                "Toggles whether or not notify info should automatically",
-                "showup after a boss has been defeated"
-            }
-        }
-    )
-
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().notify_info_conditional_ultra_secret
-            end,
-
-            Display = function()
-                return "Conditional Ultra Secret: " .. (mod:get_config().notify_info_conditional_ultra_secret and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().notify_info_conditional_ultra_secret = value
-            end,
-
-            Info = {
-                "Toggles whether or not notify info should show Ultra Secret Rooms",
-                "If and only if any player has: Red Key / Cracked Key / Soul of Cain"
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "General")
-    
-    MCM.AddText(mod_name, "General", "Bum kill reminders", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().bum_kill_reminders_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().bum_kill_reminders_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().bum_kill_reminders_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether or not bum / beggars should show kill reminders",
-                "For the current floor"
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "General")
-
-    MCM.AddText(mod_name, "General", "Explosion Immunity Reminders", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().explosion_immunity_reminders_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().explosion_immunity_reminders_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().explosion_immunity_reminders_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether to show on explosion(i.e. bombs, troll bombs) that",
-                "Isaac has explosion immunity"
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "General")
-
-    MCM.AddText(mod_name, "General", "Knife Piece Reminders", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().knife_piece_reminders_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().knife_piece_reminders_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().knife_piece_reminders_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether to show knife piece 1 and knife piece 2 reminders",
-                "at the trapdoor to the next floor"
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "General")
-
-    MCM.AddText(mod_name, "General", "Potential Secret Room Placeholders", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().secret_room_placeholder_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().secret_room_placeholder_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().secret_room_placeholder_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether or not to show potential secret room placeholders"
-            }
-        }
-    )
-
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.NUMBER,
-
-            CurrentSetting = function()
-                return mod:get_config().secret_room_placeholder_display_trigger
-            end,
-
-            Display = function()
-                return "Display trigger: " .. enums.DisplayTrigger:to_description(
-                    mod:get_config().secret_room_placeholder_display_trigger
-                )
-            end,
-
-            Minimum = enums.DisplayTrigger.TRIGGER_BEGIN,
-            Maximum = enums.DisplayTrigger.TRIGGER_END,
-
-            OnChange = function(value)
-                mod:get_config().secret_room_placeholder_display_trigger = value
-            end,
-
-            Info = {
-                "Switches between different kinds of display mode:",
-                "Always = Always displays",
-                "On Extra Info = Displays only when holding map button"
-            }
-        }
-    )
-
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().secret_room_placeholder_only_hard_to_find_enabled
-            end,
-
-            Display = function()
-                return "Only hard / bigger rooms: " .. (mod:get_config().secret_room_placeholder_only_hard_to_find_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().secret_room_placeholder_only_hard_to_find_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether or not to only show up placeholders for harder(bigger) rooms"
-            }
-        }
-    )
-
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().secret_room_placeholder_only_clear_rooms_enabled
-            end,
-
-            Display = function()
-                return "Enable only when room cleared: " ..
-                    (mod:get_config().secret_room_placeholder_only_clear_rooms_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().secret_room_placeholder_only_clear_rooms_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether or not placeholders should show up ONLY when room is cleared"
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "General")
-
-    MCM.AddText(mod_name, "General", "Near Death Reminders", DEFAULT_TXT_COLOR)
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().near_death_effect_enabled
-            end,
-
-            Display = function()
-                return "Enabled: " .. (mod:get_config().near_death_effect_enabled and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().near_death_effect_enabled = value
-            end,
-
-            Info = {
-                "Toggles whether or not to display an effect when the player is",
-                "on low critical health"
-            }
-        }
-    )
-
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.NUMBER,
-
-            CurrentSetting = function()
-                return mod:get_config().near_death_effect_hit_units_threshold
-            end,
-
-            Display = function()
-                return "Hit Units Threshold: " .. mod:get_config().near_death_effect_hit_units_threshold
-            end,
-
-            Minimum = 1,
-            Maximum = 20,
-
-            OnChange = function(value)
-                mod:get_config().near_death_effect_hit_units_threshold = value
-            end,
-
-            Info = {
-                "Threshold for how many hits remaining for isaac to show the near death effect",
-                "1 unit = half a red heart / soul heart / black heart = 1 bone heart",
-                "= 1 holy mantle / holy card / wooden cross / blanket mantle",
-                "This is ignored in The Lost / Tainted Lost"
-            }
-        }
-    )
-
-    MCM.AddSpace(mod_name, "General")
-
     MCM.AddText(mod_name, "General", "Developer", DEFAULT_TXT_COLOR)
 
     MCM.AddSetting(
@@ -514,13 +61,317 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             Color = {0.65, 0, 0}
         }
     )
-    
-    ---------------------
-    -- VISUALS SECTION -- 
-    ---------------------
-    MCM.AddText(mod_name, "Visuals", "Icon Scale", DEFAULT_TXT_COLOR)
+end
+
+local function setup_doors(mod_name, mod)
+    MCM.AddText(mod_name, "Doors", "Door Reminders", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Doors", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().door_reminders_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().door_reminders_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().door_reminders_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not to display door reminders in the first place",
+                "For example, white fire icon above curse room in floors with white fire"
+            }
+        }
+    )
+end
+
+local function setup_map(mod_name, mod)
+    MCM.AddText(mod_name, "Map", "Map Special Room Colormarks", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Map", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().map_special_colormarks_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().map_special_colormarks_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().map_special_colormarks_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not to have color marks (visited, unvisited) special rooms",
+                "on the minimap(REFRESH REQUIRED -> enter exit room OR quit and rejoin run / game)"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "Map")
+
+    MCM.AddText(mod_name, "Map", "Unvisited Rooms", DEFAULT_TXT_COLOR)
+    mcm_helper.add_color_setting(
+        mod_name, "Map", {
+            CurrentSetting = function()
+                return iserializer.decode_color(mod:get_config().special_color_unvisited)
+            end,
+
+            OnChange = function(new_color)
+                mod:get_config().special_color_unvisited = iserializer.encode_color(new_color)
+            end
+        }
+    )
+    MCM.AddSpace(mod_name, "Map")
+
+    MCM.AddText(mod_name, "Map", "Visited Rooms", DEFAULT_TXT_COLOR)
+    mcm_helper.add_color_setting(
+        mod_name, "Map", {
+            CurrentSetting = function()
+                return iserializer.decode_color(mod:get_config().special_color_visited)
+            end,
+
+            OnChange = function(new_color)
+                mod:get_config().special_color_visited = iserializer.encode_color(new_color)
+            end
+        }
+    )
+    MCM.AddSpace(mod_name, "Map")
+
+end
+
+local function setup_items(mod_name, mod)
+    MCM.AddText(mod_name, "Items", "Schoolbag Reminder", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Items", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().schoolbag_reminder_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().schoolbag_reminder_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().schoolbag_reminder_enabled = value
+            end,
+
+            Info = {
+                "Enables or disables schoolbag reminder"
+            },
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Items", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().schoolbag_reminder_yoffset
+            end,
+
+            Display = function()
+                return "Y offset: " .. mod:get_config().schoolbag_reminder_yoffset
+            end,
+
+            Minimum = -500,
+            Maximum = 500,
+
+            OnChange = function(value)
+                mod:get_config().schoolbag_reminder_yoffset = value
+            end,
+
+            Info = {
+                "The vertical offset (y offset) of where the schoolbag should appear relative",
+                "to isaac themselves"
+            }
+        }
+    )
+    
+    MCM.AddSpace(mod_name, "Items")
+
+    MCM.AddText(mod_name, "Items", "Knife Piece Reminders", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Items", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().knife_piece_reminders_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().knife_piece_reminders_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().knife_piece_reminders_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether to show knife piece 1 and knife piece 2 reminders",
+                "at the trapdoor to the next floor"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "Items")
+
+    MCM.AddText(mod_name, "Items", "Explosion Immunity Reminders", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Items", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().explosion_immunity_reminders_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().explosion_immunity_reminders_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().explosion_immunity_reminders_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether to show on explosion(i.e. bombs, troll bombs) that",
+                "Isaac has explosion immunity"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "Items")
+
+    MCM.AddSetting(
+        mod_name, "Items", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().explosion_immunity_reminder_opacity * 10
+            end,
+
+            Display = function()
+                return "Opacity: " .. tostring(mod:get_config().explosion_immunity_reminder_opacity)
+            end,
+
+            Minimum = 0, Maximum = 100,
+
+            OnChange = function(value)
+                mod:get_config().explosion_immunity_reminder_opacity = value / 10
+            end,
+
+            Info = {
+                "changes the opacity (how NOT transparent the reminder is)",
+                "of the explosion immunity reminder"
+            }
+        }
+    )
+    MCM.AddSetting(
+        mod_name, "Items", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().explosion_immunity_reminder_size
+            end,
+
+            Display = function()
+                return "Green Circle Size: " .. (enums.Sizes:to_description(mod:get_config().explosion_immunity_reminder_size))
+            end,
+
+            Minimum = enums.Sizes.SIZES_BEGIN, Maximum = enums.Sizes.SIZES_END,
+
+            OnChange = function(value)
+                mod:get_config().explosion_immunity_reminder_size = value
+            end,
+
+            Info = {
+                "changes how large the circle around the bombs should be",
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "Items")
+end
+
+local function setup_extra_info(mod_name, mod)
+    MCM.AddText(mod_name, "Extra Info", "Notify Info Popup", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Extra Info", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().notify_info_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not notify info should be enabled",
+                "Notify info shows the reminder of special rooms unvisited this floor"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Extra Info", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_end_of_boss_notify
+            end,
+
+            Display = function()
+                return "Should notify after boss complete: " .. (mod:get_config().notify_info_end_of_boss_notify and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_end_of_boss_notify = value
+            end,
+
+            Info = {
+                "Toggles whether or not notify info should automatically",
+                "showup after a boss has been defeated"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Extra Info", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_conditional_ultra_secret
+            end,
+
+            Display = function()
+                return "Conditional Ultra Secret: " .. (mod:get_config().notify_info_conditional_ultra_secret and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_conditional_ultra_secret = value
+            end,
+
+            Info = {
+                "Toggles whether or not notify info should show Ultra Secret Rooms",
+                "If and only if any player has: Red Key / Cracked Key / Soul of Cain"
+            }
+        }
+    )
+
+    MCM.AddSpace(mod_name, "Extra Info")
+
+    MCM.AddSetting(
+        mod_name, "Extra Info", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -542,12 +393,10 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
-    MCM.AddSpace(mod_name, "Visuals")
+    MCM.AddSpace(mod_name, "Extra Info")
 
-
-    MCM.AddText(mod_name, "Visuals", "Notify Info", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Extra Info", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -571,7 +420,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Extra Info", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -594,10 +443,10 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
         }
     )
 
-    MCM.AddSpace(mod_name, "Visuals")
+    MCM.AddSpace(mod_name, "Extra Info")
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Extra Info", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -621,7 +470,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Extra Info", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -644,10 +493,10 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
         }
     )
 
-    MCM.AddSpace(mod_name, "Visuals")
+    MCM.AddSpace(mod_name, "Extra Info")
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Extra Info", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -670,11 +519,11 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
-    MCM.AddText(mod_name, "Visuals", "Note: Notify Icon Only is incomplete", {0.4, 0.4, 0.4})
-    MCM.AddSpace(mod_name, "Visuals")
+    MCM.AddText(mod_name, "Extra Info", "Note: Notify Icon Only is incomplete", {0.4, 0.4, 0.4})
+    MCM.AddSpace(mod_name, "Extra Info")
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Extra Info", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -696,39 +545,60 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
-    MCM.AddSpace(mod_name, "Visuals")
+    MCM.AddSpace(mod_name, "Extra Info")
+end
 
-    MCM.AddText(mod_name, "Visuals", "Unvisited Rooms", DEFAULT_TXT_COLOR)
-    mcm_helper.add_color_setting(
-        mod_name, "Visuals", {
-            CurrentSetting = function()
-                return iserializer.decode_color(mod:get_config().special_color_unvisited)
-            end,
-
-            OnChange = function(new_color)
-                mod:get_config().special_color_unvisited = iserializer.encode_color(new_color)
-            end
-        }
-    )
-    MCM.AddSpace(mod_name, "Visuals")
-
-    MCM.AddText(mod_name, "Visuals", "Visited Rooms", DEFAULT_TXT_COLOR)
-    mcm_helper.add_color_setting(
-        mod_name, "Visuals", {
-            CurrentSetting = function()
-                return iserializer.decode_color(mod:get_config().special_color_visited)
-            end,
-
-            OnChange = function(new_color)
-                mod:get_config().special_color_visited = iserializer.encode_color(new_color)
-            end
-        }
-    )
-    MCM.AddSpace(mod_name, "Visuals")
-
-    MCM.AddText(mod_name, "Visuals", "Time Progress", DEFAULT_TXT_COLOR)
+local function setup_time(mod_name, mod)
+    MCM.AddText(mod_name, "Time", "Time Progress", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Time", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().time_progress_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().time_progress_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().time_progress_enabled = value
+            end,
+
+            Info = {
+                "Toggles the visibility of the time progress shown at the top",
+                "Time progress is used to indicate boss rush / hush"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Time", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().time_progress_disable_in_greed
+            end,
+
+            Display = function()
+                return "Disable in greed mode: " .. (mod:get_config().time_progress_disable_in_greed and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().time_progress_disable_in_greed = value
+            end,
+
+            Info = {
+                "Whether or not to disable time progress in greed mode always",
+            }
+        }
+    )
+
+    MCM.AddSpace(mod_name, "Time")
+
+    MCM.AddSetting(
+        mod_name, "Time", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -752,7 +622,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Time", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -776,7 +646,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
         }
     )
 
-    mcm_helper.add_vector_setting(mod_name, "Visuals", {
+    mcm_helper.add_vector_setting(mod_name, "Time", {
         CurrentSetting = function()
             return iserializer.decode_vector(mod:get_config().time_progress_offset)
         end,
@@ -787,7 +657,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     })
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Time", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -812,7 +682,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Time", {
             Type = MCM.OptionType.BOOLEAN,
 
             CurrentSetting = function()
@@ -834,7 +704,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Time", {
             Type = MCM.OptionType.BOOLEAN,
 
             CurrentSetting = function()
@@ -854,60 +724,34 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
-    MCM.AddSpace(mod_name, "Visuals")
+    MCM.AddSpace(mod_name, "Time")
 
-    MCM.AddText(mod_name, "Visuals", "Explosion Immunity Reminders", DEFAULT_TXT_COLOR)
+
+    MCM.AddText(mod_name, "Time", "Game Timer", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
-        mod_name, "Visuals", {
-            Type = MCM.OptionType.NUMBER,
+        mod_name, "Time", {
+            Type = MCM.OptionType.BOOLEAN,
 
             CurrentSetting = function()
-                return mod:get_config().explosion_immunity_reminder_opacity * 10
+                return mod:get_config().game_timer_enabled
             end,
 
             Display = function()
-                return "Opacity: " .. tostring(mod:get_config().explosion_immunity_reminder_opacity)
+                return "Enabled: " .. (mod:get_config().game_timer_enabled and "on" or "off")
             end,
 
-            Minimum = 0, Maximum = 100,
-
             OnChange = function(value)
-                mod:get_config().explosion_immunity_reminder_opacity = value / 10
+                mod:get_config().game_timer_enabled = value
             end,
 
             Info = {
-                "changes the opacity (how NOT transparent the reminder is)",
-                "of the explosion immunity reminder"
+                "Toggles whether to enable the game timer shown at the top"
             }
         }
     )
-    MCM.AddSetting(
-        mod_name, "Visuals", {
-            Type = MCM.OptionType.NUMBER,
+    MCM.AddSpace(mod_name, "Time")
 
-            CurrentSetting = function()
-                return mod:get_config().explosion_immunity_reminder_size
-            end,
-
-            Display = function()
-                return "Green Circle Size: " .. (enums.Sizes:to_description(mod:get_config().explosion_immunity_reminder_size))
-            end,
-
-            Minimum = enums.Sizes.SIZES_BEGIN, Maximum = enums.Sizes.SIZES_END,
-
-            OnChange = function(value)
-                mod:get_config().explosion_immunity_reminder_size = value
-            end,
-
-            Info = {
-                "changes how large the circle around the bombs should be",
-            }
-        }
-    )
-    MCM.AddSpace(mod_name, "Visuals")
-
-    MCM.AddText(mod_name, "Visuals", "Game Timer", DEFAULT_TXT_COLOR)
-    mcm_helper.add_vector_setting(mod_name, "Visuals", {
+    mcm_helper.add_vector_setting(mod_name, "Time", {
         CurrentSetting = function()
             return iserializer.decode_vector(mod:get_config().game_timer_offset)
         end,
@@ -918,7 +762,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     })
 
     mcm_helper.add_float_setting(
-        mod_name, "Visuals", {
+        mod_name, "Time", {
             Precision = 2,
 
             CurrentSetting = function()
@@ -940,7 +784,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Time", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -964,7 +808,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Time", {
             Type = MCM.OptionType.BOOLEAN,
 
             CurrentSetting = function()
@@ -985,11 +829,91 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
+end
 
-    MCM.AddSpace(mod_name, "Visuals")
-    MCM.AddText(mod_name, "Visuals", "Near Death Reminder", DEFAULT_TXT_COLOR)
+local function setup_characters(mod_name, mod)
+    MCM.AddText(mod_name, "Characters", "Lost Death Donation Notify", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Characters", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().lost_death_icon_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().lost_death_icon_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().lost_death_icon_enabled = value
+            end,
+
+            Info = {
+                "Toggles the visibility of an icon whether or not to show you will die",
+                "if donated to a blood donation machine / a devil beggar"
+            }
+        }
+    )
+
+    MCM.AddSpace(mod_name, "Characters")
+
+    MCM.AddText(mod_name, "Characters", "Near Death Reminders", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Characters", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().near_death_effect_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().near_death_effect_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().near_death_effect_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not to display an effect when the player is",
+                "on low critical health"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Characters", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().near_death_effect_hit_units_threshold
+            end,
+
+            Display = function()
+                return "Hit Units Threshold: " .. mod:get_config().near_death_effect_hit_units_threshold
+            end,
+
+            Minimum = 1,
+            Maximum = 20,
+
+            OnChange = function(value)
+                mod:get_config().near_death_effect_hit_units_threshold = value
+            end,
+
+            Info = {
+                "Threshold for how many hits remaining for isaac to show the near death effect",
+                "1 unit = half a red heart / soul heart / black heart = 1 bone heart",
+                "= 1 holy mantle / holy card / wooden cross / blanket mantle",
+                "This is ignored in The Lost / Tainted Lost"
+            }
+        }
+    )
+
+    MCM.AddSpace(mod_name, "Characters")
+
+    MCM.AddSetting(
+        mod_name, "Characters", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -1013,7 +937,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Characters", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -1037,7 +961,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     )
 
     MCM.AddSetting(
-        mod_name, "Visuals", {
+        mod_name, "Characters", {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -1063,6 +987,155 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             }
         }
     )
+
+end
+
+local function setup_deals(mod_name, mod)
+    MCM.AddText(mod_name, "Deals", "Bum kill reminders", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Deals", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().bum_kill_reminders_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().bum_kill_reminders_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().bum_kill_reminders_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not bum / beggars should show kill reminders",
+                "For the current floor"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "Deals")
+end
+
+local function setup_rooms(mod_name, mod)
+    MCM.AddText(mod_name, "Rooms", "Potential Secret Room Placeholders", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Rooms", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().secret_room_placeholder_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().secret_room_placeholder_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().secret_room_placeholder_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not to show potential secret room placeholders"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Rooms", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().secret_room_placeholder_display_trigger
+            end,
+
+            Display = function()
+                return "Display trigger: " .. enums.DisplayTrigger:to_description(
+                    mod:get_config().secret_room_placeholder_display_trigger
+                )
+            end,
+
+            Minimum = enums.DisplayTrigger.TRIGGER_BEGIN,
+            Maximum = enums.DisplayTrigger.TRIGGER_END,
+
+            OnChange = function(value)
+                mod:get_config().secret_room_placeholder_display_trigger = value
+            end,
+
+            Info = {
+                "Switches between different kinds of display mode:",
+                "Always = Always displays",
+                "On Extra Info = Displays only when holding map button"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Rooms", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().secret_room_placeholder_only_hard_to_find_enabled
+            end,
+
+            Display = function()
+                return "Only hard / bigger rooms: " .. (mod:get_config().secret_room_placeholder_only_hard_to_find_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().secret_room_placeholder_only_hard_to_find_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not to only show up placeholders for harder(bigger) rooms"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Rooms", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().secret_room_placeholder_only_clear_rooms_enabled
+            end,
+
+            Display = function()
+                return "Enable only when room cleared: " ..
+                    (mod:get_config().secret_room_placeholder_only_clear_rooms_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().secret_room_placeholder_only_clear_rooms_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not placeholders should show up ONLY when room is cleared"
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "Rooms")
+end
+
+local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
+    assert(MCM, "Cannot Find Mod Config Menu!")
+
+    -- clean up mod config menu if it has been drawn before
+    if MCM.GetCategoryIDByName(mod_name) ~= nil then
+        MCM.RemoveCategory(mod_name)
+    end
+    
+
+    -- GENERAL SECTION --
+    setup_general(mod_name, mod, on_reset_config_callback)
+    setup_extra_info(mod_name, mod)
+    setup_doors(mod_name, mod)
+    setup_map(mod_name, mod)
+    setup_rooms(mod_name, mod)
+    setup_items(mod_name, mod)
+    setup_time(mod_name, mod)
+    setup_characters(mod_name, mod)
+    setup_deals(mod_name, mod)
 
     -- TODO: instead of doing it like this, (since tables are iterated randomly)
     local CREDITS = {
