@@ -1145,21 +1145,21 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
 
         ["Special Thanks"] = {
             "Mod Config Menu Pure & MiniMAPI",
-
+            "",
             "A lot of helpful feedback from",
             "extremethreat1",
-
+            "",
             "The original Pyromaniac Reminder",
             "-- Barney(Steam)",
-
-            "The original Don't Forget",
-            "(knife piece reminder)",
+            "",
+            "The original Idea of Knife Piece Reminder",
+            "Don't Forget Mod",
             "-- I sniff seats(Steam)",
-
+            "",
             "Original Idea of Secret Room Placeholder",
             "Secretroom Placeholder Mod",
             "-- HeliOS(Steam)",
-
+            "",
             "Original Idea of Near Death Reminder",
             "Critical Damage Mod",
             "-- Harvester(Steam)"
