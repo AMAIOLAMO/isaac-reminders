@@ -1246,9 +1246,6 @@ function rems:on_pre_spawn_clean_award(_rng)
 
     local current_room = MinimapAPI:GetCurrentRoom()
 
-    -- TODO: Handle void floor differently, as it could be annoying to show up everytime
-    -- TODO: handle mirror floors differently, although Im still unsure on how to
-    -- Check whether or not it has been seen in the normal world
     if current_room ~= nil and current_room.Type == RoomType.ROOM_BOSS then
         self:on_boss_completed(current_room)
     end
@@ -1262,7 +1259,13 @@ function rems:on_boss_completed(boss_room)
 
     self:log_debug("BOSS COMPLETED, NOTIFY PLAYER ABOUT MISSED SPECIAL ROOMS")
 
-    self:start_notify_info()
+    -- TODO: handle mirror floors differently, although Im still unsure on how to
+    -- Check whether or not it has been seen in the normal world
+    local level = game:GetLevel()
+
+    if level:GetStage() ~= LevelStage.STAGE7 then
+        self:start_notify_info()
+    end
 end
 
 
@@ -1340,7 +1343,8 @@ function rems:on_post_render()
 end
 
 function rems:on_post_player_render(player, render_offset)
-    if self:get_config().schoolbag_reminder_enabled then
+    local config = self:get_config()
+    if config.schoolbag_reminder_enabled then
         self:render_schoolbag_reminder()
     end
 end
