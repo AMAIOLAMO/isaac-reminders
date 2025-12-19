@@ -33,6 +33,18 @@ function Timerf:tick(dt)
     self.span = self.span + dt
 end
 
+-- returns the current progress of the timer until max (0 ~ 1)
+function Timerf:progress(clamped)
+    clamped = true
+
+    if clamped then
+        return math.max(math.min(self.span / self.max_span, 1), 0)
+    end
+
+    return self.span / self.max_span
+end
+
+
 function Timerf:reset()
     self.span = 0
 end

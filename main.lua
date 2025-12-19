@@ -27,6 +27,22 @@ local sfx_manager = SFXManager()
 -- SETUP --
 local configs = include("reminders.configs")
 
+local function lerpf(a, b, t)
+    return a + (b - a) * t
+end
+
+local function lerpv(a, b, t)
+    return Vector(
+        lerpf(a.X, b.X, t), lerpf(a.Y, b.Y, t)
+    )
+end
+
+-- maps a value from one range to another linearly
+local function mapf(v, a1, b1, a2, b2)
+    return ((v - a1) / (b1 - a1)) * (b2 - a2) + a2
+end
+
+
 local function load_static_png_sprite_16x16(png_path)
     local sprite = Sprite()
     sprite:Load("gfx/reminders/static_16x16.anm2", true)
@@ -153,8 +169,7 @@ function rems:get_config()
     return self.config
 end
 
-rems.notify_info_timer = timerf.new(5, 5)
-rems.notify_info_start_fade = 4
+rems.notify_info_timer = timerf.new(3, 3)
 
 function rems:start_notify_info()
     self:update_notify_rooms()
@@ -294,14 +309,14 @@ function rems:render_notify(alpha)
     local notify_text_header = "=== ![Missed Special Rooms]! ==="
     local notify_text_header_ok = "No Missed Special Rooms :)"
 
-    local has_special_room = false
+    local special_room_count = 0
+
     for _k, _v in pairs(self.notify_special_rooms) do
-        has_special_room = true
-        break
+        special_room_count = special_room_count + 1
     end
     
     -- fallback to a solution
-    local notify_header = has_special_room and
+    local notify_header = special_room_count > 0 and
         notify_text_header or notify_text_header_ok
         or "Notify header is somehow nil! Reset Config to fix this."
         
@@ -315,21 +330,32 @@ function rems:render_notify(alpha)
         (width - header_width) / 2 + offset.X, offset.Y
     ) + global_offset
 
+    local OK_COLOR = Color(0.5, 0.9, 0.4, 1)
+    local MISSING_COLOR = Color(0.9, 0.5, 0.4, 1)
+
+    local header_color = special_room_count > 0 and MISSING_COLOR or OK_COLOR
+
     Isaac.RenderScaledText(
         notify_header,
         render_pivot.X, render_pivot.Y,
         text_scale, text_scale,
-        1, 1, 1, alpha
+        header_color.R, header_color.G, header_color.B, alpha
     )
 
     notify_sprite.Color = Color(1, 1, 1, alpha)
     notify_sprite:SetFrame(notify_sprite:GetDefaultAnimation(), 0)
-    notify_sprite:Render(render_pivot + Vector(-32, 0))
 
-    local line_no = 1
+    -- left 
+    notify_sprite:Render(render_pivot + Vector(-16, 0))
+    
+    -- right
+    notify_sprite:Render(render_pivot + Vector(header_width, 0))
+
+    local room_idx = 0
     for k, room in pairs(self.notify_special_rooms) do
         assert(self.roomtype2icon, "Cannot draw icon!")
-        local line_height_offset = line_height * line_no
+        -- +1 for header
+        local line_height_offset = line_height * (room_idx + 1)
 
         -- fall back to displaying room type
         local rname = iutils.room_name_from_type(room.type) or
@@ -352,17 +378,35 @@ function rems:render_notify(alpha)
         local icon_fsize = BASE_ICON_SIZE * icon_scale
 
         local name_width = Isaac.GetTextWidth(rlabel) * text_scale
-        local x_pivot = (width - name_width) / 2
 
         -- TODO: add special ICON ONLY way of grid align of icons
-        if config.notify_info_type & enums.NotifyInfoType.NOTIFY_ICON ~= 0 then
+        if config.notify_info_type == enums.NotifyInfoType.NOTIFY_ICON then
             icons.Color = Color(1, 1, 1, alpha)
             icons:SetFrame(icon_id, 0)
             icons.Scale = Vector(1, 1) * icon_scale
-            icons:Render(Vector(x_pivot - icon_fsize, render_pivot.Y + line_height_offset))
+            local x_pivot = render_pivot.X + header_width * 0.5
+                - (special_room_count * icon_fsize * 0.5) + icon_fsize * room_idx
+
+            icons:Render(
+                Vector(x_pivot, render_pivot.Y + line_height)
+            )
+        end
+
+        -- TODO: if both are true, then we have to render it normally
+        if config.notify_info_type == enums.NotifyInfoType.NOTIFY_ICON_TEXT then
+            icons.Color = Color(1, 1, 1, alpha)
+            icons:SetFrame(icon_id, 0)
+            icons.Scale = Vector(1, 1) * icon_scale
+
+            local x_pivot = render_pivot.X + (header_width / 2) - (name_width / 2) - icon_fsize
+
+            icons:Render(
+                Vector(x_pivot, render_pivot.Y + line_height_offset)
+            )
         end
 
         if config.notify_info_type & enums.NotifyInfoType.NOTIFY_TEXT ~= 0 then
+            local x_pivot = render_pivot.X + (header_width / 2) - (name_width / 2)
             Isaac.RenderScaledText(
                 rlabel,
                 x_pivot, render_pivot.Y + line_height_offset,
@@ -371,7 +415,7 @@ function rems:render_notify(alpha)
             )
         end
 
-        line_no = line_no + 1
+        room_idx = room_idx + 1
     end
 end
 
@@ -519,18 +563,27 @@ function rems:render_door_reminders()
 
         -- alt path doors mark
         if door.TargetRoomType == RoomType.ROOM_SECRET_EXIT then
-            local animation_scale = math.sin(Isaac.GetTime() * 0.003) * 5
-            local animation_offset = Vector(0, -1):Rotated(rot) * animation_scale -- up vector
+            -- TODO: add animation config for this
+            -- disabled for now
+            local arrow_count = 1
+            local rot_piece = 360 / arrow_count
+            
+            local time = 0.0
 
-            local render_pos = Vector(
-                screen_pos.X, screen_pos.Y
-            ) + offset + animation_offset
+            for i = 0, arrow_count - 1 do
+                local animation_scale = math.sin(Isaac.GetTime() * 0.003) * 5
+                local animation_offset = Vector(0, -1):Rotated(rot + i * rot_piece + time) * animation_scale -- up vector
 
-            render_static_sprite(
-                "ArrowPivotBottom", 0, {
-                    pos = render_pos, rot = rot
-                }
-            )
+                local render_pos = Vector(
+                    screen_pos.X, screen_pos.Y
+                ) + offset:Rotated(i * rot_piece + time) + animation_offset
+
+                render_static_sprite(
+                    "ArrowPivotBottom", 0, {
+                        pos = render_pos, rot = rot + (i * rot_piece + time)
+                    }
+                )
+            end
         end
 
         -- special boss door fool card on special stage
@@ -614,6 +667,7 @@ function rems:handle_extra_info_timer()
     if Input.GetActionValue(ButtonAction.ACTION_MAP, main_player.ControllerIndex) >= 0.5 then
         if self:get_config().debug_mode then
             Isaac.RenderText(tostring(self.extra_info_timer.span), 50, 50, 1, 1, 1, 1)
+            Isaac.RenderText(tostring(self.extra_info_timer:progress()), 50, 50 + 20, 1, 1, 1, 1)
         end
 
         self.extra_info_timer:tick_max(self.dt_ms)
@@ -623,7 +677,18 @@ function rems:handle_extra_info_timer()
     end
 end
 
+rems.notify_info_alpha = 0.0
+
 function rems:handle_special_room_notify()
+    local lerp_speed = 9.0
+
+    if self.extra_info_timer:progress() < 0.5 then
+        self.notify_info_alpha = lerpf(
+            self.notify_info_alpha, 0.0, self.dt_ms * lerp_speed
+        )
+    end
+    
+    -- boss notify info
     if self.notify_info_timer:max() == false then
         -- only update the timer when time progress
         if game:IsPaused() == false then
@@ -634,36 +699,19 @@ function rems:handle_special_room_notify()
             Isaac.RenderText(tostring(self.notify_info_timer.span), 50, 50, 1, 1, 1, 1)
         end
 
-        local alpha = 1
-
-        if self.notify_info_start_fade < self.notify_info_timer.span then
-            local fade_progress = (self.notify_info_timer.span - self.notify_info_start_fade) /
-                (self.notify_info_timer.max_span - self.notify_info_start_fade)
-
-            alpha = 1 - fade_progress
-        end
     
-        self:render_notify(alpha)
+        -- lock the alpha to 1.0 all the time when in boss notify_info_timer
+        self.notify_info_alpha = 1.0
     end
 
-    if self.extra_info_timer:max() then
-        self:render_notify(1.0)
+    -- player tab notify info (overrides the fade from the top)
+    if self.extra_info_timer:progress() >= 0.5 then
+        self.notify_info_alpha = lerpf(
+            self.notify_info_alpha, 1.0, self.dt_ms * lerp_speed
+        )
     end
-end
 
-local function lerpf(a, b, t)
-    return a + (b - a) * t
-end
-
-local function lerpv(a, b, t)
-    return Vector(
-        lerpf(a.X, b.X, t), lerpf(a.Y, b.Y, t)
-    )
-end
-
--- maps a value from one range to another linearly
-local function mapf(v, a1, b1, a2, b2)
-    return ((v - a1) / (b1 - a1)) * (b2 - a2) + a2
+    self:render_notify(self.notify_info_alpha)
 end
 
 rems.time_progress_anim_pos_offset = Vector(0, 0)
@@ -1377,6 +1425,8 @@ function rems:on_post_bomb_render(bomb_entity, _)
     self:render_explosion_immunity_reminder_for_bomb(bomb_entity)
 end
 
+rems.near_death_shader_strength = 0.0
+
 function rems:get_shader_params(shader_name)
     local config = self:get_config()
 
@@ -1407,6 +1457,7 @@ function rems:get_shader_params(shader_name)
             main_player:GetPlayerType() == PlayerType.PLAYER_THELOST_B
 
         local is_near_death = (total_hit_units + mantle_count) <= config.near_death_effect_hit_units_threshold
+
         
         -- special case for lost and tlost
         if is_lost_or_tlost then
@@ -1415,23 +1466,29 @@ function rems:get_shader_params(shader_name)
 
         local is_curse_of_unknown = game:GetLevel():GetCurses() & LevelCurse.CURSE_OF_THE_UNKNOWN ~= 0
 
-        local strength = 0.0
+        local target_strength = 0.0
 
         if config.near_death_effect_enabled then
 
             -- should bypass curse of the unknown or not
             if config.near_death_effect_bypass_COTU and is_near_death then
-                strength = config.near_death_effect_strength
+                target_strength = config.near_death_effect_strength
 
             elseif is_near_death and not is_curse_of_unknown then
-                strength = config.near_death_effect_strength
+                target_strength = config.near_death_effect_strength
             end
 
         end
 
+        local lerp_speed = 2.0
+
+        self.near_death_shader_strength = lerpf(
+            self.near_death_shader_strength, target_strength, self.dt_ms * lerp_speed
+        )
+
         local params = {
             Time = Isaac.GetFrameCount(),
-            Strength = strength,
+            Strength = self.near_death_shader_strength,
             Opacity = config.near_death_effect_opacity,
         }
 
