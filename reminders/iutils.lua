@@ -44,20 +44,26 @@ IUtils.room_names = {
     [RoomType.ROOM_DEATHMATCH] = "Deathmatch room",
 }
 
-function IUtils.is_any_secret_room(room)
-    return room.Descriptor and
-        (room.Type == RoomType.ROOM_SECRET or
-        room.Type == RoomType.ROOM_SUPERSECRET or
-        room.Type == RoomType.ROOM_ULTRASECRET)
+function IUtils.is_any_secret_room(room_type)
+    return (room_type == RoomType.ROOM_SECRET or
+        room_type == RoomType.ROOM_SUPERSECRET or
+        room_type == RoomType.ROOM_ULTRASECRET)
 end
 
-function IUtils.is_normal_room(room)
-    return room.Descriptor and room.Type == RoomType.ROOM_DEFAULT
+function IUtils.is_normal_room(room_type)
+    return room_type == RoomType.ROOM_DEFAULT
 end
 
-function IUtils.is_special_room(room)
-    return room.Descriptor and
-        room.Type ~= RoomType.ROOM_NULL and not IUtils.is_normal_room(room)
+function IUtils.is_special_room(room_type)
+    return room_type ~= RoomType.ROOM_NULL and not IUtils.is_normal_room(room_type)
+end
+
+function IUtils.room_desc_is_visible(room_desc)
+    return room_desc.DisplayFlags & (1 << 0) ~= 0
+end
+
+function IUtils.room_desc_shows_icon(room_desc)
+    return room_desc.DisplayFlags & (1 << 2) ~= 0
 end
 
 -- extended world to screen that considered mirrored worlds

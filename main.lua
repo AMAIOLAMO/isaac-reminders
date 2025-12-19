@@ -194,12 +194,16 @@ function rems:get_current_room_grid_entities()
 end
 
 
-function rems:update_room_color_marks()
+function rems:try_minimap_update_room_color_marks()
+    if not MinimapAPI then
+        return false
+    end
+
     local special_rooms = {}
 
     -- TODO: Minimap dependency
     for _, room in ipairs(MinimapAPI:GetLevel()) do
-        if iutils.is_special_room(room) then
+        if iutils.is_special_room(room.Type) then
             table.insert(special_rooms, room)
             -- probably make this customizable?
             local room_visit_count = room.Descriptor.VisitedCount
@@ -228,53 +232,59 @@ function rems:update_room_color_marks()
     output_str = output_str .. "}"
 
     self:log_debug(output_str)
+
+    return true
 end
 
-function rems:get_unvisited_special_rooms()
-    -- TODO: Minimap dependency
-    assert(MinimapAPI, "Cannot find MinimapAPI!")
-    local rooms = {}
-    
-    for _, room in ipairs(MinimapAPI:GetLevel()) do
-        if iutils.is_special_room(room) and room:IsVisited() == false then
-            table.insert(rooms, room)
+function rems:get_unvisited_special_room_descs()
+    local result_descs = {}
+
+    local room_descs = game:GetLevel():GetRooms()
+
+    for i = 0, room_descs.Size - 1 do
+        local room_desc = room_descs:Get(i)
+
+        local visible_flag = 1 << 0
+
+        if iutils.is_special_room(room_desc.Data.Type) and room_desc.VisitedCount == 0
+            and (room_desc.DisplayFlags & visible_flag) ~= 0 then
+            table.insert(result_descs, room_desc)
         end
     end
 
-    return rooms
+    return result_descs
 end
 
 function rems:update_notify_rooms()
-    local unvisited_special_rooms = self:get_unvisited_special_rooms()
+    local room_descs = self:get_unvisited_special_room_descs()
+
     for k, _ in pairs(self.notify_special_rooms) do
         self.notify_special_rooms[k] = nil
     end
-    -- for i in ipairs(self.notify_special_rooms) do
-    --     self.notify_special_rooms[i] = nil
-    -- end
 
     -- may require updating the notify rooms during pickup of collectible & cards
     local can_open_ultra_secret = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_RED_KEY)
         or iutils.any_player_has_card(game, Card.CARD_CRACKED_KEY) or iutils.any_player_has_card(game, Card.CARD_SOUL_CAIN)
 
-    for _, room in ipairs(unvisited_special_rooms) do
-        local desc = room.Descriptor
 
+    for _, desc in ipairs(room_descs) do
+        local room_type = desc.Data.Type
         -- Curse of the lost will not affect the display flags
-        local should_notify = (room:IsVisible() and room:IsIconVisible()) or iutils.is_any_secret_room(room)
+        local should_notify = (iutils.room_desc_is_visible(desc) and iutils.room_desc_shows_icon(desc))
+            or iutils.is_any_secret_room(desc.Data.Type)
 
         -- dont ultra secret when we dont have these collectibles
         if self:get_config().notify_info_conditional_ultra_secret and
-            (room.Type == RoomType.ROOM_ULTRASECRET and can_open_ultra_secret == false) then
+            (room_type == RoomType.ROOM_ULTRASECRET and can_open_ultra_secret == false) then
             should_notify = false
         end
 
         if should_notify then
-            if self.notify_special_rooms[room.Type] == nil then
-                self.notify_special_rooms[room.Type] = RoomNotify.new(room.Type, 1)
+            if self.notify_special_rooms[room_type] == nil then
+                self.notify_special_rooms[room_type] = RoomNotify.new(room_type, 1)
             else
-                self.notify_special_rooms[room.Type].count = 
-                    self.notify_special_rooms[room.Type].count + 1
+                self.notify_special_rooms[room_type].count = 
+                    self.notify_special_rooms[room_type].count + 1
             end
         end
 
@@ -284,7 +294,6 @@ function rems:update_notify_rooms()
 end
 
 function rems:render_room_icon(room_type, pos)
-    -- TODO: Minimap Dependency
     local icon_anm_name = self.roomtype2icon[room_type]
     assert(icon_anm_name, "Cannot find associate roomtype: " .. tostring(room_type) .. "and their icon")
 
@@ -1202,18 +1211,17 @@ function rems:on_post_game_started(continued)
     end
 
     -- should load
-    -- TODO: Minimap dependency
     if MinimapAPI then
-        self:log_info("Minimap Found.")
+        self:log_info("MinimapAPI Found.")
         local config = self:get_config()
 
         if config.map_special_colormarks_enabled then
-            self:update_room_color_marks()
+            self:try_minimap_update_room_color_marks()
         end
 
-        self:log_debug("Updated rooms")
+        self:log_debug("Updated room marks.")
     else
-        self:log_info("Minimap Not Found.")
+        self:log_info("MinimapAPI Not Found.")
     end
 end
 
@@ -1232,15 +1240,10 @@ function rems:on_execute_cmd(command, args)
 end
 
 function rems:on_post_new_room()
-    -- minimap Dependency
-    if not MinimapAPI then
-        return
-    end
-    -- else
-    
+
     -- update rooms
     if self:get_config().map_special_colormarks_enabled then
-        self:update_room_color_marks()
+        self:try_minimap_update_room_color_marks()
     end
 
     self:update_notify_rooms()
@@ -1250,61 +1253,45 @@ function rems:on_post_new_room()
         self:log_debug("Updated notify msg")
     end
 
-    local newmap_room = MinimapAPI:GetCurrentRoom()
-    local isaac_room = game:GetRoom()
+    local room = game:GetRoom()
 
-    if newmap_room ~= nil and iutils.is_special_room(newmap_room) and isaac_room:IsMirrorWorld() == false then
+    if MinimapAPI and iutils.is_special_room(room:GetType()) and room:IsMirrorWorld() == false then
         -- are all rooms automatically visited if we go into a new room?
         -- what about special case such as glowing hourglass?
-        if newmap_room:IsVisited() then
-            newmap_room.Color = iserializer.decode_color(self:get_config().special_color_visited)
+        local room_desc = game:GetLevel():GetCurrentRoomDesc()
+
+        if iutils.room_desc_is_visible(room_desc) then
+            MinimapAPI:GetCurrentRoom().Color = iserializer.decode_color(self:get_config().special_color_visited)
         end
     end
 end
 
 function rems:on_post_new_floor()
-    -- TODO: Minimap Dependency
-    if not MinimapAPI then
-        return
-    end
-    -- else
-    
     self:log_debug("new floor entered, cleared all marks")
 
     if self:get_config().map_special_colormarks_enabled then
-        self:update_room_color_marks()
+        self:try_minimap_update_room_color_marks()
     end
 
     self:log_debug("Updated Room marks")
 end
 
 function rems:on_pre_spawn_clean_award(_rng)
-    -- TODO: Minimap Dependency
-    if not MinimapAPI then
-        return
-    end
-    -- else
-
     -- recommended by discord users: shows a big arrow and add audio cues
     self:update_notify_rooms()
 
     if self:get_config().map_special_colormarks_enabled then
-        self:update_room_color_marks()
+        self:try_minimap_update_room_color_marks()
     end
 
-    local current_room = MinimapAPI:GetCurrentRoom()
+    local current_room = game:GetRoom()
 
-    if current_room ~= nil and current_room.Type == RoomType.ROOM_BOSS then
+    if current_room ~= nil and current_room:GetType() == RoomType.ROOM_BOSS then
         self:on_boss_completed(current_room)
     end
 end
 
 function rems:on_boss_completed(boss_room)
-    -- TODO: Minimap Dependency
-    if not MinimapAPI then
-        return
-    end
-
     self:log_debug("BOSS COMPLETED, NOTIFY PLAYER ABOUT MISSED SPECIAL ROOMS")
 
     -- TODO: handle mirror floors differently, although Im still unsure on how to
@@ -1318,15 +1305,8 @@ end
 
 
 function rems:on_post_render()
-    -- TODO: Minimap Dependency
-
     local MS2SECS = 1 / 1000
     self.dt_ms = (Isaac.GetTime() - self.prev_frame_time) * MS2SECS
-
-    if not MinimapAPI then
-        return
-    end
-
 
     local config = self:get_config()
 
@@ -1400,11 +1380,6 @@ function rems:on_post_player_render(player, render_offset)
 end
 
 function rems:on_post_bomb_render(bomb_entity, _)
-    -- TODO: Minimap Dependency
-    if not MinimapAPI then
-        return
-    end
-
     local config = self:get_config()
     if config.explosion_immunity_reminders_enabled == false then
         return
@@ -1481,7 +1456,7 @@ function rems:get_shader_params(shader_name)
 
         end
 
-        local lerp_speed = 2.0
+        local lerp_speed = 2.5
 
         self.near_death_shader_strength = lerpf(
             self.near_death_shader_strength, target_strength, self.dt_ms * lerp_speed
