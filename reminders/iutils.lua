@@ -119,8 +119,12 @@ function IUtils.get_game_time(game)
     }
 end
 
-function IUtils.room_name_from_type(room_type)
-    return IUtils.room_names[room_type]
+function IUtils.room_name_from_type(room_type, is_boss_challenge)
+    if is_boss_challenge and room_type == RoomType.ROOM_CHALLENGE then
+        return "Boss Challenge Room"
+    else
+        return IUtils.room_names[room_type]
+    end
 end
 
 function IUtils.player_any_of(game, predicate)

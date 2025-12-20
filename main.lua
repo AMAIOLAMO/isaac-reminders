@@ -100,7 +100,7 @@ function rems:reset_config()
     self:log_info("Config has reset")
 end
 
-rems.extra_info_timer = timerf.new(0.5, 0)
+rems.extra_info_timer = timerf.new(0.5, 0.5)
 
 local RoomNotify = {}
 RoomNotify.__index = RoomNotify
@@ -111,7 +111,8 @@ end
 
 
 rems.notify_special_rooms = {}
-rems.roomtype2icon = {
+
+local ROOMTYPE_TO_ICON = {
     [RoomType.ROOM_SECRET]      = "IconSecretRoom",
     [RoomType.ROOM_SUPERSECRET] = "IconSuperSecretRoom",
     [RoomType.ROOM_ULTRASECRET] = "IconUltraSecretRoom",
@@ -121,7 +122,7 @@ rems.roomtype2icon = {
     [RoomType.ROOM_SACRIFICE]   = "IconSacrificeRoom",
     [RoomType.ROOM_LIBRARY]     = "IconLibrary",
     [RoomType.ROOM_ARCADE]      = "IconArcade",
-    [RoomType.ROOM_CHALLENGE]   = "IconAmbushRoom", -- TODO: add boss challenge room support
+    [RoomType.ROOM_CHALLENGE]   = "IconAmbushRoom",
 
     [RoomType.ROOM_ISAACS]      = "IconIsaacsRoom",
     [RoomType.ROOM_BARREN]      = "IconBarrenRoom",
@@ -137,6 +138,15 @@ rems.roomtype2icon = {
 
     [RoomType.ROOM_BOSS]        = "IconBoss",
 }
+
+function rems:roomtype_to_icon_name(room_type, is_boss_challenge)
+    if is_boss_challenge and room_type == RoomType.ROOM_CHALLENGE then
+        return "IconBossAmbushRoom"
+    end
+
+    return ROOMTYPE_TO_ICON[room_type]
+end
+
 
 rems.dt_ms = 0
 rems.prev_frame_time = 0.0
@@ -294,7 +304,7 @@ function rems:update_notify_rooms()
 end
 
 function rems:render_room_icon(room_type, pos)
-    local icon_anm_name = self.roomtype2icon[room_type]
+    local icon_anm_name = self:roomtype_to_icon_name(room_type)
     assert(icon_anm_name, "Cannot find associate roomtype: " .. tostring(room_type) .. "and their icon")
 
     local icons = minimap_icons
@@ -361,13 +371,14 @@ function rems:render_notify(alpha)
     notify_sprite:Render(render_pivot + Vector(header_width, 0))
 
     local room_idx = 0
+    local is_boss_challenge = game:GetLevel():HasBossChallenge()
+
     for k, room in pairs(self.notify_special_rooms) do
-        assert(self.roomtype2icon, "Cannot draw icon!")
         -- +1 for header
         local line_height_offset = line_height * (room_idx + 1)
 
         -- fall back to displaying room type
-        local rname = iutils.room_name_from_type(room.type) or
+        local rname = iutils.room_name_from_type(room.type, is_boss_challenge) or
             ("NIL ROOM of type: " .. room.type)
 
         local rlabel = rname
@@ -377,8 +388,8 @@ function rems:render_notify(alpha)
         end
 
         -- default fall back icon to secret room icon
-        local icon_id = self.roomtype2icon[room.type] or
-            self.roomtype2icon[RoomType.ROOM_SECRET]
+        local icon_id = self:roomtype_to_icon_name(room.type, is_boss_challenge) or
+            self:roomtype_to_icon_name(RoomType.ROOM_SECRET, false)
 
         local icons = minimap_icons
 
