@@ -105,8 +105,9 @@ rems.extra_info_timer = timerf.new(0.5, 0.5)
 local RoomNotify = {}
 RoomNotify.__index = RoomNotify
 
-function RoomNotify.new(rtype, rcount)
-    return setmetatable({ type = rtype, count = rcount }, RoomNotify)
+function RoomNotify.new(rtype, rcount, rhas_mirror_counterpart)
+    rhas_mirror_counterpart = rhas_mirror_counterpart or false
+    return setmetatable({ type = rtype, count = rcount, has_mirror_counterpart = rhas_mirror_counterpart }, RoomNotify)
 end
 
 
@@ -272,6 +273,8 @@ function rems:update_notify_rooms()
         self.notify_special_rooms[k] = nil
     end
 
+    local rooms = game:GetLevel():GetRooms()
+
     -- may require updating the notify rooms during pickup of collectible & cards
     local can_open_ultra_secret = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_RED_KEY)
         or iutils.any_player_has_card(game, Card.CARD_CRACKED_KEY) or iutils.any_player_has_card(game, Card.CARD_SOUL_CAIN)
@@ -290,14 +293,21 @@ function rems:update_notify_rooms()
         end
 
         if should_notify then
+            local is_mirror_room = rooms:Get(desc.ListIndex):GetDimension() == 1
+
             if self.notify_special_rooms[room_type] == nil then
-                self.notify_special_rooms[room_type] = RoomNotify.new(room_type, 1)
+                self.notify_special_rooms[room_type] = RoomNotify.new(room_type, 1, is_mirror_room)
             else
                 self.notify_special_rooms[room_type].count = 
                     self.notify_special_rooms[room_type].count + 1
+
+                if is_mirror_room then
+                    self.notify_special_rooms[room_type].has_mirror_counterpart = is_mirror_room
+                end
             end
         end
 
+        ::continue::
     end
 
     self:log_debug("Notify rooms updated")
@@ -394,12 +404,12 @@ function rems:render_notify(alpha)
         local icons = minimap_icons
 
         local icon_scale = self:get_config().icon_scale
-        local BASE_ICON_SIZE = 12
+        local BASE_ICON_SIZE = 10
         local icon_fsize = BASE_ICON_SIZE * icon_scale
 
         local name_width = Isaac.GetTextWidth(rlabel) * text_scale
 
-        -- TODO: add special ICON ONLY way of grid align of icons
+        -- add special ICON ONLY way of grid align of icons
         if config.notify_info_type == enums.NotifyInfoType.NOTIFY_ICON then
             icons.Color = Color(1, 1, 1, alpha)
             icons:SetFrame(icon_id, 0)
@@ -410,9 +420,16 @@ function rems:render_notify(alpha)
             icons:Render(
                 Vector(x_pivot, render_pivot.Y + line_height)
             )
+
+            if room.has_mirror_counterpart then
+                icons:SetFrame("IconMirrorRoom", 0)
+                icons:Render(
+                    Vector(x_pivot, render_pivot.Y + line_height * 2)
+                )
+            end
         end
 
-        -- TODO: if both are true, then we have to render it normally
+        -- if both are true, then we have to render it normally
         if config.notify_info_type == enums.NotifyInfoType.NOTIFY_ICON_TEXT then
             icons.Color = Color(1, 1, 1, alpha)
             icons:SetFrame(icon_id, 0)
@@ -420,9 +437,20 @@ function rems:render_notify(alpha)
 
             local x_pivot = render_pivot.X + (header_width / 2) - (name_width / 2) - icon_fsize
 
-            icons:Render(
-                Vector(x_pivot, render_pivot.Y + line_height_offset)
-            )
+            if room.has_mirror_counterpart == false then
+                icons:Render(
+                    Vector(x_pivot, render_pivot.Y + line_height_offset)
+                )
+            else
+                icons:Render(
+                    Vector(x_pivot - icon_fsize, render_pivot.Y + line_height_offset)
+                )
+
+                icons:SetFrame("IconMirrorRoom", 0)
+                icons:Render(
+                    Vector(x_pivot, render_pivot.Y + line_height_offset)
+                )
+            end
         end
 
         if config.notify_info_type & enums.NotifyInfoType.NOTIFY_TEXT ~= 0 then
