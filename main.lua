@@ -293,7 +293,9 @@ function rems:update_notify_rooms()
         end
 
         if should_notify then
-            local is_mirror_room = rooms:Get(desc.ListIndex):GetDimension() == 1
+            -- local is_mirror_room = rooms:Get(desc.ListIndex):GetDimension() == 1
+            -- TODO: how to check whether or not a desc is a mirror room?
+            local is_mirror_room = false
 
             if self.notify_special_rooms[room_type] == nil then
                 self.notify_special_rooms[room_type] = RoomNotify.new(room_type, 1, is_mirror_room)
@@ -535,8 +537,16 @@ function rems:render_door_reminders()
     local has_polaroid = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_POLAROID)
     local has_negative = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_NEGATIVE)
 
+    local level = game:GetLevel()
+    local is_xl = level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0
+
+    local should_display_polaroid_or_negative = game_stage == LevelStage.STAGE4_3 or 
+        (is_xl == false and (game_stage == LevelStage.STAGE4_2)) or
+        (is_xl == true and (game_stage == LevelStage.STAGE4_1))
+
+
     -- is level right before cathedral / sheol (including hush) and is a boss room
-    if (game_stage == LevelStage.STAGE4_2 or game_stage == LevelStage.STAGE4_3 or game_stage == LevelStage.STAGE5) and
+    if should_display_polaroid_or_negative and
         room:GetType() == RoomType.ROOM_BOSS then
         local OFFSET = Vector(0, 30)
 
@@ -637,9 +647,6 @@ function rems:render_door_reminders()
         -- special boss door fool card on special stage
         
         -- TODO: edge case -> gehenna does not have ascent door
-        local level = game:GetLevel()
-        local is_xl = level:GetCurses() & LevelCurse.CURSE_OF_LABYRINTH ~= 0
-
         if door.TargetRoomType == RoomType.ROOM_BOSS then
 
             local is_mausoleum_meat_door = door:GetType() == 16 and door:GetVariant() == 3
@@ -1292,15 +1299,20 @@ function rems:on_post_new_room()
         self:log_debug("Updated notify msg")
     end
 
-    local room = game:GetRoom()
+    if not MinimapAPI then
+        return
+    end
 
-    if MinimapAPI and iutils.is_special_room(room:GetType()) and room:IsMirrorWorld() == false then
+    local room = game:GetRoom()
+    local minimapi_room = MinimapAPI:GetCurrentRoom()
+
+    if minimapi_room and iutils.is_special_room(room:GetType()) and room:IsMirrorWorld() == false then
         -- are all rooms automatically visited if we go into a new room?
         -- what about special case such as glowing hourglass?
         local room_desc = game:GetLevel():GetCurrentRoomDesc()
 
         if iutils.room_desc_is_visible(room_desc) then
-            MinimapAPI:GetCurrentRoom().Color = iserializer.decode_color(self:get_config().special_color_visited)
+            minimapi_room.Color = iserializer.decode_color(self:get_config().special_color_visited)
         end
     end
 end
