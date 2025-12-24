@@ -897,6 +897,9 @@ end
 function rems:render_bum_kill_reminders()
     local level = game:GetLevel()
 
+    -- TODO: bug, only works with normal beggars, rotten beggars and battery bum
+    -- DOES NOT WORK WITH DEVIL BEGGAR UNFORTUNATELY :/
+    -- But if you locked into angel deals, devil beggar suddenly works :P
     local is_bum_killed = level:GetStateFlag(LevelStateFlag.STATE_BUM_KILLED)
     if is_bum_killed == true then
         return
@@ -904,7 +907,8 @@ function rems:render_bum_kill_reminders()
     -- else
 
     local slots = Isaac.FindByType(EntityType.ENTITY_SLOT, -1, -1, true, false)
-    local devil_beggar_var = 5
+    --
+    -- local devil_beggar_var = 5
     local normal_beggar_var = 4
     local battery_bum_var = 13
     local rotten_beggar_var = 18
@@ -920,7 +924,8 @@ function rems:render_bum_kill_reminders()
         local scr_pos = iutils.world_to_screen_ext(slot.Position, is_mirror)
 
         local BEGGAR_2_DEAL_FRAME = {
-            [devil_beggar_var] = ANGEL_DEAL, [normal_beggar_var] = ALL_DEALS,
+            -- [devil_beggar_var] = ANGEL_DEAL,
+            [normal_beggar_var] = ALL_DEALS,
             [battery_bum_var] = ALL_DEALS, [rotten_beggar_var] = ALL_DEALS
         }
 

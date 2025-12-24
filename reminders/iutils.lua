@@ -41,7 +41,7 @@ IUtils.room_names = {
 
     [RoomType.ROOM_SECRET_EXIT] = "Alt Path Room",
     [RoomType.ROOM_BLUE] = "Blue Womb Room",
-    [RoomType.ROOM_DEATHMATCH] = "Deathmatch room",
+    -- [RoomType.ROOM_DEATHMATCH] = "Deathmatch room",
 }
 
 function IUtils.is_any_secret_room(room_type)
