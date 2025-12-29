@@ -332,13 +332,16 @@ function rems:render_notify(alpha)
 
     local config = self:get_config()
 
+    local is_curse_of_lost = game:GetLevel():GetCurses() & LevelCurse.CURSE_OF_THE_LOST ~= 0
+
     local line_height = config.notify_info_line_height
     local text_scale = config.notify_info_text_scale
     local opacity = config.notify_info_opacity
     alpha = alpha * opacity
 
-    local notify_text_header = "=== ![Missed Special Rooms]! ==="
-    local notify_text_header_ok = "No Missed Special Rooms :)"
+    local notify_text_header      = "=== ![Missed Special Rooms]! === "
+    local notify_text_header_ok   = "No Missed Special Rooms :)"
+    local notify_text_header_lost = "Oh no! You have Curse of The Lost :("
 
     local special_room_count = 0
 
@@ -350,7 +353,17 @@ function rems:render_notify(alpha)
     local notify_header = special_room_count > 0 and
         notify_text_header or notify_text_header_ok
         or "Notify header is somehow nil! Reset Config to fix this."
-        
+
+    local OK_COLOR = Color(0.5, 0.9, 0.4, 1)
+    local MISSING_COLOR = Color(0.9, 0.5, 0.4, 1)
+
+    local header_color = special_room_count > 0 and MISSING_COLOR or OK_COLOR
+
+    if is_curse_of_lost then
+        notify_header = notify_text_header_lost
+        header_color = MISSING_COLOR
+    end
+
     local header_width = Isaac.GetTextWidth(notify_header) * text_scale
 
     local offset = iserializer.decode_vector(config.notify_info_offset)
@@ -360,11 +373,6 @@ function rems:render_notify(alpha)
     local render_pivot = Vector(
         (width - header_width) / 2 + offset.X, offset.Y
     ) + global_offset
-
-    local OK_COLOR = Color(0.5, 0.9, 0.4, 1)
-    local MISSING_COLOR = Color(0.9, 0.5, 0.4, 1)
-
-    local header_color = special_room_count > 0 and MISSING_COLOR or OK_COLOR
 
     Isaac.RenderScaledText(
         notify_header,
@@ -381,6 +389,10 @@ function rems:render_notify(alpha)
     
     -- right
     notify_sprite:Render(render_pivot + Vector(header_width, 0))
+
+    if is_curse_of_lost then
+        return
+    end
 
     local room_idx = 0
     local is_boss_challenge = game:GetLevel():HasBossChallenge()
