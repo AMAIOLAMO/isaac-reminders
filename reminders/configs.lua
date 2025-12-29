@@ -81,6 +81,8 @@ function Configs.get_default_config()
 
         schoolbag_reminder_enabled = true,
         schoolbag_reminder_yoffset = 10,
+
+        cracked_key_reminder_enabled = true,
     }
 end
 

@@ -1117,6 +1117,32 @@ local function setup_rooms(mod_name, mod)
     MCM.AddSpace(mod_name, "Rooms")
 end
 
+local function setup_unlocks(mod_name, mod)
+    MCM.AddText(mod_name, "Unlocks", "Cracked Key Reminder on Dad's Note", DEFAULT_TXT_COLOR)
+    MCM.AddSetting(
+        mod_name, "Unlocks", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().cracked_key_reminder_enabled
+            end,
+
+            Display = function()
+                return "Enabled: " .. (mod:get_config().cracked_key_reminder_enabled and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().cracked_key_reminder_enabled = value
+            end,
+
+            Info = {
+                "Toggles whether or not a red key should show up on dad's note",
+                "to remind you of cracked key for tainted unlocks"
+            }
+        }
+    )
+end
+
 local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     assert(MCM, "Cannot Find Mod Config Menu!")
 
@@ -1135,6 +1161,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
     setup_items(mod_name, mod)
     setup_time(mod_name, mod)
     setup_characters(mod_name, mod)
+    setup_unlocks(mod_name, mod)
     setup_deals(mod_name, mod)
 
     -- TODO: instead of doing it like this, (since tables are iterated randomly)

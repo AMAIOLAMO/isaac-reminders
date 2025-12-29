@@ -1234,6 +1234,33 @@ function rems:render_item_reminders()
     end
 end
 
+
+
+function rems:render_cracked_key_reminder()
+    -- lol, kinda funny its called dads notes, as if isaac's dad wrote a bunch of notes :P
+    -- TODO: maybe dynamically get this by name identifier instead of a constant?
+    -- Im not sure if Edmund will change this in the future lol
+    local DAD_NOTE_ID = 668
+    local dads_notes = Isaac.FindByType(EntityType.ENTITY_PICKUP, 100, DAD_NOTE_ID, true)
+
+    if #dads_notes == 0 then
+        return
+    end
+
+    local animation_y_offset = math.sin(Isaac.GetTime() * 0.001) * 5.5
+
+    for _, note in ipairs(dads_notes) do
+        local scr_pos = Isaac.WorldToScreen(note.Position)
+
+        render_static_sprite(
+            "RedKeyPivotCenter", 0, {
+                pos = scr_pos + Vector(0, -1) * animation_y_offset,
+                rot = math.sin(Isaac.GetTime() * 0.0015) * 15
+            }
+        )
+    end
+end
+
 ---------------
 -- CALLBACKS --
 ---------------
@@ -1394,6 +1421,10 @@ function rems:on_post_render()
 
         if config.knife_piece_reminders_enabled then
             self:render_knife_piece_reminders()
+        end
+
+        if config.cracked_key_reminder_enabled then
+            self:render_cracked_key_reminder()
         end
 
         -- BUM KILL REMINDERS :O (shocking ikr)
