@@ -1359,15 +1359,15 @@ function rems:on_post_new_room()
     guard_not_nil("MinimapAPI", MinimapAPI)
 
     local room = game:GetRoom()
-    local minimapi_room = MinimapAPI:GetCurrentRoom()
+    local mapi_room = MinimapAPI:GetCurrentRoom()
 
-    if room and minimapi_room and iutils.is_special_room(room:GetType()) and room:IsMirrorWorld() == false then
+    if room and mapi_room and iutils.is_special_room(room:GetType()) and room:IsMirrorWorld() == false then
         guard_not_nil("game:GetLevel()", game:GetLevel())
         local room_desc = game:GetLevel():GetCurrentRoomDesc()
 
         if room_desc and iutils.room_desc_is_visible(room_desc) then
-            guard_not_nil("minimapi_room.Color", minimapi_room.Color)
-            minimapi_room.Color = iserializer.decode_color(config.special_color_visited)
+            -- possible mapi_room.Color is nil(will use default color according to docs)
+            mapi_room.Color = iserializer.decode_color(config.special_color_visited)
         end
     end
 end
