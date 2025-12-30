@@ -42,6 +42,10 @@ local function mapf(v, a1, b1, a2, b2)
     return ((v - a1) / (b1 - a1)) * (b2 - a2) + a2
 end
 
+local function guard_not_nil(var_name, value)
+    assert(value ~= nil, "value of variable name: " .. var_name .. " is nil")
+end
+
 
 local function load_static_png_sprite_16x16(png_path)
     local sprite = Sprite()
@@ -1330,40 +1334,45 @@ function rems:on_execute_cmd(command, args)
 end
 
 function rems:on_post_new_room()
-
     -- update rooms
-    if self:get_config().map_special_colormarks_enabled then
+    local config = self:get_config()
+    guard_not_nil("config", config)
+
+    guard_not_nil("config.map_special_colormarks_enabled", config.map_special_colormarks_enabled)
+
+    if config.map_special_colormarks_enabled then
         self:try_minimap_update_room_color_marks()
     end
 
     self:update_notify_rooms()
 
-    if self:get_config().debug_mode then
+    guard_not_nil("config.debug_mode", config.debug_mode)
+    if config.debug_mode then
         self:log_debug("Updated room marks")
         self:log_debug("Updated notify msg")
     end
 
-    if not MinimapAPI then
+    if MinimapAPI == nil then
         return
     end
+
+    guard_not_nil("MinimapAPI", MinimapAPI)
 
     local room = game:GetRoom()
     local minimapi_room = MinimapAPI:GetCurrentRoom()
 
-    if minimapi_room and iutils.is_special_room(room:GetType()) and room:IsMirrorWorld() == false then
-        -- are all rooms automatically visited if we go into a new room?
-        -- what about special case such as glowing hourglass?
+    if room and minimapi_room and iutils.is_special_room(room:GetType()) and room:IsMirrorWorld() == false then
+        guard_not_nil("game:GetLevel()", game:GetLevel())
         local room_desc = game:GetLevel():GetCurrentRoomDesc()
 
-        if iutils.room_desc_is_visible(room_desc) then
-            minimapi_room.Color = iserializer.decode_color(self:get_config().special_color_visited)
+        if room_desc and iutils.room_desc_is_visible(room_desc) then
+            guard_not_nil("minimapi_room.Color", minimapi_room.Color)
+            minimapi_room.Color = iserializer.decode_color(config.special_color_visited)
         end
     end
 end
 
 function rems:on_post_new_floor()
-    self:log_debug("new floor entered, cleared all marks")
-
     if self:get_config().map_special_colormarks_enabled then
         self:try_minimap_update_room_color_marks()
     end
