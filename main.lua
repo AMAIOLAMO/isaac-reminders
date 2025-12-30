@@ -1241,6 +1241,48 @@ end
 
 
 function rems:render_cracked_key_reminder()
+    if game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) == false then
+        return
+    end
+    local level = game:GetLevel()
+
+    local should_show_cracked_key = level:GetStage() == LevelStage.STAGE3_2
+
+    should_show_cracked_key = should_show_cracked_key and
+        level:GetStageType() == StageType.STAGETYPE_REPENTANCE
+
+    if should_show_cracked_key == false then
+        return
+    end
+
+    -- TODO: simplify and abstract this code somewhere cached (much faster that way)
+    local boss_door = nil
+    local room = game:GetRoom()
+
+    for i = 0, 7 do
+        local door = room:GetDoor(i)
+
+        if door and door.TargetRoomType == RoomType.ROOM_BOSS then
+            boss_door = door
+            break
+        end
+    end
+
+    local animation_y_offset = math.sin(Isaac.GetTime() * 0.001) * 5.5
+
+    if boss_door then
+        local scr_pos = Isaac.WorldToScreen(boss_door.Position)
+
+        local rot = self:direction_to_rotation_deg(boss_door.Direction)
+
+        render_static_sprite(
+            "RedKeyPivotCenter", 0, {
+                pos = scr_pos + (Vector(0, -1) * animation_y_offset):Rotated(rot),
+                rot = math.sin(Isaac.GetTime() * 0.0015) * 15 + rot
+            }
+        )
+    end
+
     -- lol, kinda funny its called dads notes, as if isaac's dad wrote a bunch of notes :P
     -- TODO: maybe dynamically get this by name identifier instead of a constant?
     -- Im not sure if Edmund will change this in the future lol
@@ -1250,8 +1292,6 @@ function rems:render_cracked_key_reminder()
     if #dads_notes == 0 then
         return
     end
-
-    local animation_y_offset = math.sin(Isaac.GetTime() * 0.001) * 5.5
 
     for _, note in ipairs(dads_notes) do
         local scr_pos = Isaac.WorldToScreen(note.Position)
