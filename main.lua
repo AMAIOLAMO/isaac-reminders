@@ -1377,6 +1377,8 @@ function rems:on_post_new_floor()
         self:try_minimap_update_room_color_marks()
     end
 
+    self:update_notify_rooms()
+
     self:log_debug("Updated Room marks")
 end
 
