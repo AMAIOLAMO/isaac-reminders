@@ -1316,12 +1316,17 @@ function rems:on_post_game_started(continued)
 
     if self:HasData() then
         local json_data = self:LoadData()
+
         self:log_debug(string.format("Loading data: %s", json_data))
+
         local new_config_data = json.decode(json_data)
         self.config = new_config_data
+
         self:log_debug(string.format("Data loaded"))
         self:log_debug(string.format("Filling missing data..."))
+
         configs.clean_config_from_default(self.config)
+
         self:log_debug(string.format("Data filled."))
     end
 
@@ -1647,4 +1652,3 @@ rems:AddCallback(ModCallbacks.MC_EXECUTE_CMD, rems.on_execute_cmd)
 
 rems:AddCallback(ModCallbacks.MC_POST_BOMB_RENDER, rems.on_post_bomb_render)
 rems:AddCallback(ModCallbacks.MC_GET_SHADER_PARAMS, rems.get_shader_params)
-

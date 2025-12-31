@@ -49,6 +49,9 @@ local enums = {
     ItemReminderFrame = {
         IREMINDER_SCHOOLBAG    = 0,
         IREMINDER_ORPHAN_SOCKS = 1,
+    },
+
+    LanguageString = {
     }
 }
 

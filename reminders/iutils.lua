@@ -26,7 +26,7 @@ IUtils.room_names = {
     [RoomType.ROOM_ISAACS] = "Bedroom",
     [RoomType.ROOM_BARREN] = "Barren Bedroom",
 
-    [RoomType.ROOM_CHEST]    = "Chest Room",
+    [RoomType.ROOM_CHEST]    = "Vault Room",
     [RoomType.ROOM_DICE]     = "Dice Room",
     [RoomType.ROOM_CURSE]    = "Curse Room",
 
@@ -41,6 +41,7 @@ IUtils.room_names = {
 
     [RoomType.ROOM_SECRET_EXIT] = "Alt Path Room",
     [RoomType.ROOM_BLUE] = "Blue Womb Room",
+
     -- [RoomType.ROOM_DEATHMATCH] = "Deathmatch room",
 }
 
