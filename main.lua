@@ -259,16 +259,31 @@ function rems:get_unvisited_special_room_descs()
     for i = 0, room_descs.Size - 1 do
         local room_desc = room_descs:Get(i)
 
-        local visible_flag = 1 << 0
+        -- local visible_flag = 1 << 0
 
-        if iutils.is_special_room(room_desc.Data.Type) and room_desc.VisitedCount == 0
-            and (room_desc.DisplayFlags & visible_flag) ~= 0 then
+        if room_desc.VisitedCount > 0 then
+            goto continue
+        end
+
+        if iutils.is_special_room(room_desc.Data.Type) then
+            -- and (room_desc.DisplayFlags & visible_flag) ~= 0 then
             table.insert(result_descs, room_desc)
         end
+
+        ::continue::
     end
 
     return result_descs
 end
+
+local GUARANTEE_BYPASS_ROOM_TYPES = {
+    [RoomType.ROOM_TREASURE] = true,
+    [RoomType.ROOM_SHOP] = true,
+    [RoomType.ROOM_BOSS] = true,
+
+    [RoomType.ROOM_SECRET] = true,
+    [RoomType.ROOM_SUPERSECRET] = true,
+}
 
 function rems:update_notify_rooms()
     local room_descs = self:get_unvisited_special_room_descs()
@@ -288,7 +303,7 @@ function rems:update_notify_rooms()
         local room_type = desc.Data.Type
         -- Curse of the lost will not affect the display flags
         local should_notify = (iutils.room_desc_is_visible(desc) and iutils.room_desc_shows_icon(desc))
-            or iutils.is_any_secret_room(desc.Data.Type)
+            or GUARANTEE_BYPASS_ROOM_TYPES[room_type] ~= nil
 
         -- dont ultra secret when we dont have these collectibles
         if self:get_config().notify_info_conditional_ultra_secret and
