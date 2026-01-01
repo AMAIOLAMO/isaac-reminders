@@ -786,7 +786,7 @@ function rems:handle_special_room_notify()
 end
 
 rems.time_progress_anim_pos_offset = Vector(0, 0)
-rems.timer_offset_stack = offset_stack.new()
+rems.timers_offset_stack = offset_stack.new()
 
 function rems:render_time_progress(offset_stack)
     assert(offset_stack ~= nil, "offset_stack should not be nil")
@@ -840,23 +840,29 @@ function rems:render_time_progress(offset_stack)
     hush_icon.Color      = Color(1, 1, 1, opacity)
 
     local length = w * config.time_progress_width_percent
-    local sections = 30 / 5 -- divide in 5 minutes
+    local SECTION_MINS = 5
+    local sections = 30 / SECTION_MINS -- divide in 5 minutes
     local section_len = length / sections
 
     local SECTION_BODY_HEIGHT = 5
+
+    local BOSS_RUSH_TIME_MINS = 20
+    local HUSH_TIME_MINS = 30
 
     for i = 0, sections do
         local node_pos = Vector(
             w / 2 - length / 2 + section_len * i + total_offset.X, CLOCK_HEIGHT + total_offset.Y
         )
 
+        local section_begin_time_mins = i * SECTION_MINS
+
         -- boss rush
-        if i == (25 / 5) and config.time_progress_boss_rush_icon_enabled then
+        if section_begin_time_mins == BOSS_RUSH_TIME_MINS and config.time_progress_boss_rush_icon_enabled then
             boss_rush_icon:SetFrame("Static_Center", 0)
             boss_rush_icon:Render(node_pos)
 
         -- hush
-        elseif i == (30 / 5) and config.time_progress_hush_icon_enabled then
+        elseif section_begin_time_mins == HUSH_TIME_MINS and config.time_progress_hush_icon_enabled then
             hush_icon:SetFrame("Static_Center", 0)
             hush_icon:Render(node_pos)
 
@@ -866,9 +872,9 @@ function rems:render_time_progress(offset_stack)
         end
     end
 
-    local hush_time_secs = 30 * 60
+    local HUSH_TIME_SECS = HUSH_TIME_MINS * 60
 
-    local progress = math.min(game_time.total_secs, hush_time_secs) / hush_time_secs
+    local progress = math.min(game_time.total_secs, HUSH_TIME_SECS) / HUSH_TIME_SECS
 
     clock_sprite:SetFrame("Static_Center", 0)
     clock_sprite:Render(Vector(
@@ -985,6 +991,15 @@ function rems:render_explosion_immunity_reminder_for_bomb(bomb_entity)
 end
 
 function rems:render_knife_piece_reminders()
+    local is_ascent_path = game:GetStateFlag(GameStateFlag.STATE_BACKWARDS_PATH_INIT) or
+        game:GetLevel():IsAscent()
+
+    -- no need to display knife pieces during this time
+    if is_ascent_path then
+        return
+    end
+
+
     local grid_entities = self:get_current_room_grid_entities()
 
     local has_knife_piece_1 = iutils.any_player_has_collectible(game, CollectibleType.COLLECTIBLE_KNIFE_PIECE_1)
@@ -1030,11 +1045,11 @@ function rems:render_knife_piece_reminders()
                 local scr_pos = iutils.world_to_screen_ext(entity.Position, is_mirror)
 
                 render_static_sprite("Knives", KNIFE_PIECE_2_FRAME, {
-                    pos = scr_pos + Vector(-10, -20 + animation_y_offset1)
+                    pos = scr_pos + Vector(-GAP, -20 + animation_y_offset1)
                 })
 
                 render_static_sprite("Notify", NOTIFY_QUESTION_MARK_FRAME, {
-                    pos = scr_pos + Vector(10, -20 + animation_y_offset1)
+                    pos = scr_pos + Vector(GAP, -20 + animation_y_offset2)
                 })
             end
         end
@@ -1473,7 +1488,7 @@ function rems:on_post_render()
             self:render_lost_death_icon()
         end
 
-        self.timer_offset_stack:clear()
+        self.timers_offset_stack:clear()
 
         if config.knife_piece_reminders_enabled then
             self:render_knife_piece_reminders()
@@ -1508,16 +1523,16 @@ function rems:on_post_render()
 
         if config.time_progress_enabled then
             if config.time_progress_disable_in_greed and is_greed == false then
-                self:render_time_progress(self.timer_offset_stack)
+                self:render_time_progress(self.timers_offset_stack)
             end
 
             if config.time_progress_disable_in_greed == false then
-                self:render_time_progress(self.timer_offset_stack)
+                self:render_time_progress(self.timers_offset_stack)
             end
         end
 
         if config.game_timer_enabled then
-            self:render_game_timer(self.timer_offset_stack)
+            self:render_game_timer(self.timers_offset_stack)
         end
 
         -- incomplete
