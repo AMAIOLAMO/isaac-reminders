@@ -26,6 +26,7 @@ function Configs.get_default_config()
         notify_info_line_height = 15,
         notify_info_type = enums.NotifyInfoType.NOTIFY_ICON_TEXT,
         notify_info_opacity = 1.0,
+        notify_info_should_bypass_guaranteed_rooms = true,
 
         icon_scale = 1.5,
 

@@ -368,6 +368,32 @@ local function setup_extra_info(mod_name, mod)
         }
     )
 
+    MCM.AddSetting(
+        mod_name, "Extra Info", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().notify_info_should_bypass_guaranteed_rooms
+            end,
+
+            Display = function()
+                return "Guaranteed Rooms Bypass: " ..
+                    (mod:get_config().notify_info_should_bypass_guaranteed_rooms and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().notify_info_should_bypass_guaranteed_rooms = value
+            end,
+
+            Info = {
+                "Toggles whether or not notify info should bypass certain guaranteed",
+                "rooms for the floor(Treasure rooms, secret rooms, super secret rooms, etc.)"
+            }
+        }
+    )
+
+        -- notify_info_should_bypass_guaranteed_rooms = true,
+
     MCM.AddSpace(mod_name, "Extra Info")
 
     MCM.AddSetting(

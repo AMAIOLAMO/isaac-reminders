@@ -286,6 +286,7 @@ local GUARANTEE_BYPASS_ROOM_TYPES = {
 }
 
 function rems:update_notify_rooms()
+    local config = self:get_config()
     local room_descs = self:get_unvisited_special_room_descs()
 
     for k, _ in pairs(self.notify_special_rooms) do
@@ -303,7 +304,10 @@ function rems:update_notify_rooms()
         local room_type = desc.Data.Type
         -- Curse of the lost will not affect the display flags
         local should_notify = (iutils.room_desc_is_visible(desc) and iutils.room_desc_shows_icon(desc))
-            or GUARANTEE_BYPASS_ROOM_TYPES[room_type] ~= nil
+
+        if config.notify_info_should_bypass_guaranteed_rooms then
+            should_notify = should_notify or GUARANTEE_BYPASS_ROOM_TYPES[room_type] ~= nil
+        end
 
         -- dont ultra secret when we dont have these collectibles
         if self:get_config().notify_info_conditional_ultra_secret and
