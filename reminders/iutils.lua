@@ -1,6 +1,8 @@
 -- AUTHOR: CxRedix
 -- Copyright 2025 CxRedix
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
+local enums = require("reminders.enums")
+
 local IUtils = {}
 
 -- Room names
@@ -232,5 +234,10 @@ function IUtils.get_total_mantle_effect_count(player)
     return (player:GetEffects():HasNullEffect(NullItemID.ID_HOLY_CARD) and 1 or 0) +
         player:GetEffects():GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE)
 end
+
+-- TODO: complete this function for easier and readable code in terms of floor checking :)
+-- function IUtils.is_floor_type(stage, stage_type, floor_types)
+--     if stage 
+-- end
 
 return IUtils

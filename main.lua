@@ -872,6 +872,7 @@ function rems:render_time_progress(offset_stack)
     local boss_rush_time_mins = 20
 
     -- gehenna / mausoleum special time for boss rush
+    -- TODO: simplify this check to be much easier to read
     if (stage == LevelStage.STAGE3_1 or stage == LevelStage.STAGE3_2) and 
         (stage_type == StageType.STAGETYPE_REPENTANCE or stage_type == StageType.STAGETYPE_REPENTANCE_B) then
         boss_rush_time_mins = 25
