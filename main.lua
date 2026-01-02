@@ -865,7 +865,18 @@ function rems:render_time_progress(offset_stack)
 
     local SECTION_BODY_HEIGHT = 5
 
-    local BOSS_RUSH_TIME_MINS = 20
+    local level = game:GetLevel()
+    local stage = level:GetStage()
+    local stage_type = level:GetStageType()
+
+    local boss_rush_time_mins = 20
+
+    -- gehenna / mausoleum special time for boss rush
+    if (stage == LevelStage.STAGE3_1 or stage == LevelStage.STAGE3_2) and 
+        (stage_type == StageType.STAGETYPE_REPENTANCE or stage_type == StageType.STAGETYPE_REPENTANCE_B) then
+        boss_rush_time_mins = 25
+    end
+
     local HUSH_TIME_MINS = 30
 
     for i = 0, sections do
@@ -876,7 +887,7 @@ function rems:render_time_progress(offset_stack)
         local section_begin_time_mins = i * SECTION_MINS
 
         -- boss rush
-        if section_begin_time_mins == BOSS_RUSH_TIME_MINS and config.time_progress_boss_rush_icon_enabled then
+        if section_begin_time_mins == boss_rush_time_mins and config.time_progress_boss_rush_icon_enabled then
             boss_rush_icon:SetFrame("Static_Center", 0)
             boss_rush_icon:Render(node_pos)
 
