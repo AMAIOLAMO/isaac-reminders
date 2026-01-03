@@ -235,7 +235,6 @@ function IUtils.get_total_mantle_effect_count(player)
         player:GetEffects():GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE)
 end
 
--- TODO: complete this function for easier and readable code in terms of floor checking :)
 function IUtils.is_floor_type(stage, stage_type, floor_types)
     local ftype = enums.FloorType
 
