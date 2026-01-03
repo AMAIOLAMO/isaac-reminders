@@ -1086,6 +1086,15 @@ function rems:render_knife_piece_reminders()
 end
 
 function rems:render_secret_room_placeholders()
+    local FLOOR_TYPE_BITS_TO_NOT_SHOW = enums.FloorType.FLOOR_HUSH | enums.FloorType.FLOOR_HOME
+
+    local stage = game:GetLevel():GetStage()
+    local stage_type = game:GetLevel():GetStageType()
+
+    if iutils.get_floor_type(stage, stage_type) & FLOOR_TYPE_BITS_TO_NOT_SHOW > 0 then
+        return
+    end
+
     local ROOMS_TO_NOT_SHOW = {
         [RoomType.ROOM_BOSS]            = true,
         [RoomType.ROOM_SUPERSECRET]     = true,
