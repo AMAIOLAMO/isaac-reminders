@@ -89,17 +89,10 @@ local enums = {
 
         STAGE_HOME            = 1 << 25,
 
-        STAGE_END             = 1 << 25,
-    },
+        STAGE_NULL            = 1 << 26,
 
-    -- FloorType = {
-    --     STAGE_BASEMENT = 1 << 0, STAGE_CELLAR = 1 << 1, STAGE_BURNING_BASEMENT, STAGE_DOWNPOUR, STAGE_DROSS,
-    --     STAGE_CAVES, STAGE_CATACOMBS, STAGE_FLOODED_CAVES, STAGE_MINES, STAGE_ASHPIT,
-    --     STAGE_DEPTHS, STAGE_NECROPOLIS, STAGE_DANK_DEPTHS, STAGE_MAUSOLEUM, STAGE_GEHENNA,
-    --     STAGE_WOMB, STAGE_UTERO, STAGE_SCARRED_WOMB, STAGE_CORPSE,
-    --     STAGE_HUSH,
-    --     STAGE_SHEOL, STAGE_CATHEDRAL, STAGE_DARK_ROOM, STAGE_CHEST, STAGE_VOID, STAGE_HOME
-    -- },
+        STAGE_END             = 1 << 26
+    },
 
     LanguageString = {
     }
