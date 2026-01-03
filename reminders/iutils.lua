@@ -235,102 +235,110 @@ function IUtils.get_total_mantle_effect_count(player)
         player:GetEffects():GetCollectibleEffectNum(CollectibleType.COLLECTIBLE_HOLY_MANTLE)
 end
 
-function IUtils.is_floor_type(stage, stage_type, floor_types)
+function IUtils.get_floor_type(stage, stage_type)
     local ftype = enums.FloorType
 
     if stage == LevelStage.STAGE1_1 or stage == LevelStage.STAGE1_2 then
         if stage_type == StageType.STAGETYPE_ORIGINAL then
-            return ftype.STAGE_BASEMENT
+            return ftype.FLOOR_BASEMENT
 
         elseif stage_type == StageType.STAGETYPE_WOTL then
-            return ftype.STAGE_CELLAR
+            return ftype.FLOOR_CELLAR
 
         elseif stage_type == StageType.STAGETYPE_AFTERBIRTH then
-            return ftype.STAGE_BURNING_BASEMENT
+            return ftype.FLOOR_BURNING_BASEMENT
 
         elseif stage_type == StageType.STAGETYPE_REPENTANCE then
-            return ftype.STAGE_DOWNPOUR
+            return ftype.FLOOR_DOWNPOUR
 
         elseif stage_type == StageType.STAGETYPE_REPENTANCE_B then
-            return ftype.STAGE_DROSS
+            return ftype.FLOOR_DROSS
         end
+
 
     elseif stage == LevelStage.STAGE2_1 or stage == LevelStage.STAGE2_2 then
         if stage_type == StageType.STAGETYPE_ORIGINAL then
-            return ftype.STAGE_CAVES
+            return ftype.FLOOR_CAVES
 
         elseif stage_type == StageType.STAGETYPE_WOTL then
-            return ftype.STAGE_CATACOMBS
+            return ftype.FLOOR_CATACOMBS
 
         elseif stage_type == StageType.STAGETYPE_AFTERBIRTH then
-            return ftype.STAGE_FLOODED_CAVES
+            return ftype.FLOOR_FLOODED_CAVES
 
         elseif stage_type == StageType.STAGETYPE_REPENTANCE then
-            return ftype.STAGE_MINES
+            return ftype.FLOOR_MINES
 
         elseif stage_type == StageType.STAGETYPE_REPENTANCE_B then
-            return ftype.STAGE_ASHPIT
+            return ftype.FLOOR_ASHPIT
         end
+
 
     elseif stage == LevelStage.STAGE3_1 or stage == LevelStage.STAGE3_2 then
         if stage_type == StageType.STAGETYPE_ORIGINAL then
-            return ftype.STAGE_DEPTHS
+            return ftype.FLOOR_DEPTHS
 
         elseif stage_type == StageType.STAGETYPE_WOTL then
-            return ftype.STAGE_NECROPOLIS
+            return ftype.FLOOR_NECROPOLIS
 
         elseif stage_type == StageType.STAGETYPE_AFTERBIRTH then
-            return ftype.STAGE_DANK_DEPTHS
+            return ftype.FLOOR_DANK_DEPTHS
 
         elseif stage_type == StageType.STAGETYPE_REPENTANCE then
-            return ftype.STAGE_MAUSOLEUM
+            return ftype.FLOOR_MAUSOLEUM
 
         elseif stage_type == StageType.STAGETYPE_REPENTANCE_B then
-            return ftype.STAGE_GEHENNA
+            return ftype.FLOOR_GEHENNA
         end
+
 
     elseif stage == LevelStage.STAGE4_1 or stage == LevelStage.STAGE4_2 then
         if stage_type == StageType.STAGETYPE_ORIGINAL then
-            return ftype.STAGE_WOMB
+            return ftype.FLOOR_WOMB
 
         elseif stage_type == StageType.STAGETYPE_WOTL then
-            return ftype.STAGE_UTERO
+            return ftype.FLOOR_UTERO
 
         elseif stage_type == StageType.STAGETYPE_AFTERBIRTH then
-            return ftype.STAGE_SCARRED_WOMB
+            return ftype.FLOOR_SCARRED_WOMB
 
         elseif stage_type == StageType.STAGETYPE_REPENTANCE then
-            return ftype.STAGE_CORPSE
+            return ftype.FLOOR_CORPSE
         end
 
+
     elseif stage == LevelStage.STAGE4_3 then
-        return ftype.STAGE_HUSH
+        return ftype.FLOOR_HUSH
+
 
     elseif stage == LevelStage.STAGE5 then
         if stage_type == StageType.STAGETYPE_ORIGINAL then
-            return ftype.STAGE_SHEOL
+            return ftype.FLOOR_SHEOL
 
         elseif stage_type == StageType.STAGETYPE_WOTL then
-            return ftype.STAGE_CATHEDRAL
+            return ftype.FLOOR_CATHEDRAL
         end
+
 
     elseif stage == LevelStage.STAGE6 then
         if stage_type == StageType.STAGETYPE_ORIGINAL then
-            return ftype.STAGE_DARK_ROOM
+            return ftype.FLOOR_DARK_ROOM
 
         elseif stage_type == StageType.STAGETYPE_WOTL then
-            return ftype.STAGE_CHEST
+            return ftype.FLOOR_CHEST
         end
 
+
     elseif stage == LevelStage.STAGE7 then
-        return ftype.STAGE_VOID
+        return ftype.FLOOR_VOID
+
 
     elseif stage == LevelStage.STAGE8 then
-        return ftype.STAGE_HOME
+        return ftype.FLOOR_HOME
     end
 
     -- fallback
-    return ftype.STAGE_NULL
+    return ftype.FLOOR_NULL
 end
 
 return IUtils

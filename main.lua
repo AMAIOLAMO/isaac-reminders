@@ -3,7 +3,6 @@
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
 
 -- The major purpose of this mod is to make things that are not obvious to be more obvious!
--- TODO: remove full dependency towards miniMAPI
 
 -- BUG: Mini bosses with treasure map does not display color marks still, even if the icon is visible.
 
@@ -216,7 +215,6 @@ function rems:try_minimap_update_room_color_marks()
 
     local special_rooms = {}
 
-    -- TODO: Minimap dependency
     for _, room in ipairs(MinimapAPI:GetLevel()) do
         if iutils.is_special_room(room.Type) then
             table.insert(special_rooms, room)
@@ -872,9 +870,9 @@ function rems:render_time_progress(offset_stack)
     local boss_rush_time_mins = 20
 
     -- gehenna / mausoleum special time for boss rush
-    -- TODO: simplify this check to be much easier to read
-    if (stage == LevelStage.STAGE3_1 or stage == LevelStage.STAGE3_2) and 
-        (stage_type == StageType.STAGETYPE_REPENTANCE or stage_type == StageType.STAGETYPE_REPENTANCE_B) then
+    local floor_type = iutils.get_floor_type(stage, stage_type)
+
+    if floor_type & (enums.FloorType.FLOOR_GEHENNA | enums.FloorType.FLOOR_MAUSOLEUM) > 0 then
         boss_rush_time_mins = 25
     end
 
@@ -930,7 +928,6 @@ function rems:render_game_timer(offset_stack)
         "%02.0f:%02.0f:%02.0f", game_time.hours, game_time.mins, game_time.secs
     )
 
-    -- TODO: instead we should utilize game_progress's box offset
     local offset = iserializer.decode_vector(self:get_config().game_timer_offset)
 
     if self.extra_info_timer:max() == false then

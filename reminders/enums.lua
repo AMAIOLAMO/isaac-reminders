@@ -52,46 +52,46 @@ local enums = {
     },
 
     FloorType = {
-        STAGE_BEGIN           = 1 << 0,
+        FLOOR_BEGIN           = 1 << 0,
 
-        STAGE_BASEMENT        = 1 << 0,
-        STAGE_CELLAR          = 1 << 1,
-        STAGE_BURNING_BASEMENT= 1 << 2,
-        STAGE_DOWNPOUR        = 1 << 3,
-        STAGE_DROSS           = 1 << 4,
+        FLOOR_BASEMENT        = 1 << 0,
+        FLOOR_CELLAR          = 1 << 1,
+        FLOOR_BURNING_BASEMENT= 1 << 2,
+        FLOOR_DOWNPOUR        = 1 << 3,
+        FLOOR_DROSS           = 1 << 4,
 
-        STAGE_CAVES           = 1 << 5,
-        STAGE_CATACOMBS       = 1 << 6,
-        STAGE_FLOODED_CAVES   = 1 << 7,
-        STAGE_MINES           = 1 << 8,
-        STAGE_ASHPIT          = 1 << 9,
+        FLOOR_CAVES           = 1 << 5,
+        FLOOR_CATACOMBS       = 1 << 6,
+        FLOOR_FLOODED_CAVES   = 1 << 7,
+        FLOOR_MINES           = 1 << 8,
+        FLOOR_ASHPIT          = 1 << 9,
 
-        STAGE_DEPTHS          = 1 << 10,
-        STAGE_NECROPOLIS      = 1 << 11,
-        STAGE_DANK_DEPTHS     = 1 << 12,
-        STAGE_MAUSOLEUM       = 1 << 13,
-        STAGE_GEHENNA         = 1 << 14,
+        FLOOR_DEPTHS          = 1 << 10,
+        FLOOR_NECROPOLIS      = 1 << 11,
+        FLOOR_DANK_DEPTHS     = 1 << 12,
+        FLOOR_MAUSOLEUM       = 1 << 13,
+        FLOOR_GEHENNA         = 1 << 14,
 
-        STAGE_WOMB            = 1 << 15,
-        STAGE_UTERO           = 1 << 16,
-        STAGE_SCARRED_WOMB    = 1 << 17,
-        STAGE_CORPSE          = 1 << 18,
+        FLOOR_WOMB            = 1 << 15,
+        FLOOR_UTERO           = 1 << 16,
+        FLOOR_SCARRED_WOMB    = 1 << 17,
+        FLOOR_CORPSE          = 1 << 18,
 
-        STAGE_HUSH            = 1 << 19,
+        FLOOR_HUSH            = 1 << 19,
 
-        STAGE_SHEOL           = 1 << 20,
-        STAGE_CATHEDRAL       = 1 << 21,
+        FLOOR_SHEOL           = 1 << 20,
+        FLOOR_CATHEDRAL       = 1 << 21,
 
-        STAGE_DARK_ROOM       = 1 << 22,
-        STAGE_CHEST           = 1 << 23,
+        FLOOR_DARK_ROOM       = 1 << 22,
+        FLOOR_CHEST           = 1 << 23,
 
-        STAGE_VOID            = 1 << 24,
+        FLOOR_VOID            = 1 << 24,
 
-        STAGE_HOME            = 1 << 25,
+        FLOOR_HOME            = 1 << 25,
 
-        STAGE_NULL            = 1 << 26,
+        FLOOR_NULL            = 1 << 26,
 
-        STAGE_END             = 1 << 26
+        FLOOR_END             = 1 << 26
     },
 
     LanguageString = {
