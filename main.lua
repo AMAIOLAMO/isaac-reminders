@@ -1560,14 +1560,15 @@ function rems:on_post_render()
             local HIDE_TIME_TOTAL_SECS = 30 * 60
 
             if config.time_progress_display_trigger == enums.DisplayTrigger.TRIGGER_EXTRA_INFO then
-                should_hide = not (self.extra_info_timer:max() or
-                    game_time.total_secs >= HIDE_TIME_TOTAL_SECS)
+                should_hide = not (self.extra_info_timer:max())
             end
 
             -- allows extra options such as ALWAYS -> NEVER, or NOT POP UP ON EXTRA INFO
             if config.time_progress_invert_display_trigger then
                 should_hide = not should_hide
             end
+
+            should_hide = should_hide or game_time.total_secs >= HIDE_TIME_TOTAL_SECS
 
             if (config.time_progress_disable_in_greed and is_greed == false) or
                 (config.time_progress_disable_in_greed == false) then
