@@ -803,9 +803,10 @@ function rems:handle_special_room_notify()
 end
 
 rems.time_progress_anim_pos_offset = Vector(0, 0)
-rems.timers_offset_stack = offset_stack.new()
 
-function rems:render_time_progress(offset_stack)
+rems.normal_timers_offset_stack = offset_stack.new()
+
+function rems:render_time_progress(offset_stack, should_hide)
     assert(offset_stack ~= nil, "offset_stack should not be nil")
 
     local w = Isaac.GetScreenWidth()
@@ -815,13 +816,7 @@ function rems:render_time_progress(offset_stack)
 
     local config_offset = iserializer.decode_vector(self:get_config().time_progress_offset)
 
-    local extra_info_fade_opacity = 1.0
-
-    if self.extra_info_timer:max() then
-        extra_info_fade_opacity = 0.4
-    end
-
-    local opacity = config.time_progress_opacity * extra_info_fade_opacity
+    local opacity = config.time_progress_opacity
     local node_opacity = config.time_progress_opacity_node
 
     local ANIM_SPEED = 4.0
@@ -829,12 +824,6 @@ function rems:render_time_progress(offset_stack)
     local game_time = iutils.get_game_time(game)
 
     local lerp_target = Vector.Zero
-
-    local game_time = iutils.get_game_time(game)
-    local HIDE_TIME_TOTAL_SECS = 30 * 60
-
-    local should_hide = self.extra_info_timer:max() or
-        game_time.total_secs >= HIDE_TIME_TOTAL_SECS
 
 
     if should_hide then
@@ -915,8 +904,14 @@ function rems:render_time_progress(offset_stack)
     )
 end
 
-function rems:render_game_timer(offset_stack)
+function rems:render_game_timer(offset_stack, should_hide)
     assert(offset_stack ~= nil, "offsets cannot be nil")
+
+    if should_hide then
+        return 
+    end
+    -- else
+
     local config = self:get_config()
 
     local w = Isaac.GetScreenWidth()
@@ -930,18 +925,16 @@ function rems:render_game_timer(offset_stack)
 
     local offset = iserializer.decode_vector(self:get_config().game_timer_offset)
 
-    if self.extra_info_timer:max() == false then
-        local scale = config.game_timer_scale
-        local opacity = config.game_timer_opacity
+    local scale = config.game_timer_scale
+    local opacity = config.game_timer_opacity
 
-        Isaac.RenderScaledText(
-            time_str,
-            w / 2 - Isaac.GetTextWidth(time_str) * scale / 2 + offset.X,
-            offset_stack:current() + offset.Y,
-            scale, scale,
-            0.8, 0.8, 0.8, opacity
-        )
-    end
+    Isaac.RenderScaledText(
+        time_str,
+        w / 2 - Isaac.GetTextWidth(time_str) * scale / 2 + offset.X,
+        offset_stack:current() + offset.Y,
+        scale, scale,
+        0.8, 0.8, 0.8, opacity
+    )
 end
 
 function rems:render_bum_kill_reminders()
@@ -1525,8 +1518,6 @@ function rems:on_post_render()
             self:render_lost_death_icon()
         end
 
-        self.timers_offset_stack:clear()
-
         if config.knife_piece_reminders_enabled then
             self:render_knife_piece_reminders()
         end
@@ -1558,18 +1549,45 @@ function rems:on_post_render()
         end
 
 
+        self.normal_timers_offset_stack:clear()
+
         if config.time_progress_enabled then
-            if config.time_progress_disable_in_greed and is_greed == false then
-                self:render_time_progress(self.timers_offset_stack)
+            local offset_stack = self.normal_timers_offset_stack
+
+            local should_hide = false
+            
+            local game_time = iutils.get_game_time(game)
+            local HIDE_TIME_TOTAL_SECS = 30 * 60
+
+            if config.time_progress_display_trigger == enums.DisplayTrigger.TRIGGER_EXTRA_INFO then
+                should_hide = not (self.extra_info_timer:max() or
+                    game_time.total_secs >= HIDE_TIME_TOTAL_SECS)
             end
 
-            if config.time_progress_disable_in_greed == false then
-                self:render_time_progress(self.timers_offset_stack)
+            -- allows extra options such as ALWAYS -> NEVER, or NOT POP UP ON EXTRA INFO
+            if config.time_progress_invert_display_trigger then
+                should_hide = not should_hide
+            end
+
+            if (config.time_progress_disable_in_greed and is_greed == false) or
+                (config.time_progress_disable_in_greed == false) then
+                self:render_time_progress(offset_stack, should_hide)
             end
         end
 
         if config.game_timer_enabled then
-            self:render_game_timer(self.timers_offset_stack)
+            local offset_stack = self.normal_timers_offset_stack
+            local should_hide = false
+
+            if config.game_timer_display_trigger == enums.DisplayTrigger.TRIGGER_EXTRA_INFO then
+                should_hide = self.extra_info_timer:max() == false
+            end
+
+            if config.game_timer_invert_display_trigger then
+                should_hide = not should_hide
+            end
+
+            self:render_game_timer(offset_stack, should_hide)
         end
 
         -- incomplete

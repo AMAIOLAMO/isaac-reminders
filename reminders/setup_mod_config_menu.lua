@@ -621,6 +621,59 @@ local function setup_time(mod_name, mod)
         }
     )
 
+    MCM.AddSetting(
+        mod_name, "Time", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().time_progress_display_trigger
+            end,
+
+            Display = function()
+                return "Display trigger: " .. enums.DisplayTrigger:to_description(
+                    mod:get_config().time_progress_display_trigger
+                )
+            end,
+
+            Minimum = enums.DisplayTrigger.TRIGGER_BEGIN,
+            Maximum = enums.DisplayTrigger.TRIGGER_END,
+
+            OnChange = function(value)
+                mod:get_config().time_progress_display_trigger = value
+            end,
+
+            Info = {
+                "Switches between different kinds of display mode:",
+                "Always = Always displays",
+                "On Extra Info = Displays only when holding map button"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Time", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().time_progress_invert_display_trigger
+            end,
+
+            Display = function()
+                return "Invert Display Trigger: " .. (mod:get_config().time_progress_invert_display_trigger and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().time_progress_invert_display_trigger = value
+            end,
+
+            Info = {
+                "Whether or not to invert the trigger for displaying the Time progress",
+                "ALWAYS -> NEVER",
+                "ON TRIGGER INFO(show up when you hold map) -> ON NOT TRIGGER INFO(show up when you DONT hold)"
+            }
+        }
+    )
+
     MCM.AddSpace(mod_name, "Time")
 
     MCM.AddSetting(
@@ -772,6 +825,59 @@ local function setup_time(mod_name, mod)
 
             Info = {
                 "Toggles whether to enable the game timer shown at the top"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Time", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().game_timer_display_trigger
+            end,
+
+            Display = function()
+                return "Display trigger: " .. enums.DisplayTrigger:to_description(
+                    mod:get_config().game_timer_display_trigger
+                )
+            end,
+
+            Minimum = enums.DisplayTrigger.TRIGGER_BEGIN,
+            Maximum = enums.DisplayTrigger.TRIGGER_END,
+
+            OnChange = function(value)
+                mod:get_config().game_timer_display_trigger = value
+            end,
+
+            Info = {
+                "Switches between different kinds of display mode:",
+                "Always = Always displays",
+                "On Extra Info = Displays only when holding map button"
+            }
+        }
+    )
+
+    MCM.AddSetting(
+        mod_name, "Time", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().game_timer_invert_display_trigger
+            end,
+
+            Display = function()
+                return "Invert Display Trigger: " .. (mod:get_config().game_timer_invert_display_trigger and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().game_timer_invert_display_trigger = value
+            end,
+
+            Info = {
+                "Whether or not to invert the trigger for displaying the Game Timer",
+                "ALWAYS -> NEVER",
+                "ON TRIGGER INFO(show up when you hold map) -> ON NOT TRIGGER INFO(show up when you DONT hold)"
             }
         }
     )

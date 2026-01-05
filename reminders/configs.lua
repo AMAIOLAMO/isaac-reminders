@@ -48,12 +48,16 @@ function Configs.get_default_config()
         time_progress_boss_rush_icon_enabled = true,
         time_progress_hush_icon_enabled = true,
         time_progress_disable_in_greed = true,
+        time_progress_display_trigger = enums.DisplayTrigger.TRIGGER_EXTRA_INFO,
+        time_progress_invert_display_trigger = true,
 
         game_timer_enabled = true,
         game_timer_offset = iserializer.encode_vector(Vector(0, 0)),
         game_timer_subseconds_enabled = true,
         game_timer_scale = 0.8,
         game_timer_opacity = 0.9,
+        game_timer_display_trigger = enums.DisplayTrigger.TRIGGER_EXTRA_INFO,
+        game_timer_invert_display_trigger = true,
 
         bum_kill_reminders_enabled = true,
 
