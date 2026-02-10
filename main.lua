@@ -104,6 +104,9 @@ end
 local card_fronts = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
 
 -- instance based data, only persists per instance (if you close out and reload the game, this will be false)
+
+-- HACK: the reason this flag is here is due to someone reporting april fools challege, when player is marked within
+-- the boss room, and they completed it, they can constantly get the notified info to show up, which is kind of weird?
 rems.notified_info_this_floor_for_boss = false
 
 
@@ -172,10 +175,15 @@ rems.prev_frame_time = 0.0
 
 -- DEBUG --
 function rems:log_debug(fmt, ...)
+    local arg = { ... }
+
     if self:get_config().debug_mode then
         local time_str = tostring(Isaac.GetTime())
-        local result_msg = arg and
-            string.format(fmt, table.unpack(arg)) or fmt
+
+        local result_msg =
+            (arg and string.format(fmt, table.unpack(arg)))
+            or fmt
+
         print(
             string.format("[DBG][%s][%s]: %s", MOD_NAME, time_str, result_msg)
         )
@@ -183,10 +191,14 @@ function rems:log_debug(fmt, ...)
 end
 
 function rems:log_info(fmt, ...)
+    local arg = { ... }
+
     local time_str = tostring(Isaac.GetTime())
 
-    local result_msg = arg and
-    string.format(fmt, table.unpack(arg)) or fmt
+    local result_msg =
+        (arg and string.format(fmt, table.unpack(arg)))
+        or fmt
+
     print(
         string.format("[INFO][%s][%s]: %s", MOD_NAME, time_str, result_msg)
     )
@@ -262,6 +274,21 @@ function rems:try_minimap_update_room_color_marks()
     self:log_debug(output_str)
 
     return true
+end
+
+function rems:get_room_descs(filter_predicate)
+    local result_descs = {}
+    local room_descs = game:GetLevel():GetRooms()
+
+    for i = 0, room_descs.Size - 1 do
+        local room_desc = room_descs:Get(i)
+        
+        if filter_predicate(room_desc) then
+            table.insert(result_descs, room_desc)
+        end
+    end
+
+    return result_descs
 end
 
 function rems:get_unvisited_special_room_descs()
@@ -1514,7 +1541,14 @@ function rems:on_boss_completed(boss_room)
     -- Check whether or not it has been seen in the normal world
     local level = game:GetLevel()
 
-    if level:GetStage() ~= LevelStage.STAGE7 and self.notified_info_this_floor_for_boss == false then
+    local incomplete_boss_rooms = self:get_room_descs(function(room_desc)
+        return room_desc.Data ~= nil and room_desc.Data.Type == RoomType.ROOM_BOSS and
+            (not room_desc.Clear)
+    end)
+
+    self:log_debug("incomplete boss room count: %d", #incomplete_boss_rooms)
+
+    if level:GetStage() ~= LevelStage.STAGE7 and #incomplete_boss_rooms <= 0 then
         self:start_notify_info()
         self.notified_info_this_floor_for_boss = true
         self:log_debug("notified floor per boss set to true")
