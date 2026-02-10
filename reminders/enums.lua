@@ -51,6 +51,18 @@ local enums = {
         IREMINDER_ORPHAN_SOCKS = 1,
     },
 
+    Dimension = {
+        DIM_INVALID           = -1,
+
+        DIM_BEGIN             = 0,
+
+        DIM_MAIN              = 0,
+        DIM_MIRROR_OR_MINES   = 1,
+        DIM_DEATH_CERTIFICATE = 2,
+
+        DIM_END               = 2
+    },
+
     FloorType = {
         FLOOR_BEGIN           = 1 << 0,
 

@@ -356,9 +356,7 @@ function rems:update_notify_rooms()
         end
 
         if should_notify then
-            -- local is_mirror_room = rooms:Get(desc.ListIndex):GetDimension() == 1
-            -- TODO: how to check whether or not a desc is a mirror room?
-            local is_mirror_room = false
+            local is_mirror_room = iutils.is_room_desc_mirror_world(game, desc)
 
             if self.notify_special_rooms[room_type] == nil then
                 self.notify_special_rooms[room_type] = RoomNotify.new(room_type, 1, is_mirror_room)
@@ -366,6 +364,8 @@ function rems:update_notify_rooms()
                 self.notify_special_rooms[room_type].count = 
                     self.notify_special_rooms[room_type].count + 1
 
+                -- we do not want to override the original, since it is not defined that when we loop through
+                -- room descriptions, does it loop through mirror rooms first / main dimension rooms first
                 if is_mirror_room then
                     self.notify_special_rooms[room_type].has_mirror_counterpart = is_mirror_room
                 end
@@ -1473,6 +1473,13 @@ function rems:on_post_new_room()
     local config = self:get_config()
     guard_not_nil("config", config)
 
+    local level = game:GetLevel()
+    local room_desc = level:GetCurrentRoomDesc()
+
+    self:log_debug(
+        "mirror world: %s", iutils.is_room_desc_mirror_world(game, room_desc)
+    )
+
     guard_not_nil("config.map_special_colormarks_enabled", config.map_special_colormarks_enabled)
 
     if config.map_special_colormarks_enabled then
@@ -1535,15 +1542,18 @@ function rems:on_pre_spawn_clean_award(_rng)
 end
 
 function rems:on_boss_completed(boss_room)
-    self:log_debug("BOSS COMPLETED, NOTIFY PLAYER ABOUT MISSED SPECIAL ROOMS")
+    self:log_debug("BOSS COMPLETED")
 
     -- TODO: handle mirror floors differently, although Im still unsure on how to
     -- Check whether or not it has been seen in the normal world
     local level = game:GetLevel()
 
+
+    -- ignores mirror worlds, since player's might forget that there are mirror worlds in the level :)
+    -- so always notify them even if the mirror world boss isnt completed
     local incomplete_boss_rooms = self:get_room_descs(function(room_desc)
         return room_desc.Data ~= nil and room_desc.Data.Type == RoomType.ROOM_BOSS and
-            (not room_desc.Clear)
+            (not room_desc.Clear) and iutils.is_room_desc_mirror_world(game, room_desc) == false
     end)
 
     self:log_debug("incomplete boss room count: %d", #incomplete_boss_rooms)

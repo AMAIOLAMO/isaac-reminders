@@ -341,4 +341,29 @@ function IUtils.get_floor_type(stage, stage_type)
     return ftype.FLOOR_NULL
 end
 
+-- from https://wofsauge.github.io/IsaacDocs/rep/RoomDescriptor.html?h=dimension
+function IUtils.get_room_desc_dimension(game, room_desc)
+    -- 0: main dimension
+    -- 1: secondary dimension, used by downpour mirror dimension and mines escape sequence
+    -- 2: death certificate dimension
+    for i = enums.Dimension.DIM_BEGIN, enums.Dimension.DIM_END do
+        if GetPtrHash(room_desc) == GetPtrHash(game:GetLevel():GetRoomByIdx(room_desc.SafeGridIndex, i)) then
+            return i
+        end
+    end
+
+    return -1
+end
+
+function IUtils.is_room_desc_mirror_world(game, room_desc)
+    local level = game:GetLevel()
+    local stage_type = level:GetStageType()
+    local stage = level:GetStage()
+
+    local floor_type = IUtils.get_floor_type(stage, stage_type)
+    
+    return IUtils.get_room_desc_dimension(game, room_desc) == enums.Dimension.DIM_MIRROR_OR_MINES and
+        floor_type == enums.FloorType.FLOOR_DOWNPOUR
+end
+
 return IUtils
