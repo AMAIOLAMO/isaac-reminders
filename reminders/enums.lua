@@ -93,9 +93,6 @@ local enums = {
 
         FLOOR_END             = 1 << 26
     },
-
-    LanguageString = {
-    }
 }
 
 function enums.NotifyInfoType:to_description(type)

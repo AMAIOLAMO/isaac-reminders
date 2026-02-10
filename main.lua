@@ -17,6 +17,9 @@ local iutils       = include("reminders.iutils")
 local enums        = include("reminders.enums")
 local offset_stack = include("reminders.offset_stack")
 
+local langs        = include("reminders.languages")
+local LE           = include("reminders.language_enum")
+
 local setup_mod_config_menu = include("reminders.setup_mod_config_menu")
 
 -- GAME --
@@ -25,6 +28,12 @@ local sfx_manager = SFXManager()
 
 -- SETUP --
 local configs = include("reminders.configs")
+
+
+local default_font = Font()
+default_font:Load("font/teammeatex/teammeatex10.fnt")
+
+local default_lang = langs.English
 
 local function lerpf(a, b, t)
     return a + (b - a) * t
@@ -94,13 +103,19 @@ end
 -- TODO: this is unstable in the future, we are relying on the game to give things
 local card_fronts = iutils.assert_sprite_load("gfx/ui/ui_cardfronts.anm2")
 
+-- instance based data, only persists per instance (if you close out and reload the game, this will be false)
+rems.notified_info_this_floor_for_boss = false
+
+
 rems.config = configs.get_default_config()
-
-
 
 function rems:reset_config()
     self.config = configs.get_default_config()
     self:log_info("Config has reset")
+end
+
+function rems:get_lang()
+    return default_lang
 end
 
 rems.extra_info_timer = timerf.new(0.5, 0.5)
@@ -360,9 +375,11 @@ function rems:render_notify(alpha)
     local opacity = config.notify_info_opacity
     alpha = alpha * opacity
 
-    local notify_text_header      = "=== ![Missed Special Rooms]! === "
-    local notify_text_header_ok   = "No Missed Special Rooms :)"
-    local notify_text_header_lost = "Oh no! You have Curse of The Lost :("
+    local lang = self:get_lang()
+
+    local notify_text_header      = lang:get(LE.LNOTIFY_TEXT_HEADER)
+    local notify_text_header_ok   = lang:get(LE.LNOTIFY_TEXT_HEADER_OK)
+    local notify_text_header_lost = lang:get(LE.LNOTIFY_TEXT_HEADER_LOST)
 
     local special_room_count = 0
 
@@ -490,11 +507,11 @@ function rems:render_notify(alpha)
 
         if config.notify_info_type & enums.NotifyInfoType.NOTIFY_TEXT ~= 0 then
             local x_pivot = render_pivot.X + (header_width / 2) - (name_width / 2)
-            Isaac.RenderScaledText(
+            default_font:DrawStringScaledUTF8(
                 rlabel,
                 x_pivot, render_pivot.Y + line_height_offset,
                 text_scale, text_scale,
-                1, 1, 1, alpha
+                KColor(1, 1, 1, alpha)
             )
         end
 
@@ -1412,6 +1429,7 @@ end
 function rems:on_pre_game_exit()
     -- should save
     assert(self:get_config(), "Cannot save data because config is nil")
+
     local json_data = json.encode(self:get_config())
     self:log_debug(string.format("Saving data: %s", json_data))
     self:SaveData(json_data)
@@ -1468,6 +1486,8 @@ function rems:on_post_new_floor()
     end
 
     self:update_notify_rooms()
+    self.notified_info_this_floor_for_boss = false
+    self:log_debug("notified floor per boss reset")
 
     self:log_debug("Updated Room marks")
 end
@@ -1494,8 +1514,10 @@ function rems:on_boss_completed(boss_room)
     -- Check whether or not it has been seen in the normal world
     local level = game:GetLevel()
 
-    if level:GetStage() ~= LevelStage.STAGE7 then
+    if level:GetStage() ~= LevelStage.STAGE7 and self.notified_info_this_floor_for_boss == false then
         self:start_notify_info()
+        self.notified_info_this_floor_for_boss = true
+        self:log_debug("notified floor per boss set to true")
     end
 end
 
@@ -1505,8 +1527,10 @@ function rems:on_post_render()
     self.dt_ms = (Isaac.GetTime() - self.prev_frame_time) * MS2SECS
 
     local config = self:get_config()
+    local mcm_not_visible = ModConfigMenu == nil or ModConfigMenu.IsVisible == false
 
-    if game:GetHUD():IsVisible() and ModConfigMenu.IsVisible == false then
+    if game:GetHUD():IsVisible() and mcm_not_visible then
+
         self:handle_extra_info_timer()
 
         -- in game

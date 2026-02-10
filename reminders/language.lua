@@ -12,7 +12,7 @@ function Language.new(lang_table)
 end
 
 function Language:get(key)
-    assert(self.lang_table[key] ~= nil, tostring(key) .. " does not exist as a key for the translation table!")
+    assert(self.lang_table[key] ~= nil, tostring(key) .. " does not exist as a key for the translation table: " .. tostring(self.lang_table))
     return self.lang_table[key]
 end
 
