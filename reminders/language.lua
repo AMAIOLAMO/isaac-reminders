@@ -5,9 +5,9 @@
 local Language = {}
 Language.__index = Language
 
-function Language.new(lang_table)
+function Language.new(lang_table, font)
     return setmetatable(
-        { lang_table = lang_table }, Language
+        { lang_table = lang_table, font = font }, Language
     )
 end
 

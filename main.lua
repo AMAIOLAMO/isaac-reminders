@@ -29,11 +29,7 @@ local sfx_manager = SFXManager()
 -- SETUP --
 local configs = include("reminders.configs")
 
-
-local default_font = Font()
-default_font:Load("font/teammeatex/teammeatex10.fnt")
-
-local default_lang = langs.English
+local default_lang = langs.Chinese
 
 local function lerpf(a, b, t)
     return a + (b - a) * t
@@ -395,6 +391,7 @@ function rems:render_notify(alpha)
 
     local config = self:get_config()
 
+
     local is_curse_of_lost = game:GetLevel():GetCurses() & LevelCurse.CURSE_OF_THE_LOST ~= 0
 
     local line_height = config.notify_info_line_height
@@ -403,10 +400,12 @@ function rems:render_notify(alpha)
     alpha = alpha * opacity
 
     local lang = self:get_lang()
+    local font = lang.font
 
-    local notify_text_header      = lang:get(LE.LNOTIFY_TEXT_HEADER)
-    local notify_text_header_ok   = lang:get(LE.LNOTIFY_TEXT_HEADER_OK)
-    local notify_text_header_lost = lang:get(LE.LNOTIFY_TEXT_HEADER_LOST)
+    local notify_text_header        = lang:get(LE.LNOTIFY_TEXT_HEADER)
+    local notify_text_header_ok     = lang:get(LE.LNOTIFY_TEXT_HEADER_OK)
+    local notify_text_header_lost   = lang:get(LE.LNOTIFY_TEXT_HEADER_LOST)
+    local notify_text_header_failed = lang:get(LE.LNOTIFY_TEXT_HEADER_FAILED)
 
     local special_room_count = 0
 
@@ -417,7 +416,7 @@ function rems:render_notify(alpha)
     -- fallback to a solution
     local notify_header = special_room_count > 0 and
         notify_text_header or notify_text_header_ok
-        or "Notify header is somehow nil! Reset Config to fix this."
+        or notify_text_header_failed
 
     local OK_COLOR = Color(0.5, 0.9, 0.4, 1)
     local MISSING_COLOR = Color(0.9, 0.5, 0.4, 1)
@@ -429,7 +428,8 @@ function rems:render_notify(alpha)
         header_color = MISSING_COLOR
     end
 
-    local header_width = Isaac.GetTextWidth(notify_header) * text_scale
+    local header_width = font:GetStringWidthUTF8(notify_header) * text_scale
+    
 
     local offset = iserializer.decode_vector(config.notify_info_offset)
 
@@ -439,11 +439,11 @@ function rems:render_notify(alpha)
         (width - header_width) / 2 + offset.X, offset.Y
     ) + global_offset
 
-    Isaac.RenderScaledText(
+    font:DrawStringScaledUTF8(
         notify_header,
         render_pivot.X, render_pivot.Y,
         text_scale, text_scale,
-        header_color.R, header_color.G, header_color.B, alpha
+        KColor(header_color.R, header_color.G, header_color.B, alpha)
     )
 
     notify_sprite.Color = Color(1, 1, 1, alpha)
@@ -467,8 +467,8 @@ function rems:render_notify(alpha)
         local line_height_offset = line_height * (room_idx + 1)
 
         -- fall back to displaying room type
-        local rname = iutils.room_name_from_type(room.type, is_boss_challenge) or
-            ("NIL ROOM of type: " .. room.type)
+        local rname = lang:get(LE:from_room_type(room.type, is_boss_challenge)) or
+            (string.format(lang:get(LE.LNOTIFY_TEXT_ROOM_NIL), room.type))
 
         local rlabel = rname
 
@@ -486,7 +486,7 @@ function rems:render_notify(alpha)
         local BASE_ICON_SIZE = 10
         local icon_fsize = BASE_ICON_SIZE * icon_scale
 
-        local name_width = Isaac.GetTextWidth(rlabel) * text_scale
+        local name_width = font:GetStringWidthUTF8(rlabel) * text_scale
 
         -- add special ICON ONLY way of grid align of icons
         if config.notify_info_type == enums.NotifyInfoType.NOTIFY_ICON then
@@ -534,7 +534,7 @@ function rems:render_notify(alpha)
 
         if config.notify_info_type & enums.NotifyInfoType.NOTIFY_TEXT ~= 0 then
             local x_pivot = render_pivot.X + (header_width / 2) - (name_width / 2)
-            default_font:DrawStringScaledUTF8(
+            font:DrawStringScaledUTF8(
                 rlabel,
                 x_pivot, render_pivot.Y + line_height_offset,
                 text_scale, text_scale,
@@ -972,6 +972,7 @@ function rems:render_game_timer(offset_stack, should_hide)
     local scale = config.game_timer_scale
     local opacity = config.game_timer_opacity
 
+    -- TODO: font support here :)
     Isaac.RenderScaledText(
         time_str,
         w / 2 - Isaac.GetTextWidth(time_str) * scale / 2 + offset.X,

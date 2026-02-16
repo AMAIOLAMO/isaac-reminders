@@ -3,10 +3,81 @@
 -- THIS FILE IS LICENSED UNDER GPL-3.0-or-later by CxRedix
 
 local lang_enum = {
-    LTEST                     = 1,
-    LNOTIFY_TEXT_HEADER       = 2,
-    LNOTIFY_TEXT_HEADER_OK    = 3,
-    LNOTIFY_TEXT_HEADER_LOST  = 4,
+    LTEST = 1,
+
+    LNOTIFY_TEXT_HEADER        = 2,
+    LNOTIFY_TEXT_HEADER_OK     = 3,
+    LNOTIFY_TEXT_HEADER_LOST   = 4,
+    LNOTIFY_TEXT_HEADER_FAILED = 5,
+    LNOTIFY_TEXT_ROOM_NIL      = 6,
+
+    LROOM_NULL        = 7,
+    LROOM_DEFAULT     = 8,
+    LROOM_ERROR       = 9,
+    LROOM_SECRET      = 10,
+    LROOM_SUPERSECRET = 11,
+    LROOM_ULTRASECRET = 12,
+    LROOM_SHOP        = 13,
+    LROOM_TREASURE    = 14,
+    LROOM_SACRIFICE   = 15,
+    LROOM_LIBRARY     = 16,
+    LROOM_ARCADE      = 17,
+    LROOM_CHALLENGE   = 18,
+    LROOM_PLANETARIUM = 19,
+    LROOM_ISAACS      = 20,
+    LROOM_BARREN      = 21,
+    LROOM_CHEST       = 22,
+    LROOM_DICE        = 23,
+    LROOM_CURSE       = 24,
+    LROOM_DEVIL       = 25,
+    LROOM_ANGEL       = 26,
+    LROOM_DUNGEON     = 27,
+    LROOM_MINIBOSS    = 28,
+    LROOM_BOSS        = 29,
+    LROOM_SECRET_EXIT = 30,
+    LROOM_BLUE        = 31,
+
+    LROOM_BOSS_CHALLENGE = 32, -- special
 }
+
+local ROOM_TYPE2LANG_ENUM = {
+    [RoomType.ROOM_NULL]         = lang_enum.LROOM_NULL,
+    [RoomType.ROOM_DEFAULT]      = lang_enum.LROOM_DEFAULT,
+    [RoomType.ROOM_ERROR]        = lang_enum.LROOM_ERROR,
+    [RoomType.ROOM_SECRET]       = lang_enum.LROOM_SECRET,
+    [RoomType.ROOM_SUPERSECRET]  = lang_enum.LROOM_SUPERSECRET,
+    [RoomType.ROOM_ULTRASECRET]  = lang_enum.LROOM_ULTRASECRET,
+    [RoomType.ROOM_SHOP]         = lang_enum.LROOM_SHOP,
+    [RoomType.ROOM_TREASURE]     = lang_enum.LROOM_TREASURE,
+    [RoomType.ROOM_SACRIFICE]    = lang_enum.LROOM_SACRIFICE,
+    [RoomType.ROOM_LIBRARY]      = lang_enum.LROOM_LIBRARY,
+    [RoomType.ROOM_ARCADE]       = lang_enum.LROOM_ARCADE,
+    [RoomType.ROOM_CHALLENGE]    = lang_enum.LROOM_CHALLENGE,
+    [RoomType.ROOM_PLANETARIUM]  = lang_enum.LROOM_PLANETARIUM,
+    [RoomType.ROOM_ISAACS]       = lang_enum.LROOM_ISAACS,
+    [RoomType.ROOM_BARREN]       = lang_enum.LROOM_BARREN,
+    [RoomType.ROOM_CHEST]        = lang_enum.LROOM_CHEST,
+    [RoomType.ROOM_DICE]         = lang_enum.LROOM_DICE,
+    [RoomType.ROOM_CURSE]        = lang_enum.LROOM_CURSE,
+    [RoomType.ROOM_DEVIL]        = lang_enum.LROOM_DEVIL,
+    [RoomType.ROOM_ANGEL]        = lang_enum.LROOM_ANGEL,
+    [RoomType.ROOM_DUNGEON]      = lang_enum.LROOM_DUNGEON,
+    [RoomType.ROOM_MINIBOSS]     = lang_enum.LROOM_MINIBOSS,
+    [RoomType.ROOM_BOSS]         = lang_enum.LROOM_BOSS,
+    [RoomType.ROOM_SECRET_EXIT]  = lang_enum.LROOM_SECRET_EXIT,
+    [RoomType.ROOM_BLUE]         = lang_enum.LROOM_BLUE,
+    -- DOES NOT INCLUDE BOSS CHALLENGE AS ITS MERGED WITH CHALLENGE ROOM IN ISAAC
+}
+
+function lang_enum:from_room_type(room_type, is_boss_challenge)
+    if is_boss_challenge and room_type == RoomType.ROOM_CHALLENGE then
+        return lang_enum.LROOM_BOSS_CHALLENGE
+    end
+    -- else
+
+    local value = ROOM_TYPE2LANG_ENUM[room_type]
+    assert(value ~= nil, "room type association not found of room type: " .. room_type)
+    return value
+end
 
 return lang_enum
