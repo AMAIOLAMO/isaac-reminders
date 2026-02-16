@@ -5,6 +5,7 @@
 -- The major purpose of this mod is to make things that are not obvious to be more obvious!
 
 -- BUG: Mini bosses with treasure map does not display color marks still, even if the icon is visible.
+-- BUG: it seems Y0ZZ 6LQ7 has an issue with it's checking of curse rooms :/
 
 local MOD_NAME = "Reminders"
 local rems = RegisterMod(MOD_NAME, 1)
@@ -29,7 +30,7 @@ local sfx_manager = SFXManager()
 -- SETUP --
 local configs = include("reminders.configs")
 
-local default_lang = langs.Chinese
+local default_lang = langs.English
 
 local function lerpf(a, b, t)
     return a + (b - a) * t
