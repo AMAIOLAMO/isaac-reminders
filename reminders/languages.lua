@@ -9,6 +9,9 @@ local Languages = {}
 local default_language_font = Font()
 default_language_font:Load("font/teammeatex/teammeatex10.fnt")
 
+-- potential bug, if we use the key while the language has no native name(LE.LLANG_NATIVE_NAME), it will fallback to english
+-- even if the other values are still in their respective language. Maintain values for now
+
 Languages.English = lang.new({
     [LE.LNOTIFY_TEXT_HEADER       ] = "=== ![Missed Special Rooms]! === ",
     [LE.LNOTIFY_TEXT_HEADER_OK    ] = "No Missed Special Rooms :)",
@@ -43,6 +46,8 @@ Languages.English = lang.new({
     [LE.LROOM_BLUE       ] = "Blue Womb Room",
 
     [LE.LROOM_BOSS_CHALLENGE] = "Boss Challenge Room",
+
+    [LE.LLANG_NATIVE_NAME] = "English",
 }, default_language_font)
 
 Languages.Chinese = lang.new({
@@ -79,11 +84,32 @@ Languages.Chinese = lang.new({
     [LE.LROOM_BLUE       ] = "蓝子宫房",
 
     [LE.LROOM_BOSS_CHALLENGE] = "头目挑战房",
-}, default_language_font)
+
+    [LE.LLANG_NATIVE_NAME] = "中文",
+}, default_language_font, Languages.English)
 
 Languages.Russian = lang.new({
+    [LE.LLANG_NATIVE_NAME] = "Русский",
+}, default_language_font, Languages.English)
 
-}, default_language_font)
+-- Maintain the associations of language and their respective id, this allows certain languages
+-- to now show up yet in the game if not associated to do so
 
+Languages.lang_ids = {
+    BEGIN = 1,
+
+    English = 1,
+    Chinese = 2,
+    Russian = 3,
+
+    END = 3,
+}
+
+
+Languages.lang_id_to_language = {
+    [Languages.lang_ids.English] = Languages.English,
+    [Languages.lang_ids.Chinese] = Languages.Chinese,
+    [Languages.lang_ids.Russian] = Languages.Russian
+}
 
 return Languages

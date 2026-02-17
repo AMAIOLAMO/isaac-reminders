@@ -38,6 +38,8 @@ local lang_enum = {
     LROOM_BLUE        = 31,
 
     LROOM_BOSS_CHALLENGE = 32, -- special
+
+    LLANG_NATIVE_NAME = 33,
 }
 
 local ROOM_TYPE2LANG_ENUM = {

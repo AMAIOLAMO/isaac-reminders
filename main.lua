@@ -30,8 +30,6 @@ local sfx_manager = SFXManager()
 -- SETUP --
 local configs = include("reminders.configs")
 
-local default_lang = langs.English
-
 local function lerpf(a, b, t)
     return a + (b - a) * t
 end
@@ -115,7 +113,7 @@ function rems:reset_config()
 end
 
 function rems:get_lang()
-    return default_lang
+    return langs.lang_id_to_language[rems:get_config().language_id]
 end
 
 rems.extra_info_timer = timerf.new(0.5, 0.5)

@@ -5,15 +5,22 @@
 local Language = {}
 Language.__index = Language
 
-function Language.new(lang_table, font)
+function Language.new(lang_table, font, fallback_lang)
     return setmetatable(
-        { lang_table = lang_table, font = font }, Language
+        { lang_table = lang_table, font = font, fallback_lang = fallback_lang }, Language
     )
 end
-
 function Language:get(key)
-    assert(self.lang_table[key] ~= nil, tostring(key) .. " does not exist as a key for the translation table: " .. tostring(self.lang_table))
-    return self.lang_table[key]
+    local value = self.lang_table[key]
+
+    if value == nil and self.fallback_lang ~= nil then
+        assert(self.fallback_lang ~= nil, tostring(key) .. " does not exist as a key in the translation table, and the fallback language is nil")
+        value = self.fallback_lang:get(key)
+    end
+
+    assert(value ~= nil, tostring(key) .. " does not exist as a key in the translation table")
+    
+    return value
 end
 
 function Language:has(key)

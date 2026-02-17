@@ -4,13 +4,17 @@
 
 local iserializer = require("reminders.iserializer")
 local enums = require("reminders.enums")
+local langs = include("reminders.languages")
+
 local Configs = {}
+
 
 function Configs.get_default_config()
     -- must conform to these few types:
     -- number, boolean, table / array, strings 
     return {
         debug_mode = false,
+        language_id = langs.lang_ids.English,
 
         map_special_colormarks_enabled = true,
 

@@ -4,6 +4,9 @@
 local mcm_helper  = include("reminders.mod_config_menu_helper")
 local iserializer = include("reminders.iserializer")
 local enums       = include("reminders.enums")
+local langs       = include("reminders.languages")
+
+local LE = include("reminders.language_enum")
 
 local MCM = ModConfigMenu
 
@@ -37,6 +40,33 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
         }
     )
     MCM.AddSpace(mod_name, "General")
+    local lang_ids = langs.lang_ids
+
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.NUMBER,
+
+            CurrentSetting = function()
+                return mod:get_config().language_id
+            end,
+
+            Display = function()
+                return "Language: " .. langs.lang_id_to_language[mod:get_config().language_id]:get(LE.LLANG_NATIVE_NAME)
+            end,
+
+            Minimum = lang_ids.BEGIN, Maximum = lang_ids.END,
+
+            OnChange = function(value)
+                mod:get_config().language_id = value
+            end,
+
+            Info = {
+                "The language you wish to use",
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "General")
+
     MCM.AddText(mod_name, "General", "!!!! DANGEROUS AREA !!!!", {0.8, 0.1, 0.1})
     MCM.AddSetting(
         mod_name, "General", {
