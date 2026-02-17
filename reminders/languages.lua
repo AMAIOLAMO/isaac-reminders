@@ -89,6 +89,41 @@ Languages.Chinese = lang.new({
 }, default_language_font, Languages.English)
 
 Languages.Russian = lang.new({
+    [LE.LNOTIFY_TEXT_HEADER       ] = "=== ![Пропущенные особенные комнаты]! === ",
+    [LE.LNOTIFY_TEXT_HEADER_OK    ] = "Нет пропущенных особенных комнат :)",
+    [LE.LNOTIFY_TEXT_HEADER_LOST  ] = "О нет! У вас Проклятие Потерянного! :(",
+    [LE.LNOTIFY_TEXT_HEADER_FAILED] = "Заголовок уведомлений почему-то сломан! Сбросьте конфигурацию, чтобы это починить.",
+
+    [LE.LNOTIFY_TEXT_ROOM_NIL     ] = "Неизвестная комната типа: %d",
+
+    [LE.LROOM_NULL       ] = "Нулевая комната",
+    [LE.LROOM_DEFAULT    ] = "Обычная комната",
+    [LE.LROOM_ERROR      ] = "Комната ошибки",
+    [LE.LROOM_SECRET     ] = "Секретная комната",
+    [LE.LROOM_SUPERSECRET] = "Суперсекретная комната",
+    [LE.LROOM_ULTRASECRET] = "Ультра секретная комната",
+    [LE.LROOM_SHOP       ] = "Магазин",
+    [LE.LROOM_TREASURE   ] = "Комната сокровищ",
+    [LE.LROOM_SACRIFICE  ] = "Комната жертвоприношения",
+    [LE.LROOM_LIBRARY    ] = "Библиотека",
+    [LE.LROOM_ARCADE     ] = "Аркада",
+    [LE.LROOM_CHALLENGE  ] = "Комната испытания",
+    [LE.LROOM_PLANETARIUM] = "Планетарий",
+    [LE.LROOM_ISAACS     ] = "Спальня",
+    [LE.LROOM_BARREN     ] = "Пустая спальня",
+    [LE.LROOM_CHEST      ] = "Хранилище",
+    [LE.LROOM_DICE       ] = "Комната кости",
+    [LE.LROOM_CURSE      ] = "Проклятая комната",
+    [LE.LROOM_DEVIL      ] = "Комната дьявола",
+    [LE.LROOM_ANGEL      ] = "Комната ангела",
+    [LE.LROOM_DUNGEON    ] = "Подземная комната",
+    [LE.LROOM_MINIBOSS   ] = "Комната мини-босса",
+    [LE.LROOM_BOSS       ] = "Комната босса",
+    [LE.LROOM_SECRET_EXIT] = "Комната альт-пути",
+    [LE.LROOM_BLUE       ] = "Комната к ???",
+
+    [LE.LROOM_BOSS_CHALLENGE] = "Комната испытания с боссом",
+
     [LE.LLANG_NATIVE_NAME] = "Русский",
 }, default_language_font, Languages.English)
 

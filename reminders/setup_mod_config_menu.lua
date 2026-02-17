@@ -14,31 +14,7 @@ local DEFAULT_TXT_COLOR = {.1, .2, .4}
 
 local function setup_general(mod_name, mod, on_reset_config_callback)
     assert(MCM, "Cannot Find Mod Config Menu!")
-    
-    MCM.AddText(mod_name, "General", "Developer", DEFAULT_TXT_COLOR)
 
-    MCM.AddSetting(
-        mod_name, "General", {
-            Type = MCM.OptionType.BOOLEAN,
-
-            CurrentSetting = function()
-                return mod:get_config().debug_mode
-            end,
-
-            Display = function()
-                return "Debug Mode: " .. (mod:get_config().debug_mode and "on" or "off")
-            end,
-
-            OnChange = function(value)
-                mod:get_config().debug_mode = value
-            end,
-
-            Info = {
-                "debug mode displays extra information",
-                "in debug console / while using the mod"
-            }
-        }
-    )
     MCM.AddSpace(mod_name, "General")
     local lang_ids = langs.lang_ids
 
@@ -62,6 +38,32 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
 
             Info = {
                 "The language you wish to use",
+            }
+        }
+    )
+    MCM.AddSpace(mod_name, "General")
+    
+    MCM.AddText(mod_name, "General", "Developer", DEFAULT_TXT_COLOR)
+
+    MCM.AddSetting(
+        mod_name, "General", {
+            Type = MCM.OptionType.BOOLEAN,
+
+            CurrentSetting = function()
+                return mod:get_config().debug_mode
+            end,
+
+            Display = function()
+                return "Debug Mode: " .. (mod:get_config().debug_mode and "on" or "off")
+            end,
+
+            OnChange = function(value)
+                mod:get_config().debug_mode = value
+            end,
+
+            Info = {
+                "debug mode displays extra information",
+                "in debug console / while using the mod"
             }
         }
     )
@@ -1351,7 +1353,12 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             "",
             "Original Idea of Near Death Reminder",
             "Critical Damage Mod",
-            "-- Harvester(Steam)"
+            "-- Harvester(Steam)",
+
+            "Translations",
+            "English: CxRedix",
+            "Chinese: CxRedix",
+            "Russian: ExtremeThreat1",
         }
     }
 
