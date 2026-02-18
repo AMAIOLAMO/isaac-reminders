@@ -1420,6 +1420,13 @@ function rems:on_post_game_started(continued)
     end
 
 
+    -- Loads mod config menu after the config has been set, each time the game is reloaded
+    -- to account for language changes for now
+    if ModConfigMenu then
+        setup_mod_config_menu(MOD_NAME, rems, rems.on_reset_config)
+    end
+
+
     if card_fronts:IsLoaded() then
         self:log_info("Loaded card sprites.")
     else
@@ -1771,10 +1778,6 @@ function rems:on_reset_config()
 end
 
 -- MOD CONFIG MENU SUPPORT --
-
-if ModConfigMenu then
-    setup_mod_config_menu(MOD_NAME, rems, rems.on_reset_config)
-end
 
 
 -- Callback Registers --

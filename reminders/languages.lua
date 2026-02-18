@@ -48,6 +48,8 @@ Languages.English = lang.new({
     [LE.LROOM_BOSS_CHALLENGE] = "Boss Challenge Room",
 
     [LE.LLANG_NATIVE_NAME] = "English",
+
+    [LE.LLANG_CONFIG_GENERAL_NAME] = "General",
 }, default_language_font)
 
 Languages.Chinese = lang.new({
@@ -86,6 +88,9 @@ Languages.Chinese = lang.new({
     [LE.LROOM_BOSS_CHALLENGE] = "头目挑战房",
 
     [LE.LLANG_NATIVE_NAME] = "中文",
+
+
+    [LE.LLANG_CONFIG_GENERAL_NAME] = "通用",
 }, default_language_font, Languages.English)
 
 Languages.Russian = lang.new({

@@ -14,12 +14,16 @@ local DEFAULT_TXT_COLOR = {.1, .2, .4}
 
 local function setup_general(mod_name, mod, on_reset_config_callback)
     assert(MCM, "Cannot Find Mod Config Menu!")
+    local lang = mod:get_lang()
 
-    MCM.AddSpace(mod_name, "General")
+    local subsection_name = lang:get(LE.LLANG_CONFIG_GENERAL_NAME)
+    print("Found subsection name as: " .. subsection_name)
+
+    MCM.AddSpace(mod_name, subsection_name)
     local lang_ids = langs.lang_ids
 
     MCM.AddSetting(
-        mod_name, "General", {
+        mod_name, subsection_name, {
             Type = MCM.OptionType.NUMBER,
 
             CurrentSetting = function()
@@ -41,12 +45,12 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
             }
         }
     )
-    MCM.AddSpace(mod_name, "General")
+    MCM.AddSpace(mod_name, subsection_name)
     
-    MCM.AddText(mod_name, "General", "Developer", DEFAULT_TXT_COLOR)
+    MCM.AddText(mod_name, subsection_name, "Developer", DEFAULT_TXT_COLOR)
 
     MCM.AddSetting(
-        mod_name, "General", {
+        mod_name, subsection_name, {
             Type = MCM.OptionType.BOOLEAN,
 
             CurrentSetting = function()
@@ -67,11 +71,11 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
             }
         }
     )
-    MCM.AddSpace(mod_name, "General")
+    MCM.AddSpace(mod_name, subsection_name)
 
-    MCM.AddText(mod_name, "General", "!!!! DANGEROUS AREA !!!!", {0.8, 0.1, 0.1})
+    MCM.AddText(mod_name, subsection_name, "!!!! DANGEROUS AREA !!!!", {0.8, 0.1, 0.1})
     MCM.AddSetting(
-        mod_name, "General", {
+        mod_name, subsection_name, {
             Type = MCM.OptionType.BOOLEAN,
 
             CurrentSetting = function()
@@ -1354,7 +1358,7 @@ local setup_mod_config_menu = function(mod_name, mod, on_reset_config_callback)
             "Original Idea of Near Death Reminder",
             "Critical Damage Mod",
             "-- Harvester(Steam)",
-
+            "",
             "Translations",
             "English: CxRedix",
             "Chinese: CxRedix",
