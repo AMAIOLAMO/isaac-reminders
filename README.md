@@ -1,5 +1,7 @@
 # TOO MANY REMINDERS
-![Thumbnail](https://github.com/AMAIOLAMO/isaac-reminders/blob/main/reminders_thumbnail.gif)
+<p align="center">
+  <img src="https://github.com/AMAIOLAMO/isaac-reminders/blob/main/reminders_thumbnail.gif" />
+</p>
 
 A mod for gamers who have gold fish memory :)
 

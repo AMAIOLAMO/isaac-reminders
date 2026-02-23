@@ -16,8 +16,7 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
     assert(MCM, "Cannot Find Mod Config Menu!")
     local lang = mod:get_lang()
 
-    local subsection_name = lang:get(LE.LLANG_CONFIG_GENERAL_NAME)
-    print("Found subsection name as: " .. subsection_name)
+    local subsection_name = lang:get(LE.LLANG_CONFIG_GENERAL_SECTION)
 
     MCM.AddSpace(mod_name, subsection_name)
     local lang_ids = langs.lang_ids
@@ -31,7 +30,7 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "Language: " .. langs.lang_id_to_language[mod:get_config().language_id]:get(LE.LLANG_NATIVE_NAME)
+                return lang:get(LE.LLANG_CONFIG_LANGUAGE) .. ": " .. langs.lang_id_to_language[mod:get_config().language_id]:get(LE.LLANG_NATIVE_NAME)
             end,
 
             Minimum = lang_ids.BEGIN, Maximum = lang_ids.END,
@@ -41,13 +40,13 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
             end,
 
             Info = {
-                "The language you wish to use",
+                lang:get(LE.LLANG_CONFIG_LANGUAGE_DESC)
             }
         }
     )
     MCM.AddSpace(mod_name, subsection_name)
     
-    MCM.AddText(mod_name, subsection_name, "Developer", DEFAULT_TXT_COLOR)
+    MCM.AddText(mod_name, subsection_name, lang:get(LE.LLANG_CONFIG_DEVELOPER_LABEL), DEFAULT_TXT_COLOR)
 
     MCM.AddSetting(
         mod_name, subsection_name, {
@@ -58,7 +57,7 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "Debug Mode: " .. (mod:get_config().debug_mode and "on" or "off")
+                return lang:get(LE.LLANG_CONFIG_DEBUG_MODE) .. ": " .. (mod:get_config().debug_mode and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -66,14 +65,13 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
             end,
 
             Info = {
-                "debug mode displays extra information",
-                "in debug console / while using the mod"
+                lang:get(LE.LLANG_CONFIG_DEBUG_MODE_DESC)
             }
         }
     )
     MCM.AddSpace(mod_name, subsection_name)
 
-    MCM.AddText(mod_name, subsection_name, "!!!! DANGEROUS AREA !!!!", {0.8, 0.1, 0.1})
+    MCM.AddText(mod_name, subsection_name, "!!!! " .. lang:get(LE.LLANG_CONFIG_DANGEROUS_AREA_LABEL) .. " !!!!", {0.8, 0.1, 0.1})
     MCM.AddSetting(
         mod_name, subsection_name, {
             Type = MCM.OptionType.BOOLEAN,
@@ -83,7 +81,7 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
             end,
 
             Display = function()
-                return "RESET ALL SETTINGS"
+                return lang:get(LE.LLANG_CONFIG_RESET_ALL_SETTINGS)
             end,
 
             OnChange = function(value)
@@ -91,7 +89,7 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
             end,
 
             Info = {
-                "RESETS ALL SETTINGS, CHOOSE AT YOUR OWN RISK"
+                lang:get(LE.LLANG_CONFIG_RESET_ALL_SETTINGS_DESC)
             },
 
             Color = {0.65, 0, 0}
@@ -100,9 +98,12 @@ local function setup_general(mod_name, mod, on_reset_config_callback)
 end
 
 local function setup_doors(mod_name, mod)
-    MCM.AddText(mod_name, "Doors", "Door Reminders", DEFAULT_TXT_COLOR)
+    local lang = mod:get_lang()
+    local section_name = lang:get(LE.LLANG_CONFIG_DOORS_SECTION)
+
+    MCM.AddText(mod_name, section_name, lang:get(LE.LLANG_CONFIG_DOOR_REMINDERS_LABEL), DEFAULT_TXT_COLOR)
     MCM.AddSetting(
-        mod_name, "Doors", {
+        mod_name, section_name, {
             Type = MCM.OptionType.BOOLEAN,
 
             CurrentSetting = function()
@@ -110,7 +111,9 @@ local function setup_doors(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().door_reminders_enabled and "on" or "off")
+                return lang:get(LE.LLANG_CONFIG_ENABLED_LABEL) .. ": " .. (mod:get_config().door_reminders_enabled and
+                    lang:get(LE.LLANG_CONFIG_ENABLED_ON) or lang:get(LE.LLANG_CONFIG_ENABLED_OFF)
+                )
             end,
 
             OnChange = function(value)

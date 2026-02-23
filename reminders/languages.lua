@@ -49,7 +49,24 @@ Languages.English = lang.new({
 
     [LE.LLANG_NATIVE_NAME] = "English",
 
-    [LE.LLANG_CONFIG_GENERAL_NAME] = "General",
+    [LE.LLANG_CONFIG_ENABLED_LABEL] = "Enabled",
+    [LE.LLANG_CONFIG_ENABLED_ON] = "on",
+    [LE.LLANG_CONFIG_ENABLED_OFF] = "off",
+
+    [LE.LLANG_CONFIG_GENERAL_SECTION] = "General",
+    [LE.LLANG_CONFIG_LANGUAGE] = "Language",
+    [LE.LLANG_CONFIG_LANGUAGE_DESC] = "The language that you wish to use",
+
+    [LE.LLANG_CONFIG_DEVELOPER_LABEL] = "Developer",
+    [LE.LLANG_CONFIG_DEBUG_MODE] = "Debug Mode",
+    [LE.LLANG_CONFIG_DEBUG_MODE_DESC] = "For debug purposes only",
+
+    [LE.LLANG_CONFIG_DANGEROUS_AREA_LABEL] = "DANGEROUS AREA",
+    [LE.LLANG_CONFIG_RESET_ALL_SETTINGS] = "RESET ALL SETTINGS",
+    [LE.LLANG_CONFIG_RESET_ALL_SETTINGS_DESC] = "RESETS ALL SETTINGS, CHOOSE AT YOUR OWN RISK.",
+
+    [LE.LLANG_CONFIG_DOORS_SECTION] = "Doors",
+    [LE.LLANG_CONFIG_DOOR_REMINDERS_LABEL] = "Door Reminders",
 }, default_language_font)
 
 Languages.Chinese = lang.new({
@@ -89,8 +106,25 @@ Languages.Chinese = lang.new({
 
     [LE.LLANG_NATIVE_NAME] = "中文",
 
+    [LE.LLANG_CONFIG_ENABLED_LABEL] = "是否开启",
+    [LE.LLANG_CONFIG_ENABLED_ON] = "是",
+    [LE.LLANG_CONFIG_ENABLED_OFF] = "否",
 
-    [LE.LLANG_CONFIG_GENERAL_NAME] = "通用",
+    [LE.LLANG_CONFIG_GENERAL_SECTION] = "通用",
+    [LE.LLANG_CONFIG_LANGUAGE] = "语言",
+    [LE.LLANG_CONFIG_LANGUAGE_DESC] = "选择你要使用的语言",
+
+    [LE.LLANG_CONFIG_DEVELOPER_LABEL] = "开发者",
+    [LE.LLANG_CONFIG_DEBUG_MODE] = "调试模式",
+    [LE.LLANG_CONFIG_DEBUG_MODE_DESC] = "仅用于调试",
+
+    [LE.LLANG_CONFIG_DANGEROUS_AREA_LABEL] = "危险区域",
+    [LE.LLANG_CONFIG_RESET_ALL_SETTINGS] = "重置所有设置",
+    [LE.LLANG_CONFIG_RESET_ALL_SETTINGS_DESC] = "完全重置所有设置，小心为妙！",
+
+    [LE.LLANG_CONFIG_DOORS_SECTION] = "门",
+    [LE.LLANG_CONFIG_DOOR_REMINDERS_LABEL] = "门提醒",
+
 }, default_language_font, Languages.English)
 
 Languages.Russian = lang.new({
