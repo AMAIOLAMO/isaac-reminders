@@ -12,6 +12,16 @@ local MCM = ModConfigMenu
 
 local DEFAULT_TXT_COLOR = {.1, .2, .4}
 
+-- translates Enabled: On / Off into a given language, allows custom label to be replaced instead of Enabled:
+local function translate_enabled_display(lang, bool_value, custom_label)
+    custom_label = custom_label or lang:get(LE.LLANG_CONFIG_ENABLED_LABEL)
+
+    return custom_label .. ": " .. (
+        bool_value and lang:get(LE.LLANG_CONFIG_ENABLED_ON) or
+            lang:get(LE.LLANG_CONFIG_ENABLED_OFF)
+    )
+end
+
 local function setup_general(mod_name, mod, on_reset_config_callback)
     assert(MCM, "Cannot Find Mod Config Menu!")
     local lang = mod:get_lang()
@@ -111,9 +121,10 @@ local function setup_doors(mod_name, mod)
             end,
 
             Display = function()
-                return lang:get(LE.LLANG_CONFIG_ENABLED_LABEL) .. ": " .. (mod:get_config().door_reminders_enabled and
-                    lang:get(LE.LLANG_CONFIG_ENABLED_ON) or lang:get(LE.LLANG_CONFIG_ENABLED_OFF)
-                )
+                return translate_enabled_display(lang, mod:get_config().door_reminders_enabled)
+                -- return lang:get(LE.LLANG_CONFIG_ENABLED_LABEL) .. ": " .. (mod:get_config().door_reminders_enabled and
+                --     lang:get(LE.LLANG_CONFIG_ENABLED_ON) or lang:get(LE.LLANG_CONFIG_ENABLED_OFF)
+                -- )
             end,
 
             OnChange = function(value)
@@ -129,9 +140,12 @@ local function setup_doors(mod_name, mod)
 end
 
 local function setup_map(mod_name, mod)
-    MCM.AddText(mod_name, "Map", "Map Special Room Colormarks", DEFAULT_TXT_COLOR)
+    local lang = mod:get_lang()
+    local section_name = lang:get(LE.LLANG_CONFIG_MAP_SECTION)
+
+    MCM.AddText(mod_name, section_name, lang:get(LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_COLORMARKS_LABEL), DEFAULT_TXT_COLOR)
     MCM.AddSetting(
-        mod_name, "Map", {
+        mod_name, section_name, {
             Type = MCM.OptionType.BOOLEAN,
 
             CurrentSetting = function()
@@ -139,7 +153,7 @@ local function setup_map(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().map_special_colormarks_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().map_special_colormarks_enabled)
             end,
 
             OnChange = function(value)
@@ -147,16 +161,19 @@ local function setup_map(mod_name, mod)
             end,
 
             Info = {
-                "Toggles whether or not to have color marks (visited, unvisited) special rooms",
-                "on the minimap(REFRESH REQUIRED -> enter exit room OR quit and rejoin run / game)"
+                lang:get(LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_COLORMARKS_DESC)
             }
+            --     {
+            --     "Toggles whether or not to have color marks (visited, unvisited) special rooms",
+            --     "on the minimap(REFRESH REQUIRED -> enter exit room OR quit and rejoin run / game)"
+            -- }
         }
     )
-    MCM.AddSpace(mod_name, "Map")
+    MCM.AddSpace(mod_name, section_name)
 
-    MCM.AddText(mod_name, "Map", "Unvisited Rooms", DEFAULT_TXT_COLOR)
+    MCM.AddText(mod_name, section_name, lang:get(LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_UNVISITED_LABEL), DEFAULT_TXT_COLOR)
     mcm_helper.add_color_setting(
-        mod_name, "Map", {
+        mod_name, section_name, {
             CurrentSetting = function()
                 return iserializer.decode_color(mod:get_config().special_color_unvisited)
             end,
@@ -166,11 +183,11 @@ local function setup_map(mod_name, mod)
             end
         }
     )
-    MCM.AddSpace(mod_name, "Map")
+    MCM.AddSpace(mod_name, section_name)
 
-    MCM.AddText(mod_name, "Map", "Visited Rooms", DEFAULT_TXT_COLOR)
+    MCM.AddText(mod_name, section_name, lang:get(LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_VISITED_LABEL), DEFAULT_TXT_COLOR)
     mcm_helper.add_color_setting(
-        mod_name, "Map", {
+        mod_name, section_name, {
             CurrentSetting = function()
                 return iserializer.decode_color(mod:get_config().special_color_visited)
             end,
@@ -180,11 +197,12 @@ local function setup_map(mod_name, mod)
             end
         }
     )
-    MCM.AddSpace(mod_name, "Map")
-
+    MCM.AddSpace(mod_name, section_name)
 end
 
 local function setup_items(mod_name, mod)
+    local lang = mod:get_lang()
+
     MCM.AddText(mod_name, "Items", "Schoolbag Reminder", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "Items", {
@@ -195,7 +213,8 @@ local function setup_items(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().schoolbag_reminder_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().schoolbag_reminder_enabled)
+                -- return "Enabled: " .. ( and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -246,7 +265,8 @@ local function setup_items(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().knife_piece_reminders_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().knife_piece_reminders_enabled)
+                -- return "Enabled: " .. (mod:get_config().knife_piece_reminders_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -271,7 +291,8 @@ local function setup_items(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().explosion_immunity_reminders_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().explosion_immunity_reminders_enabled)
+                -- return "Enabled: " .. (mod:get_config().explosion_immunity_reminders_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -337,6 +358,8 @@ local function setup_items(mod_name, mod)
 end
 
 local function setup_extra_info(mod_name, mod)
+    local lang = mod:get_lang()
+
     MCM.AddText(mod_name, "Extra Info", "Notify Info Popup", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "Extra Info", {
@@ -347,7 +370,8 @@ local function setup_extra_info(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().notify_info_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().notify_info_enabled)
+                -- return "Enabled: " .. (mod:get_config().notify_info_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -614,6 +638,8 @@ local function setup_extra_info(mod_name, mod)
 end
 
 local function setup_time(mod_name, mod)
+    local lang = mod:get_lang()
+
     MCM.AddText(mod_name, "Time", "Time Progress", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "Time", {
@@ -624,7 +650,8 @@ local function setup_time(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().time_progress_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().time_progress_enabled)
+                -- return "Enabled: " .. (mod:get_config().time_progress_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -855,7 +882,8 @@ local function setup_time(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().game_timer_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().game_timer_enabled)
+                -- return "Enabled: " .. (mod:get_config().game_timer_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -1003,6 +1031,8 @@ local function setup_time(mod_name, mod)
 end
 
 local function setup_characters(mod_name, mod)
+    local lang = mod:get_lang()
+
     MCM.AddText(mod_name, "Characters", "Lost Death Donation Notify", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "Characters", {
@@ -1013,7 +1043,8 @@ local function setup_characters(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().lost_death_icon_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().lost_death_icon_enabled)
+                -- return "Enabled: " .. (mod:get_config().lost_death_icon_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -1039,7 +1070,8 @@ local function setup_characters(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().near_death_effect_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().near_death_effect_enabled)
+                -- return "Enabled: " .. (mod:get_config().near_death_effect_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -1162,6 +1194,8 @@ local function setup_characters(mod_name, mod)
 end
 
 local function setup_deals(mod_name, mod)
+    local lang = mod:get_lang()
+
     MCM.AddText(mod_name, "Deals", "Bum kill reminders", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "Deals", {
@@ -1172,7 +1206,8 @@ local function setup_deals(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().bum_kill_reminders_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().bum_kill_reminders_enabled)
+                -- return "Enabled: " .. (mod:get_config().bum_kill_reminders_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -1189,6 +1224,8 @@ local function setup_deals(mod_name, mod)
 end
 
 local function setup_rooms(mod_name, mod)
+    local lang = mod:get_lang()
+
     MCM.AddText(mod_name, "Rooms", "Potential Secret Room Placeholders", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "Rooms", {
@@ -1199,7 +1236,8 @@ local function setup_rooms(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().secret_room_placeholder_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().secret_room_placeholder_enabled)
+                -- return "Enabled: " .. (mod:get_config().secret_room_placeholder_enabled and "on" or "off")
             end,
 
             OnChange = function(value)
@@ -1289,6 +1327,7 @@ local function setup_rooms(mod_name, mod)
 end
 
 local function setup_unlocks(mod_name, mod)
+    local lang = mod:get_lang()
     MCM.AddText(mod_name, "Unlocks", "Cracked Key Reminder on Dad's Note", DEFAULT_TXT_COLOR)
     MCM.AddSetting(
         mod_name, "Unlocks", {
@@ -1299,7 +1338,8 @@ local function setup_unlocks(mod_name, mod)
             end,
 
             Display = function()
-                return "Enabled: " .. (mod:get_config().cracked_key_reminder_enabled and "on" or "off")
+                return translate_enabled_display(lang, mod:get_config().cracked_key_reminder_enabled)
+                -- return "Enabled: " .. (mod:get_config().cracked_key_reminder_enabled and "on" or "off")
             end,
 
             OnChange = function(value)

@@ -67,6 +67,13 @@ Languages.English = lang.new({
 
     [LE.LLANG_CONFIG_DOORS_SECTION] = "Doors",
     [LE.LLANG_CONFIG_DOOR_REMINDERS_LABEL] = "Door Reminders",
+
+    [LE.LLANG_CONFIG_MAP_SECTION] = "Map",
+    [LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_COLORMARKS_LABEL] = "Map Special Room Colormarks",
+    [LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_COLORMARKS_DESC] = "Enables / Disables color marks for visited and unvisited special rooms",
+
+    [LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_UNVISITED_LABEL] = "Unvisited Rooms",
+    [LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_VISITED_LABEL] = "Visited Rooms",
 }, default_language_font)
 
 Languages.Chinese = lang.new({
@@ -106,7 +113,7 @@ Languages.Chinese = lang.new({
 
     [LE.LLANG_NATIVE_NAME] = "中文",
 
-    [LE.LLANG_CONFIG_ENABLED_LABEL] = "是否开启",
+    [LE.LLANG_CONFIG_ENABLED_LABEL] = "开启",
     [LE.LLANG_CONFIG_ENABLED_ON] = "是",
     [LE.LLANG_CONFIG_ENABLED_OFF] = "否",
 
@@ -125,6 +132,12 @@ Languages.Chinese = lang.new({
     [LE.LLANG_CONFIG_DOORS_SECTION] = "门",
     [LE.LLANG_CONFIG_DOOR_REMINDERS_LABEL] = "门提醒",
 
+    [LE.LLANG_CONFIG_MAP_SECTION] = "地图",
+    [LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_COLORMARKS_LABEL] = "地图特殊房间颜色比标记",
+    [LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_COLORMARKS_DESC] = "显示或隐藏特殊房间(进入/未进入)的颜色标记",
+
+    [LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_UNVISITED_LABEL] = "未探索的房间",
+    [LE.LLANG_CONFIG_MAP_SPECIAL_ROOM_VISITED_LABEL] = "探索完成的房间",
 }, default_language_font, Languages.English)
 
 Languages.Russian = lang.new({
