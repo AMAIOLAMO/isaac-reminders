@@ -46,6 +46,7 @@ Languages.English = lang.new({
     [LE.LROOM_BLUE       ] = "Blue Womb Room",
 
     [LE.LROOM_BOSS_CHALLENGE] = "Boss Challenge Room",
+    [LE.LROOM_GREED_EXIT    ] = "Exit Room",
 
     [LE.LLANG_NATIVE_NAME] = "English",
 
@@ -110,6 +111,7 @@ Languages.Chinese = lang.new({
     [LE.LROOM_BLUE       ] = "蓝子宫房",
 
     [LE.LROOM_BOSS_CHALLENGE] = "头目挑战房",
+    [LE.LROOM_GREED_EXIT    ] = "出口房",
 
     [LE.LLANG_NATIVE_NAME] = "中文",
 
@@ -175,6 +177,7 @@ Languages.Russian = lang.new({
     [LE.LROOM_BLUE       ] = "Комната к ???",
 
     [LE.LROOM_BOSS_CHALLENGE] = "Комната испытания с боссом",
+    [LE.LROOM_GREED_EXIT    ] = "Комната выхода",
 
     [LE.LLANG_NATIVE_NAME] = "Русский",
 }, default_language_font, Languages.English)

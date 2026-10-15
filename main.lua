@@ -154,6 +154,8 @@ local ROOMTYPE_TO_ICON = {
     [RoomType.ROOM_ANGEL]       = "IconAngelRoom",
 
     [RoomType.ROOM_BOSS]        = "IconBoss",
+
+    [RoomType.ROOM_GREED_EXIT]  = "IconLadder",
 }
 
 function rems:roomtype_to_icon_name(room_type, is_boss_challenge)
@@ -466,7 +468,8 @@ function rems:render_notify(alpha)
         local line_height_offset = line_height * (room_idx + 1)
 
         -- fall back to displaying room type
-        local rname = lang:get(LE:from_room_type(room.type, is_boss_challenge)) or
+        local rname_key = LE:from_room_type(room.type, is_boss_challenge)
+        local rname = (rname_key ~= nil and lang:get(rname_key)) or
             (string.format(lang:get(LE.LNOTIFY_TEXT_ROOM_NIL), room.type))
 
         local rlabel = rname
@@ -1140,7 +1143,6 @@ function rems:render_secret_room_placeholders()
         [RoomType.ROOM_DEVIL]           = true,
         [RoomType.ROOM_ANGEL]           = true,
         [RoomType.ROOM_BLACK_MARKET]    = true,
-        [RoomType.ROOM_GREED_EXIT]      = true,
         [RoomType.ROOM_SECRET_EXIT]     = true,
         [RoomType.ROOM_TELEPORTER_EXIT] = true,
         [RoomType.ROOM_TELEPORTER]      = true,

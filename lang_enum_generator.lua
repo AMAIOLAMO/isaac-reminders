@@ -36,6 +36,7 @@ local lang = {
     "LROOM_SECRET_EXIT",
     "LROOM_BLUE",
     "LROOM_BOSS_CHALLENGE",
+    "LROOM_GREED_EXIT",
 
     -- Configs
     "LLANG_CONFIG_ENABLED_LABEL",
